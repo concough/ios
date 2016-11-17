@@ -7,12 +7,20 @@
 //
 
 import UIKit
+import SwiftyJSON
 
 class ViewController: UIViewController {
 
     override func viewDidLoad() {
         super.viewDidLoad()
         // Do any additional setup after loading the view, typically from a nib.
+        
+        var json: JSON = ["name": "Abolfazl", "age": 24, "lessons": ["math", "art"]]
+        
+        if let name = json["lessons"].array {
+            print(name[0])
+        }
+        
     }
 
     override func didReceiveMemoryWarning() {

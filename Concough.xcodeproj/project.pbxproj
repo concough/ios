@@ -7,14 +7,46 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		6A7F6794B7FD418602C5E907 /* Pods_Concough.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = B82887E22296AB852B639160 /* Pods_Concough.framework */; };
+		9A8F7E2493CF3ED28767E1B0 /* Pods_Concough.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 6457DCA706C5468BE9479E6F /* Pods_Concough.framework */; };
+		EB1AA8DB1DD332B500F0CED9 /* HomeTableViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = EB1AA8DA1DD332B500F0CED9 /* HomeTableViewController.swift */; };
+		EB1AA8DE1DD386CA00F0CED9 /* EntranceActivity.swift in Sources */ = {isa = PBXBuildFile; fileRef = EB1AA8DD1DD386CA00F0CED9 /* EntranceActivity.swift */; };
 		EB762F541DCF99D10084CA1D /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = EB762F531DCF99D10084CA1D /* AppDelegate.swift */; };
 		EB762F561DCF99D10084CA1D /* ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = EB762F551DCF99D10084CA1D /* ViewController.swift */; };
 		EB762F591DCF99D10084CA1D /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = EB762F571DCF99D10084CA1D /* Main.storyboard */; };
 		EB762F5B1DCF99D10084CA1D /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = EB762F5A1DCF99D10084CA1D /* Assets.xcassets */; };
 		EB762F5E1DCF99D10084CA1D /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = EB762F5C1DCF99D10084CA1D /* LaunchScreen.storyboard */; };
+		EB762F671DCF9A430084CA1D /* AppSettings.plist in Resources */ = {isa = PBXBuildFile; fileRef = EB762F661DCF9A430084CA1D /* AppSettings.plist */; };
+		EBFF8AA91DD4BF010002D03C /* EntranceCreateTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = EBFF8AA81DD4BF010002D03C /* EntranceCreateTableViewCell.swift */; };
+		EBFF8AAB1DD4C98C0002D03C /* EntranceUpdateTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = EBFF8AAA1DD4C98C0002D03C /* EntranceUpdateTableViewCell.swift */; };
+		EBFF8AAE1DD4D3230002D03C /* Realm.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = EBFF8AAC1DD4D3230002D03C /* Realm.framework */; };
+		EBFF8AAF1DD4D3230002D03C /* Realm.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = EBFF8AAC1DD4D3230002D03C /* Realm.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		EBFF8AB01DD4D3230002D03C /* RealmSwift.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = EBFF8AAD1DD4D3230002D03C /* RealmSwift.framework */; };
+		EBFF8AB11DD4D3230002D03C /* RealmSwift.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = EBFF8AAD1DD4D3230002D03C /* RealmSwift.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 /* End PBXBuildFile section */
 
+/* Begin PBXCopyFilesBuildPhase section */
+		EBFF8AB21DD4D3230002D03C /* Embed Frameworks */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 10;
+			files = (
+				EBFF8AB11DD4D3230002D03C /* RealmSwift.framework in Embed Frameworks */,
+				EBFF8AAF1DD4D3230002D03C /* Realm.framework in Embed Frameworks */,
+			);
+			name = "Embed Frameworks";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXCopyFilesBuildPhase section */
+
 /* Begin PBXFileReference section */
+		47E1AA76DD316D6B5BF951B7 /* Pods-Concough.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Concough.release.xcconfig"; path = "Pods/Target Support Files/Pods-Concough/Pods-Concough.release.xcconfig"; sourceTree = "<group>"; };
+		6457DCA706C5468BE9479E6F /* Pods_Concough.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_Concough.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		7C4790EBB0F86DF94D790C1F /* Pods-Concough.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Concough.debug.xcconfig"; path = "Pods/Target Support Files/Pods-Concough/Pods-Concough.debug.xcconfig"; sourceTree = "<group>"; };
+		B82887E22296AB852B639160 /* Pods_Concough.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_Concough.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		EB1AA8DA1DD332B500F0CED9 /* HomeTableViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = HomeTableViewController.swift; sourceTree = "<group>"; };
+		EB1AA8DD1DD386CA00F0CED9 /* EntranceActivity.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = EntranceActivity.swift; sourceTree = "<group>"; };
 		EB762F501DCF99D10084CA1D /* Concough.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Concough.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		EB762F531DCF99D10084CA1D /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		EB762F551DCF99D10084CA1D /* ViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewController.swift; sourceTree = "<group>"; };
@@ -22,6 +54,12 @@
 		EB762F5A1DCF99D10084CA1D /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		EB762F5D1DCF99D10084CA1D /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
 		EB762F5F1DCF99D10084CA1D /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		EB762F661DCF9A430084CA1D /* AppSettings.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = AppSettings.plist; sourceTree = "<group>"; };
+		EB95BB811DD3214B0040CA48 /* SwiftyJSON.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SwiftyJSON.framework; path = "Pods/../build/Debug-iphoneos/SwiftyJSON/SwiftyJSON.framework"; sourceTree = "<group>"; };
+		EBFF8AA81DD4BF010002D03C /* EntranceCreateTableViewCell.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = EntranceCreateTableViewCell.swift; sourceTree = "<group>"; };
+		EBFF8AAA1DD4C98C0002D03C /* EntranceUpdateTableViewCell.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = EntranceUpdateTableViewCell.swift; sourceTree = "<group>"; };
+		EBFF8AAC1DD4D3230002D03C /* Realm.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = Realm.framework; sourceTree = "<group>"; };
+		EBFF8AAD1DD4D3230002D03C /* RealmSwift.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = RealmSwift.framework; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -29,17 +67,41 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				EBFF8AAE1DD4D3230002D03C /* Realm.framework in Frameworks */,
+				6A7F6794B7FD418602C5E907 /* Pods_Concough.framework in Frameworks */,
+				EBFF8AB01DD4D3230002D03C /* RealmSwift.framework in Frameworks */,
+				9A8F7E2493CF3ED28767E1B0 /* Pods_Concough.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		5D64880020D554EEF0619C3D /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				EB95BB811DD3214B0040CA48 /* SwiftyJSON.framework */,
+				B82887E22296AB852B639160 /* Pods_Concough.framework */,
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
+		EB1AA8DC1DD3868E00F0CED9 /* Structures */ = {
+			isa = PBXGroup;
+			children = (
+				EB1AA8DD1DD386CA00F0CED9 /* EntranceActivity.swift */,
+			);
+			name = Structures;
+			sourceTree = "<group>";
+		};
 		EB762F471DCF99D10084CA1D = {
 			isa = PBXGroup;
 			children = (
+				EBFF8AB31DD4D3350002D03C /* Frameworks */,
 				EB762F521DCF99D10084CA1D /* Concough */,
 				EB762F511DCF99D10084CA1D /* Products */,
+				F0D55B7D8C8F8D01DF3ECA64 /* Pods */,
+				5D64880020D554EEF0619C3D /* Frameworks */,
 			);
 			sourceTree = "<group>";
 		};
@@ -54,6 +116,9 @@
 		EB762F521DCF99D10084CA1D /* Concough */ = {
 			isa = PBXGroup;
 			children = (
+				EB762F691DCF9A8C0084CA1D /* Classes */,
+				EB762F681DCF9A580084CA1D /* Views */,
+				EB762F651DCF9A090084CA1D /* Settings */,
 				EB762F531DCF99D10084CA1D /* AppDelegate.swift */,
 				EB762F551DCF99D10084CA1D /* ViewController.swift */,
 				EB762F571DCF99D10084CA1D /* Main.storyboard */,
@@ -64,6 +129,51 @@
 			path = Concough;
 			sourceTree = "<group>";
 		};
+		EB762F651DCF9A090084CA1D /* Settings */ = {
+			isa = PBXGroup;
+			children = (
+				EB762F661DCF9A430084CA1D /* AppSettings.plist */,
+			);
+			name = Settings;
+			sourceTree = "<group>";
+		};
+		EB762F681DCF9A580084CA1D /* Views */ = {
+			isa = PBXGroup;
+			children = (
+				EB1AA8DA1DD332B500F0CED9 /* HomeTableViewController.swift */,
+				EBFF8AA81DD4BF010002D03C /* EntranceCreateTableViewCell.swift */,
+				EBFF8AAA1DD4C98C0002D03C /* EntranceUpdateTableViewCell.swift */,
+			);
+			name = Views;
+			sourceTree = "<group>";
+		};
+		EB762F691DCF9A8C0084CA1D /* Classes */ = {
+			isa = PBXGroup;
+			children = (
+				EB1AA8DC1DD3868E00F0CED9 /* Structures */,
+			);
+			name = Classes;
+			sourceTree = "<group>";
+		};
+		EBFF8AB31DD4D3350002D03C /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				EBFF8AAC1DD4D3230002D03C /* Realm.framework */,
+				EBFF8AAD1DD4D3230002D03C /* RealmSwift.framework */,
+				6457DCA706C5468BE9479E6F /* Pods_Concough.framework */,
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
+		F0D55B7D8C8F8D01DF3ECA64 /* Pods */ = {
+			isa = PBXGroup;
+			children = (
+				7C4790EBB0F86DF94D790C1F /* Pods-Concough.debug.xcconfig */,
+				47E1AA76DD316D6B5BF951B7 /* Pods-Concough.release.xcconfig */,
+			);
+			name = Pods;
+			sourceTree = "<group>";
+		};
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
@@ -71,9 +181,14 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = EB762F621DCF99D10084CA1D /* Build configuration list for PBXNativeTarget "Concough" */;
 			buildPhases = (
+				47814383C6134908B3A434D1 /* [CP] Check Pods Manifest.lock */,
 				EB762F4C1DCF99D10084CA1D /* Sources */,
 				EB762F4D1DCF99D10084CA1D /* Frameworks */,
 				EB762F4E1DCF99D10084CA1D /* Resources */,
+				CF01AE0E140C70B6E794F846 /* [CP] Embed Pods Frameworks */,
+				0E63680CD72298A81E9FA30F /* [CP] Copy Pods Resources */,
+				EBFF8AB21DD4D3230002D03C /* Embed Frameworks */,
+				EBFF8AB41DD4D3940002D03C /* Strip Framework Architecture */,
 			);
 			buildRules = (
 			);
@@ -97,6 +212,7 @@
 					EB762F4F1DCF99D10084CA1D = {
 						CreatedOnToolsVersion = 7.2;
 						DevelopmentTeam = U2TCQ3KHF4;
+						LastSwiftMigration = 0810;
 					};
 				};
 			};
@@ -124,6 +240,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				EB762F5E1DCF99D10084CA1D /* LaunchScreen.storyboard in Resources */,
+				EB762F671DCF9A430084CA1D /* AppSettings.plist in Resources */,
 				EB762F5B1DCF99D10084CA1D /* Assets.xcassets in Resources */,
 				EB762F591DCF99D10084CA1D /* Main.storyboard in Resources */,
 			);
@@ -131,12 +248,78 @@
 		};
 /* End PBXResourcesBuildPhase section */
 
+/* Begin PBXShellScriptBuildPhase section */
+		0E63680CD72298A81E9FA30F /* [CP] Copy Pods Resources */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+			);
+			name = "[CP] Copy Pods Resources";
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "\"${SRCROOT}/Pods/Target Support Files/Pods-Concough/Pods-Concough-resources.sh\"\n";
+			showEnvVarsInLog = 0;
+		};
+		47814383C6134908B3A434D1 /* [CP] Check Pods Manifest.lock */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+			);
+			name = "[CP] Check Pods Manifest.lock";
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "diff \"${PODS_ROOT}/../Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n";
+			showEnvVarsInLog = 0;
+		};
+		CF01AE0E140C70B6E794F846 /* [CP] Embed Pods Frameworks */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+			);
+			name = "[CP] Embed Pods Frameworks";
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "\"${SRCROOT}/Pods/Target Support Files/Pods-Concough/Pods-Concough-frameworks.sh\"\n";
+			showEnvVarsInLog = 0;
+		};
+		EBFF8AB41DD4D3940002D03C /* Strip Framework Architecture */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+			);
+			name = "Strip Framework Architecture";
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "bash \"${BUILT_PRODUCTS_DIR}/${FRAMEWORKS_FOLDER_PATH}/Realm.framework/strip-frameworks.sh\"";
+		};
+/* End PBXShellScriptBuildPhase section */
+
 /* Begin PBXSourcesBuildPhase section */
 		EB762F4C1DCF99D10084CA1D /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				EBFF8AAB1DD4C98C0002D03C /* EntranceUpdateTableViewCell.swift in Sources */,
+				EBFF8AA91DD4BF010002D03C /* EntranceCreateTableViewCell.swift in Sources */,
+				EB1AA8DB1DD332B500F0CED9 /* HomeTableViewController.swift in Sources */,
 				EB762F561DCF99D10084CA1D /* ViewController.swift in Sources */,
+				EB1AA8DE1DD386CA00F0CED9 /* EntranceActivity.swift in Sources */,
 				EB762F541DCF99D10084CA1D /* AppDelegate.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -248,23 +431,39 @@
 		};
 		EB762F631DCF99D10084CA1D /* Debug */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = 7C4790EBB0F86DF94D790C1F /* Pods-Concough.debug.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(PROJECT_DIR)/build/Debug-iphoneos/SwiftyJSON",
+					"$(PROJECT_DIR)",
+				);
 				INFOPLIST_FILE = Concough/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 9.0;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
 				PRODUCT_BUNDLE_IDENTIFIER = com.famba.Concough;
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_VERSION = 2.3;
 			};
 			name = Debug;
 		};
 		EB762F641DCF99D10084CA1D /* Release */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = 47E1AA76DD316D6B5BF951B7 /* Pods-Concough.release.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(PROJECT_DIR)/build/Debug-iphoneos/SwiftyJSON",
+					"$(PROJECT_DIR)",
+				);
 				INFOPLIST_FILE = Concough/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 9.0;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
 				PRODUCT_BUNDLE_IDENTIFIER = com.famba.Concough;
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_VERSION = 2.3;
 			};
 			name = Release;
 		};
@@ -287,6 +486,7 @@
 				EB762F641DCF99D10084CA1D /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
 	};
