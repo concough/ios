@@ -154,6 +154,9 @@ class HomeTableViewController: UITableViewController {
             
             if refresh {
                 self.activityList.removeAll()
+                NSOperationQueue.mainQueue().addOperationWithBlock { () -> Void in
+                    self.tableView.reloadData()
+                }                
             }
 
             if let jsonData = data where jsonData.count > 0 {
