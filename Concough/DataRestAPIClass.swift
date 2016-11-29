@@ -11,7 +11,7 @@ import Alamofire
 import SwiftyJSON
 
 class DataRestAPIClass {
-    class func updateActivity(next next: String?, completion: (refresh: Bool, data: JSON?, error: NSError?) -> ()) {
+    class func updateActivity(next next: String?, completion: (refresh: Bool, data: JSON?, error: HTTPErrorType?) -> ()) {
         guard var fullPath = UrlMakerSingleton.sharedInstance.activityUrl() else {
             return
         }
@@ -27,19 +27,39 @@ class DataRestAPIClass {
             }
         }
         
-        Alamofire.request(.GET, fullPath).validate().responseJSON { response in
-            
-            //debugPrint(response)
-            switch response.result {
-            case .Success:
-                if let json = response.result.value {
-                    let jsonData = JSON(json)
-                    
-                    completion(refresh: !hasNext, data: jsonData, error: nil)
-                }
+        // get additional headers from oauth
+        OAuthHandlerSingleton.sharedInstance.assureAuthorized { (authenticated, error) in
+            if authenticated && error == nil {
                 
-            case .Failure(let error):
-                completion(refresh: !hasNext, data: nil, error: error)
+                let headers = OAuthHandlerSingleton.sharedInstance.getHeader()
+                
+                Alamofire.request(.GET, fullPath, parameters: nil, encoding: .URL, headers: headers).responseJSON { response in
+                    
+                    //debugPrint(response)
+                    let statusCode = response.response?.statusCode
+                    let errorType = HTTPErrorType.toType(statusCode!)
+                    
+                    switch errorType {
+                    case .Success:
+                        if let json = response.result.value {
+                            let jsonData = JSON(json)
+                            
+                            completion(refresh: !hasNext, data: jsonData, error: .Success)
+                        }
+                    case .UnAuthorized:
+                        fallthrough
+                    case .ForbidenAccess:
+                        OAuthHandlerSingleton.sharedInstance.assureAuthorized(true, completion: { (authenticated, error) in
+                            if authenticated && error == nil {
+                                completion(refresh: false, data: nil, error: errorType)
+                            }
+                        })
+                    default:
+                        completion(refresh: false, data: nil, error: errorType)
+                    }
+                }
+            } else {
+                completion(refresh: false, data: nil, error: error)
             }
         }
     }

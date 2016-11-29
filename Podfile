@@ -7,5 +7,5 @@ target 'Concough' do
   # Pods for Concough
     pod 'SwiftyJSON', '~> 2.3'
     pod 'Alamofire', '~> 3.0'
-
+    pod 'SwiftKeychainWrapper', '~> 2.0'
 end

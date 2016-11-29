@@ -13,6 +13,7 @@ class UrlMakerSingleton {
     private var _api_version: String!
     private var _media_class_name: String!
     private var _activity_class_name: String!
+    private var _oauth_class_name: String!
     
     static let sharedInstance = UrlMakerSingleton()
     
@@ -22,11 +23,12 @@ class UrlMakerSingleton {
         self._api_version = API_VERSION
         self._media_class_name = MEDIA_CLASS_NAME
         self._activity_class_name = ACTIVITY_CLASS_NAME
+        self._oauth_class_name = OAUTH_CLASS_NAME
     }
     
     internal func mediaUrlFor(type: String, mediaId: AnyObject) -> String? {
         let functionName = "\(type)/\(mediaId)"
-        let fullPath = "\(self._base_url)\(self._api_version)/\(self._media_class_name)/\(functionName)"
+        let fullPath = "\(self._base_url)\(self._api_version)/\(self._media_class_name)/\(functionName)/"
         
         return fullPath
     }
@@ -38,9 +40,15 @@ class UrlMakerSingleton {
     
     internal func activityUrlWithNext(next: String) -> String? {
         if var path = UrlMakerSingleton.sharedInstance.activityUrl() {
-            path += "next/\(next)"
+            path += "next/\(next)/"
             return path
         }
         return nil
+    }
+    
+    internal func tokenUrl() -> String? {
+        let functionName = "token"
+        let fullPath = "\(self._base_url)\(self._oauth_class_name)/\(functionName)/"
+        return fullPath
     }
 }

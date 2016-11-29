@@ -31,6 +31,14 @@
 		EBB68D241DE6D025003792B3 /* MediaRestAPIClass.swift in Sources */ = {isa = PBXBuildFile; fileRef = EBB68D231DE6D025003792B3 /* MediaRestAPIClass.swift */; };
 		EBB68D261DE6DB47003792B3 /* FormatterSingleton.swift in Sources */ = {isa = PBXBuildFile; fileRef = EBB68D251DE6DB47003792B3 /* FormatterSingleton.swift */; };
 		EBB68D281DE6FFCC003792B3 /* DataRestAPIClass.swift in Sources */ = {isa = PBXBuildFile; fileRef = EBB68D271DE6FFCC003792B3 /* DataRestAPIClass.swift */; };
+		EBB68D2A1DE9C31E003792B3 /* TestViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = EBB68D291DE9C31E003792B3 /* TestViewController.swift */; };
+		EBB68D2D1DE9DC8C003792B3 /* OAuthAdapter.swift in Sources */ = {isa = PBXBuildFile; fileRef = EBB68D2C1DE9DC8C003792B3 /* OAuthAdapter.swift */; };
+		EBB68D311DEAC7B6003792B3 /* OAuthHandlerSingleton.swift in Sources */ = {isa = PBXBuildFile; fileRef = EBB68D301DEAC7B6003792B3 /* OAuthHandlerSingleton.swift */; };
+		EBB68D341DEAD926003792B3 /* KeyChainAccessProxy.swift in Sources */ = {isa = PBXBuildFile; fileRef = EBB68D331DEAD926003792B3 /* KeyChainAccessProxy.swift */; };
+		EBB68D361DEBF3F0003792B3 /* StartupViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = EBB68D351DEBF3F0003792B3 /* StartupViewController.swift */; };
+		EBB68D381DEBFAA7003792B3 /* LoginViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = EBB68D371DEBFAA7003792B3 /* LoginViewController.swift */; };
+		EBB68D3A1DEC1015003792B3 /* SignUpViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = EBB68D391DEC1015003792B3 /* SignUpViewController.swift */; };
+		EBB68D3F1DED6018003792B3 /* HttpStatusType.swift in Sources */ = {isa = PBXBuildFile; fileRef = EBB68D3E1DED6018003792B3 /* HttpStatusType.swift */; };
 		EBFF8AA91DD4BF010002D03C /* EntranceCreateTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = EBFF8AA81DD4BF010002D03C /* EntranceCreateTableViewCell.swift */; };
 		EBFF8AAB1DD4C98C0002D03C /* EntranceUpdateTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = EBFF8AAA1DD4C98C0002D03C /* EntranceUpdateTableViewCell.swift */; };
 		EBFF8AAE1DD4D3230002D03C /* Realm.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = EBFF8AAC1DD4D3230002D03C /* Realm.framework */; };
@@ -84,6 +92,15 @@
 		EBB68D231DE6D025003792B3 /* MediaRestAPIClass.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MediaRestAPIClass.swift; sourceTree = "<group>"; };
 		EBB68D251DE6DB47003792B3 /* FormatterSingleton.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = FormatterSingleton.swift; sourceTree = "<group>"; };
 		EBB68D271DE6FFCC003792B3 /* DataRestAPIClass.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DataRestAPIClass.swift; sourceTree = "<group>"; };
+		EBB68D291DE9C31E003792B3 /* TestViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = TestViewController.swift; sourceTree = "<group>"; };
+		EBB68D2C1DE9DC8C003792B3 /* OAuthAdapter.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = OAuthAdapter.swift; sourceTree = "<group>"; };
+		EBB68D301DEAC7B6003792B3 /* OAuthHandlerSingleton.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = OAuthHandlerSingleton.swift; sourceTree = "<group>"; };
+		EBB68D331DEAD926003792B3 /* KeyChainAccessProxy.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = KeyChainAccessProxy.swift; sourceTree = "<group>"; };
+		EBB68D351DEBF3F0003792B3 /* StartupViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = StartupViewController.swift; sourceTree = "<group>"; };
+		EBB68D371DEBFAA7003792B3 /* LoginViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = LoginViewController.swift; sourceTree = "<group>"; };
+		EBB68D391DEC1015003792B3 /* SignUpViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SignUpViewController.swift; sourceTree = "<group>"; };
+		EBB68D3B1DED5473003792B3 /* Concough.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = Concough.entitlements; sourceTree = "<group>"; };
+		EBB68D3E1DED6018003792B3 /* HttpStatusType.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = HttpStatusType.swift; sourceTree = "<group>"; };
 		EBFF8AA81DD4BF010002D03C /* EntranceCreateTableViewCell.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = EntranceCreateTableViewCell.swift; sourceTree = "<group>"; };
 		EBFF8AAA1DD4C98C0002D03C /* EntranceUpdateTableViewCell.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = EntranceUpdateTableViewCell.swift; sourceTree = "<group>"; };
 		EBFF8AAC1DD4D3230002D03C /* Realm.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = Realm.framework; sourceTree = "<group>"; };
@@ -118,6 +135,7 @@
 			isa = PBXGroup;
 			children = (
 				EB1AA8DD1DD386CA00F0CED9 /* EntranceActivity.swift */,
+				EBB68D3E1DED6018003792B3 /* HttpStatusType.swift */,
 			);
 			name = Structures;
 			sourceTree = "<group>";
@@ -144,6 +162,7 @@
 		EB762F521DCF99D10084CA1D /* Concough */ = {
 			isa = PBXGroup;
 			children = (
+				EBB68D3B1DED5473003792B3 /* Concough.entitlements */,
 				EBB68CFE1DE47FB8003792B3 /* Models */,
 				EBB68CFD1DE47FAD003792B3 /* Controllers */,
 				EB762F681DCF9A580084CA1D /* Views */,
@@ -181,6 +200,8 @@
 		EB762F691DCF9A8C0084CA1D /* Classes */ = {
 			isa = PBXGroup;
 			children = (
+				EBB68D321DEAD90C003792B3 /* Utils */,
+				EBB68D2B1DE9DC6D003792B3 /* OAuth */,
 				EBB68D221DE6D00B003792B3 /* Rest */,
 				EBB68D1D1DE5D6B8003792B3 /* Singletons */,
 				EB1AA8DC1DD3868E00F0CED9 /* Structures */,
@@ -192,6 +213,10 @@
 			isa = PBXGroup;
 			children = (
 				EB1AA8DA1DD332B500F0CED9 /* HomeTableViewController.swift */,
+				EBB68D291DE9C31E003792B3 /* TestViewController.swift */,
+				EBB68D351DEBF3F0003792B3 /* StartupViewController.swift */,
+				EBB68D371DEBFAA7003792B3 /* LoginViewController.swift */,
+				EBB68D391DEC1015003792B3 /* SignUpViewController.swift */,
 			);
 			name = Controllers;
 			sourceTree = "<group>";
@@ -232,6 +257,7 @@
 				EBB68D1E1DE5D7AA003792B3 /* MediaCacheSingleton.swift */,
 				EBB68D201DE6CD01003792B3 /* UrlMakerSingleton.swift */,
 				EBB68D251DE6DB47003792B3 /* FormatterSingleton.swift */,
+				EBB68D301DEAC7B6003792B3 /* OAuthHandlerSingleton.swift */,
 			);
 			name = Singletons;
 			sourceTree = "<group>";
@@ -243,6 +269,22 @@
 				EBB68D271DE6FFCC003792B3 /* DataRestAPIClass.swift */,
 			);
 			name = Rest;
+			sourceTree = "<group>";
+		};
+		EBB68D2B1DE9DC6D003792B3 /* OAuth */ = {
+			isa = PBXGroup;
+			children = (
+				EBB68D2C1DE9DC8C003792B3 /* OAuthAdapter.swift */,
+			);
+			name = OAuth;
+			sourceTree = "<group>";
+		};
+		EBB68D321DEAD90C003792B3 /* Utils */ = {
+			isa = PBXGroup;
+			children = (
+				EBB68D331DEAD926003792B3 /* KeyChainAccessProxy.swift */,
+			);
+			name = Utils;
 			sourceTree = "<group>";
 		};
 		EBFF8AB31DD4D3350002D03C /* Frameworks */ = {
@@ -296,13 +338,18 @@
 			isa = PBXProject;
 			attributes = {
 				LastSwiftUpdateCheck = 0720;
-				LastUpgradeCheck = 0720;
+				LastUpgradeCheck = 0810;
 				ORGANIZATIONNAME = Famba;
 				TargetAttributes = {
 					EB762F4F1DCF99D10084CA1D = {
 						CreatedOnToolsVersion = 7.2;
 						DevelopmentTeam = U2TCQ3KHF4;
 						LastSwiftMigration = 0810;
+						SystemCapabilities = {
+							com.apple.Keychain = {
+								enabled = 1;
+							};
+						};
 					};
 				};
 			};
@@ -413,16 +460,24 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				EBB68D381DEBFAA7003792B3 /* LoginViewController.swift in Sources */,
 				EBFF8AAB1DD4C98C0002D03C /* EntranceUpdateTableViewCell.swift in Sources */,
 				EBB68D1F1DE5D7AA003792B3 /* MediaCacheSingleton.swift in Sources */,
 				EBB68D051DE488D9003792B3 /* WhitePanelUI.swift in Sources */,
 				EBB68D001DE48022003792B3 /* Constants.swift in Sources */,
 				EBB68D211DE6CD01003792B3 /* UrlMakerSingleton.swift in Sources */,
+				EBB68D2A1DE9C31E003792B3 /* TestViewController.swift in Sources */,
+				EBB68D3A1DEC1015003792B3 /* SignUpViewController.swift in Sources */,
+				EBB68D3F1DED6018003792B3 /* HttpStatusType.swift in Sources */,
 				EBB68D261DE6DB47003792B3 /* FormatterSingleton.swift in Sources */,
+				EBB68D361DEBF3F0003792B3 /* StartupViewController.swift in Sources */,
 				EBFF8AA91DD4BF010002D03C /* EntranceCreateTableViewCell.swift in Sources */,
 				EB1AA8DB1DD332B500F0CED9 /* HomeTableViewController.swift in Sources */,
+				EBB68D311DEAC7B6003792B3 /* OAuthHandlerSingleton.swift in Sources */,
+				EBB68D2D1DE9DC8C003792B3 /* OAuthAdapter.swift in Sources */,
 				EBB68D241DE6D025003792B3 /* MediaRestAPIClass.swift in Sources */,
 				EBB68D281DE6FFCC003792B3 /* DataRestAPIClass.swift in Sources */,
+				EBB68D341DEAD926003792B3 /* KeyChainAccessProxy.swift in Sources */,
 				EB1AA8DE1DD386CA00F0CED9 /* EntranceActivity.swift in Sources */,
 				EB762F541DCF99D10084CA1D /* AppDelegate.swift in Sources */,
 			);
@@ -463,8 +518,10 @@
 				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
 				CLANG_WARN_EMPTY_BODY = YES;
 				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
 				CLANG_WARN_INT_CONVERSION = YES;
 				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
 				CLANG_WARN_UNREACHABLE_CODE = YES;
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
@@ -508,8 +565,10 @@
 				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
 				CLANG_WARN_EMPTY_BODY = YES;
 				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
 				CLANG_WARN_INT_CONVERSION = YES;
 				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
 				CLANG_WARN_UNREACHABLE_CODE = YES;
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
@@ -528,6 +587,7 @@
 				IPHONEOS_DEPLOYMENT_TARGET = 9.2;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				SDKROOT = iphoneos;
+				SWIFT_OPTIMIZATION_LEVEL = "-Owholemodule";
 				TARGETED_DEVICE_FAMILY = "1,2";
 				VALIDATE_PRODUCT = YES;
 			};
@@ -537,7 +597,9 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 7C4790EBB0F86DF94D790C1F /* Pods-Concough.debug.xcconfig */;
 			buildSettings = {
+				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_ENTITLEMENTS = Concough/Concough.entitlements;
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(inherited)",
 					"$(PROJECT_DIR)/build/Debug-iphoneos/SwiftyJSON",
@@ -556,7 +618,9 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 47E1AA76DD316D6B5BF951B7 /* Pods-Concough.release.xcconfig */;
 			buildSettings = {
+				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_ENTITLEMENTS = Concough/Concough.entitlements;
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(inherited)",
 					"$(PROJECT_DIR)/build/Debug-iphoneos/SwiftyJSON",

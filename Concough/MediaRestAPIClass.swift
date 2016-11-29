@@ -19,24 +19,45 @@ class MediaRestAPIClass {
     }
     
     
-    class func downloadEsetImage(imageId: Int, completion: (fullUrl: String?, data: NSData?, error: NSError?) -> ()) {
+    class func downloadEsetImage(imageId: Int, completion: (fullUrl: String?, data: NSData?, error: HTTPErrorType?) -> ()) {
         if let fullPath = MediaRestAPIClass.makeEsetImageUri(imageId) {
-            Alamofire.request(.GET ,fullPath).responseData() { response in
-                print("download index:\(imageId)")
-                
-                switch response.result {
-                case .Success:
-                    guard let data = response.result.value else {
-                        return
-                    }
-                    // call callback function
-                    completion(fullUrl: fullPath, data: data, error: nil)
+            
+            
+            
+            // get additional headers from oauth
+            OAuthHandlerSingleton.sharedInstance.assureAuthorized(completion: { (authenticated, error) in
+                if authenticated && error == nil {
+                    let headers = OAuthHandlerSingleton.sharedInstance.getHeader()
                     
-                case .Failure(let err):
-                    // failure occured --> in future must be replace with error detector
-                    completion(fullUrl: fullPath, data: nil, error: err)
+                    Alamofire.request(.GET ,fullPath, parameters: nil, encoding: .URL, headers: headers).responseData() { response in
+                        //print("download index:\(imageId)")
+                        let statusCode = response.response?.statusCode
+                        let errorType = HTTPErrorType.toType(statusCode!)
+
+                        
+                        switch errorType {
+                        case .Success:
+                            guard let data = response.result.value else {
+                                return
+                            }
+                            // call callback function
+                            completion(fullUrl: fullPath, data: data, error: nil)
+                        case .ForbidenAccess:
+                            OAuthHandlerSingleton.sharedInstance.assureAuthorized(true, completion: { (authenticated, error) in
+                                if authenticated && error == nil {
+                                    completion(fullUrl: fullPath, data: nil, error: error)
+                                }
+                            })
+                            break
+                        default:
+                            // failure occured --> in future must be replace with error detector
+                            completion(fullUrl: fullPath, data: nil, error: errorType)
+                        }
+                    }
+                } else {
+                    completion(fullUrl: fullPath, data: nil, error: error)
                 }
-            }
+            })
         } else {
             // can not make url --> must return an error
         }

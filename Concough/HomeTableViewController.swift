@@ -139,46 +139,56 @@ class HomeTableViewController: UITableViewController {
     override func tableView(tableView: UITableView, didSelectRowAtIndexPath indexPath: NSIndexPath) {
         print("\(indexPath.row) has been selected")
     }
-    
 
     // MARK: Private Functions
     
     private func loadFeeds(next next: String?) {
-
+        UIApplication.sharedApplication().networkActivityIndicatorVisible = true
+        
         DataRestAPIClass.updateActivity(next: next) {
             refresh, data, error in
-            
+                        
             NSOperationQueue.mainQueue().addOperationWithBlock {
                 self.refreshControl?.endRefreshing()
+                UIApplication.sharedApplication().networkActivityIndicatorVisible = false
             }
             
-            if refresh {
-                self.activityList.removeAll()
-                NSOperationQueue.mainQueue().addOperationWithBlock { () -> Void in
-                    self.tableView.reloadData()
-                }                
-            }
+            if let err = error {
+                switch err {
+                case .Success:
+                    if refresh {
+                        self.activityList.removeAll()
+                        self.moreFeedExist = true
+                        
+                        NSOperationQueue.mainQueue().addOperationWithBlock { () -> Void in
+                            self.tableView.reloadData()
+                        }
+                    }
 
-            if let jsonData = data where jsonData.count > 0 {
-                
-                for (_, item) in jsonData {
-                    let cStr = item["created"].stringValue
-                    let aType = item["activity_type"].stringValue
-                    let t = item["target"]
-                    
-                    let c:NSDate = FormatterSingleton.sharedInstance.UTCDateFormatter.dateFromString(cStr)!
-                    
-                    let con = ConcoughActivity(created: c, createdStr: cStr, activityType: aType, target: t)
-                    self.activityList.append(con)
+                    if let jsonData = data where jsonData.count > 0 {
+                        
+                        for (_, item) in jsonData {
+                            let cStr = item["created"].stringValue
+                            let aType = item["activity_type"].stringValue
+                            let t = item["target"]
+                            
+                            let c:NSDate = FormatterSingleton.sharedInstance.UTCDateFormatter.dateFromString(cStr)!
+                            
+                            let con = ConcoughActivity(created: c, createdStr: cStr, activityType: aType, target: t)
+                            self.activityList.append(con)
+                        }
+                        
+                        NSOperationQueue.mainQueue().addOperationWithBlock { () -> Void in
+                            self.tableView.reloadData()
+                        }
+                        
+                    } else { // no more feeds
+                        self.moreFeedExist = false
+                        
+                    }
+                default:
+                    print("HomeTableViewController --> loadFeeds: error = \(err)")
                 }
-                
-                NSOperationQueue.mainQueue().addOperationWithBlock { () -> Void in
-                    self.tableView.reloadData()
-                }
-                
-            } else { // no more feeds
-                self.moreFeedExist = false
-                
             }
         }
     }
