@@ -31,7 +31,7 @@ class AccessTokenAdapter {
                 response in
                 
                 switch (response.result) {
-                case .Success(let value):
+                case .Success:
                     let statusCode = response.response?.statusCode
                     let data = JSON(data: response.data!)
                     completion(data: data, statusCode: statusCode!, error: nil)
