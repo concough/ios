@@ -49,7 +49,7 @@ class OAuthHandlerSingleton {
 
             AccessTokenAdapter.authorize(username: self._username!, password: self._password!, completion: { data, statusCode, err in
 
-                print ("OAuthHandlerSingleton --> authorize: \(statusCode) - \(err)\n")
+                //print ("OAuthHandlerSingleton --> authorize: \(statusCode) - \(err)\n")
                 
                 if statusCode == 401 {
                     // unauthorized access
@@ -100,7 +100,7 @@ class OAuthHandlerSingleton {
 
             AccessTokenAdapter.refreshToken(refToken: self._refreshToken!, completion: { (data, statusCode, err) in
 
-                print ("OAuthHandlerSingleton --> refreshToken: \(statusCode) - \(err)\n")
+                //print ("OAuthHandlerSingleton --> refreshToken: \(statusCode) - \(err)\n")
                 
                 if statusCode == 401 {
                     self.authorize({ (error) in
@@ -162,7 +162,7 @@ class OAuthHandlerSingleton {
     func assureAuthorized(refresh: Bool = false, completion: (authenticated: Bool, error: HTTPErrorType?) -> ()) {
         
         if self.isAuthorized() {
-            print ("OAuthHandlerSingleton --> assureAuthorized: Authorized\n")
+            //print ("OAuthHandlerSingleton --> assureAuthorized: Authorized\n")
             if refresh {
                 self.refreshToken({ (error) in
                     completion(authenticated: true, error: error)
@@ -172,7 +172,7 @@ class OAuthHandlerSingleton {
                     let timeDiff = Int(NSDate().timeIntervalSinceDate(last_time))
                     if timeDiff >= expiresIn - 60 {
                         self.refreshToken({ (error) in
-                            print ("OAuthHandlerSingleton --> assureAuthorized: Expired\n")
+                            //print ("OAuthHandlerSingleton --> assureAuthorized: Expired\n")
                             completion(authenticated: true, error: error)
                         })
                     } else {
@@ -182,12 +182,12 @@ class OAuthHandlerSingleton {
             }
         } else {
             if self.isAuthenticated() {
-                print ("OAuthHandlerSingleton --> assureAuthorized: Not Authorized but Authenticated\n")
+                //print ("OAuthHandlerSingleton --> assureAuthorized: Not Authorized but Authenticated\n")
                 self.authorize({ (error) in
                     completion(authenticated: true, error: error)
                 })
             } else {
-                print ("OAuthHandlerSingleton --> assureAuthorized: Not Authenticated\n")
+                //print ("OAuthHandlerSingleton --> assureAuthorized: Not Authenticated\n")
                 completion(authenticated: false, error: nil)
             }
         }

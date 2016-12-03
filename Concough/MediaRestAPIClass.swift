@@ -19,7 +19,7 @@ class MediaRestAPIClass {
     }
     
     
-    class func downloadEsetImage(imageId: Int, completion: (fullUrl: String?, data: NSData?, error: HTTPErrorType?) -> ()) {
+    class func downloadEsetImage(indexPath: NSIndexPath, imageId: Int, completion: (fullUrl: String?, data: NSData?, error: HTTPErrorType?) -> ()) {
         if let fullPath = MediaRestAPIClass.makeEsetImageUri(imageId) {
             
             
@@ -29,7 +29,7 @@ class MediaRestAPIClass {
                 if authenticated && error == nil {
                     let headers = OAuthHandlerSingleton.sharedInstance.getHeader()
                     
-                    Alamofire.request(.GET ,fullPath, parameters: nil, encoding: .URL, headers: headers).responseData() { response in
+                    let request = Alamofire.request(.GET ,fullPath, parameters: nil, encoding: .URL, headers: headers).responseData() { response in
                         //print("download index:\(imageId)")
                         let statusCode = response.response?.statusCode
                         let errorType = HTTPErrorType.toType(statusCode!)
@@ -54,6 +54,11 @@ class MediaRestAPIClass {
                             completion(fullUrl: fullPath, data: nil, error: errorType)
                         }
                     }
+                    
+                    // cache Request for future use
+                    let key = "\(indexPath.section):\(indexPath.row):\(fullPath)"
+                    MediaRequestRepositorySingleton.sharedInstance.add(key: key, value: request)
+                    
                 } else {
                     completion(fullUrl: fullPath, data: nil, error: error)
                 }

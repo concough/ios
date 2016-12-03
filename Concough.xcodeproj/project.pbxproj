@@ -39,6 +39,11 @@
 		EBB68D381DEBFAA7003792B3 /* LoginViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = EBB68D371DEBFAA7003792B3 /* LoginViewController.swift */; };
 		EBB68D3A1DEC1015003792B3 /* SignUpViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = EBB68D391DEC1015003792B3 /* SignUpViewController.swift */; };
 		EBB68D3F1DED6018003792B3 /* HttpStatusType.swift in Sources */ = {isa = PBXBuildFile; fileRef = EBB68D3E1DED6018003792B3 /* HttpStatusType.swift */; };
+		EBB68D421DF31221003792B3 /* UIExtensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = EBB68D411DF31221003792B3 /* UIExtensions.swift */; };
+		EBB68D441DF312F6003792B3 /* ObjectiveCHelpers.swift in Sources */ = {isa = PBXBuildFile; fileRef = EBB68D431DF312F6003792B3 /* ObjectiveCHelpers.swift */; };
+		EBB68D461DF31A13003792B3 /* RequestRepositoryClass.swift in Sources */ = {isa = PBXBuildFile; fileRef = EBB68D451DF31A13003792B3 /* RequestRepositoryClass.swift */; };
+		EBB68D481DF3203C003792B3 /* CriticalSectionHelpers.swift in Sources */ = {isa = PBXBuildFile; fileRef = EBB68D471DF3203C003792B3 /* CriticalSectionHelpers.swift */; };
+		EBB68D4A1DF327EE003792B3 /* MediaRequestRepositorySingleton.swift in Sources */ = {isa = PBXBuildFile; fileRef = EBB68D491DF327EE003792B3 /* MediaRequestRepositorySingleton.swift */; };
 		EBFF8AA91DD4BF010002D03C /* EntranceCreateTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = EBFF8AA81DD4BF010002D03C /* EntranceCreateTableViewCell.swift */; };
 		EBFF8AAB1DD4C98C0002D03C /* EntranceUpdateTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = EBFF8AAA1DD4C98C0002D03C /* EntranceUpdateTableViewCell.swift */; };
 		EBFF8AAE1DD4D3230002D03C /* Realm.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = EBFF8AAC1DD4D3230002D03C /* Realm.framework */; };
@@ -101,6 +106,11 @@
 		EBB68D391DEC1015003792B3 /* SignUpViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SignUpViewController.swift; sourceTree = "<group>"; };
 		EBB68D3B1DED5473003792B3 /* Concough.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = Concough.entitlements; sourceTree = "<group>"; };
 		EBB68D3E1DED6018003792B3 /* HttpStatusType.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = HttpStatusType.swift; sourceTree = "<group>"; };
+		EBB68D411DF31221003792B3 /* UIExtensions.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = UIExtensions.swift; sourceTree = "<group>"; };
+		EBB68D431DF312F6003792B3 /* ObjectiveCHelpers.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ObjectiveCHelpers.swift; sourceTree = "<group>"; };
+		EBB68D451DF31A13003792B3 /* RequestRepositoryClass.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = RequestRepositoryClass.swift; sourceTree = "<group>"; };
+		EBB68D471DF3203C003792B3 /* CriticalSectionHelpers.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CriticalSectionHelpers.swift; sourceTree = "<group>"; };
+		EBB68D491DF327EE003792B3 /* MediaRequestRepositorySingleton.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MediaRequestRepositorySingleton.swift; sourceTree = "<group>"; };
 		EBFF8AA81DD4BF010002D03C /* EntranceCreateTableViewCell.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = EntranceCreateTableViewCell.swift; sourceTree = "<group>"; };
 		EBFF8AAA1DD4C98C0002D03C /* EntranceUpdateTableViewCell.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = EntranceUpdateTableViewCell.swift; sourceTree = "<group>"; };
 		EBFF8AAC1DD4D3230002D03C /* Realm.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = Realm.framework; sourceTree = "<group>"; };
@@ -162,6 +172,7 @@
 		EB762F521DCF99D10084CA1D /* Concough */ = {
 			isa = PBXGroup;
 			children = (
+				EBB68D401DF31202003792B3 /* Extensions */,
 				EBB68D3B1DED5473003792B3 /* Concough.entitlements */,
 				EBB68CFE1DE47FB8003792B3 /* Models */,
 				EBB68CFD1DE47FAD003792B3 /* Controllers */,
@@ -205,6 +216,7 @@
 				EBB68D221DE6D00B003792B3 /* Rest */,
 				EBB68D1D1DE5D6B8003792B3 /* Singletons */,
 				EB1AA8DC1DD3868E00F0CED9 /* Structures */,
+				EBB68D451DF31A13003792B3 /* RequestRepositoryClass.swift */,
 			);
 			name = Classes;
 			sourceTree = "<group>";
@@ -258,6 +270,7 @@
 				EBB68D201DE6CD01003792B3 /* UrlMakerSingleton.swift */,
 				EBB68D251DE6DB47003792B3 /* FormatterSingleton.swift */,
 				EBB68D301DEAC7B6003792B3 /* OAuthHandlerSingleton.swift */,
+				EBB68D491DF327EE003792B3 /* MediaRequestRepositorySingleton.swift */,
 			);
 			name = Singletons;
 			sourceTree = "<group>";
@@ -283,8 +296,18 @@
 			isa = PBXGroup;
 			children = (
 				EBB68D331DEAD926003792B3 /* KeyChainAccessProxy.swift */,
+				EBB68D431DF312F6003792B3 /* ObjectiveCHelpers.swift */,
+				EBB68D471DF3203C003792B3 /* CriticalSectionHelpers.swift */,
 			);
 			name = Utils;
+			sourceTree = "<group>";
+		};
+		EBB68D401DF31202003792B3 /* Extensions */ = {
+			isa = PBXGroup;
+			children = (
+				EBB68D411DF31221003792B3 /* UIExtensions.swift */,
+			);
+			name = Extensions;
 			sourceTree = "<group>";
 		};
 		EBFF8AB31DD4D3350002D03C /* Frameworks */ = {
@@ -461,6 +484,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				EBB68D381DEBFAA7003792B3 /* LoginViewController.swift in Sources */,
+				EBB68D461DF31A13003792B3 /* RequestRepositoryClass.swift in Sources */,
 				EBFF8AAB1DD4C98C0002D03C /* EntranceUpdateTableViewCell.swift in Sources */,
 				EBB68D1F1DE5D7AA003792B3 /* MediaCacheSingleton.swift in Sources */,
 				EBB68D051DE488D9003792B3 /* WhitePanelUI.swift in Sources */,
@@ -469,12 +493,16 @@
 				EBB68D2A1DE9C31E003792B3 /* TestViewController.swift in Sources */,
 				EBB68D3A1DEC1015003792B3 /* SignUpViewController.swift in Sources */,
 				EBB68D3F1DED6018003792B3 /* HttpStatusType.swift in Sources */,
+				EBB68D481DF3203C003792B3 /* CriticalSectionHelpers.swift in Sources */,
 				EBB68D261DE6DB47003792B3 /* FormatterSingleton.swift in Sources */,
 				EBB68D361DEBF3F0003792B3 /* StartupViewController.swift in Sources */,
 				EBFF8AA91DD4BF010002D03C /* EntranceCreateTableViewCell.swift in Sources */,
 				EB1AA8DB1DD332B500F0CED9 /* HomeTableViewController.swift in Sources */,
+				EBB68D441DF312F6003792B3 /* ObjectiveCHelpers.swift in Sources */,
+				EBB68D4A1DF327EE003792B3 /* MediaRequestRepositorySingleton.swift in Sources */,
 				EBB68D311DEAC7B6003792B3 /* OAuthHandlerSingleton.swift in Sources */,
 				EBB68D2D1DE9DC8C003792B3 /* OAuthAdapter.swift in Sources */,
+				EBB68D421DF31221003792B3 /* UIExtensions.swift in Sources */,
 				EBB68D241DE6D025003792B3 /* MediaRestAPIClass.swift in Sources */,
 				EBB68D281DE6FFCC003792B3 /* DataRestAPIClass.swift in Sources */,
 				EBB68D341DEAD926003792B3 /* KeyChainAccessProxy.swift in Sources */,

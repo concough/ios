@@ -8,6 +8,7 @@
 
 import UIKit
 import SwiftyJSON
+import Alamofire
 
 class EntranceCreateTableViewCell: UITableViewCell {
     
@@ -41,7 +42,7 @@ class EntranceCreateTableViewCell: UITableViewCell {
         // Configure the view for the selected state
     }
     
-    func cellConfigure(target: JSON) {
+    func cellConfigure(indexPath: NSIndexPath, target: JSON) {
         
         self.entranceTitleUILabel.text = "\(target["entrance_type"]["title"].stringValue) \(target["organization"]["title"].stringValue) "
         self.entranceSetUILabel.text = "\(target["entrance_set"]["title"].stringValue) (\(target["entrance_set"]["group"]["title"].stringValue))"
@@ -56,13 +57,21 @@ class EntranceCreateTableViewCell: UITableViewCell {
         let imageID = target["entrance_set"]["id"].intValue
         
         if let esetUrl = MediaRestAPIClass.makeEsetImageUri(imageID) {
+            MediaRequestRepositorySingleton.sharedInstance.cancel(key: "\(indexPath.section):\(indexPath.row):\(esetUrl)")
             
             if let myData = MediaCacheSingleton.sharedInstance[esetUrl] {
                 self.entranceImage.image = UIImage(data: myData)
                 
             } else {
-                MediaRestAPIClass.downloadEsetImage(imageID) {
+                // set associate object of entracneImage
+                self.entranceImage.assicatedObject = esetUrl
+                
+                // cancel download image request
+                
+                MediaRestAPIClass.downloadEsetImage(indexPath, imageId: imageID) {
                     fullPath, data, error in
+                    
+                    MediaRequestRepositorySingleton.sharedInstance.remove(key: "\(indexPath.section):\(indexPath.row):\(esetUrl)")
                     
                     if error != nil {
                         // print the error for now
@@ -70,8 +79,13 @@ class EntranceCreateTableViewCell: UITableViewCell {
                         
                     } else {
                         if let myData = data {
-                            self.entranceImage.image = UIImage(data: myData)
                             MediaCacheSingleton.sharedInstance[fullPath!] = myData
+                            
+                            if self.entranceImage.assicatedObject == esetUrl {
+                                NSOperationQueue.mainQueue().addOperationWithBlock({
+                                    self.entranceImage.image = UIImage(data: myData)
+                                })
+                            }
                         }
                     }
                 }

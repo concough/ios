@@ -46,8 +46,7 @@ class EntranceUpdateTableViewCell: UITableViewCell {
         // Configure the view for the selected state
     }
 
-    func cellConfigure(target: JSON) {
-        
+    func cellConfigure(indexPath: NSIndexPath, target: JSON) {        
         self.entranceTitleUILabel.text = "کنکور" + " \(target["entrance_type"]["title"].stringValue) \(target["organization"]["title"].stringValue)"
         self.entranceSetUILabel.text = "\(target["entrance_set"]["title"].stringValue) (\(target["entrance_set"]["group"]["title"].stringValue))"
         self.entranceYearUILabel.text = " \(FormatterSingleton.sharedInstance.NumberFormatter.stringFromNumber(target["year"].numberValue)!) "
@@ -61,22 +60,31 @@ class EntranceUpdateTableViewCell: UITableViewCell {
         let imageID = target["entrance_set"]["id"].intValue
         
         if let esetUrl = MediaRestAPIClass.makeEsetImageUri(imageID) {
+            MediaRequestRepositorySingleton.sharedInstance.cancel(key: "\(indexPath.section):\(indexPath.row):\(esetUrl)")
             
             if let myData = MediaCacheSingleton.sharedInstance[esetUrl] {
                 self.entranceImage.image = UIImage(data: myData)
                 
             } else {
-                MediaRestAPIClass.downloadEsetImage(imageID) {
+                self.entranceImage.assicatedObject = esetUrl
+
+                MediaRestAPIClass.downloadEsetImage(indexPath, imageId: imageID) {
                     fullPath, data, error in
                     
+                    MediaRequestRepositorySingleton.sharedInstance.remove(key: "\(indexPath.section):\(indexPath.row):\(esetUrl)")
                     if error != nil {
                         // print the error for now
                         print("error in downloaing image from \(fullPath!)")
                         
                     } else {
                         if let myData = data {
-                            self.entranceImage.image = UIImage(data: myData)
                             MediaCacheSingleton.sharedInstance[fullPath!] = myData
+                            
+                            if self.entranceImage.assicatedObject == esetUrl {
+                                NSOperationQueue.mainQueue().addOperationWithBlock({
+                                    self.entranceImage.image = UIImage(data: myData)
+                                })
+                            }
                         }
                     }
                 }

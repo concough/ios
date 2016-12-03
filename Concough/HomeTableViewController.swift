@@ -82,7 +82,7 @@ class HomeTableViewController: UITableViewController {
 
                 if let cell = self.tableView.dequeueReusableCellWithIdentifier(activity.activityType, forIndexPath: indexPath) as? EntranceCreateTableViewCell {
                     
-                    cell.cellConfigure(target)
+                    cell.cellConfigure(indexPath, target: target)
                     return cell
                 }
             
@@ -92,7 +92,7 @@ class HomeTableViewController: UITableViewController {
 
                 if let cell = self.tableView.dequeueReusableCellWithIdentifier(activity.activityType, forIndexPath: indexPath) as? EntranceUpdateTableViewCell {
                     
-                    cell.cellConfigure(target)
+                    cell.cellConfigure(indexPath, target: target)
                     return cell
                 }
             
@@ -120,6 +120,7 @@ class HomeTableViewController: UITableViewController {
 
     override func tableView(tableView: UITableView, willDisplayCell cell: UITableViewCell, forRowAtIndexPath indexPath: NSIndexPath) {
         
+        print("HomeTableViewController --> willDisplayCell index: \(indexPath.row)")
         let lastSectionIndex = tableView.numberOfSections - 1
         let lastRowIndex = tableView.numberOfRowsInSection(lastSectionIndex) - 1
         
@@ -131,6 +132,7 @@ class HomeTableViewController: UITableViewController {
                 let last_time = activity.createdStr
                 //print("\(indexPath) - \(last_time)")
                 
+                //print("HomeTableViewController --> willDisplayCell cause loadFeeds")
                 loadFeeds(next: last_time)
             }
         }
@@ -156,6 +158,7 @@ class HomeTableViewController: UITableViewController {
             if let err = error {
                 switch err {
                 case .Success:
+                    /*
                     if refresh {
                         self.activityList.removeAll()
                         self.moreFeedExist = true
@@ -163,8 +166,10 @@ class HomeTableViewController: UITableViewController {
                         NSOperationQueue.mainQueue().addOperationWithBlock { () -> Void in
                             self.tableView.reloadData()
                         }
-                    }
+                    } */
 
+                    var localActivityList = [ConcoughActivity]()
+                    
                     if let jsonData = data where jsonData.count > 0 {
                         
                         for (_, item) in jsonData {
@@ -175,7 +180,14 @@ class HomeTableViewController: UITableViewController {
                             let c:NSDate = FormatterSingleton.sharedInstance.UTCDateFormatter.dateFromString(cStr)!
                             
                             let con = ConcoughActivity(created: c, createdStr: cStr, activityType: aType, target: t)
-                            self.activityList.append(con)
+                            localActivityList.append(con)
+                        }
+                        
+                        if refresh {
+                            self.activityList = localActivityList
+                            self.moreFeedExist = true
+                        } else {
+                            self.activityList = self.activityList + localActivityList
                         }
                         
                         NSOperationQueue.mainQueue().addOperationWithBlock { () -> Void in
