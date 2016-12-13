@@ -14,6 +14,8 @@ class UrlMakerSingleton {
     private var _media_class_name: String!
     private var _activity_class_name: String!
     private var _oauth_class_name: String!
+    private var _auth_class_name: String!
+    private var _profile_class_name: String!
     
     static let sharedInstance = UrlMakerSingleton()
     
@@ -24,6 +26,8 @@ class UrlMakerSingleton {
         self._media_class_name = MEDIA_CLASS_NAME
         self._activity_class_name = ACTIVITY_CLASS_NAME
         self._oauth_class_name = OAUTH_CLASS_NAME
+        self._auth_class_name = AUTH_CLASS_NAME
+        self._profile_class_name = PROFILE_CLASS_NAME
     }
     
     internal func mediaUrlFor(type: String, mediaId: AnyObject) -> String? {
@@ -49,6 +53,41 @@ class UrlMakerSingleton {
     internal func tokenUrl() -> String? {
         let functionName = "token"
         let fullPath = "\(self._base_url)\(self._oauth_class_name)/\(functionName)/"
+        return fullPath
+    }
+    
+    internal func preSignupUrl() -> String? {
+        let functionName = "pre_signup"
+        let fullPath = "\(self._base_url)\(self._api_version)/\(self._auth_class_name)/\(functionName)/"
+        return fullPath
+    }
+
+    internal func checkUsername() -> String? {
+        let functionName = "check_username"
+        let fullPath = "\(self._base_url)\(self._api_version)/\(self._auth_class_name)/\(functionName)/"
+        return fullPath
+    }
+    
+    internal func signupUrl() -> String? {
+        let functionName = "signup"
+        let fullPath = "\(self._base_url)\(self._api_version)/\(self._auth_class_name)/\(functionName)/"
+        return fullPath
+    }
+    
+    internal func forgotPassword() -> String? {
+        let functionName = "forgot_password"
+        let fullPath = "\(self._base_url)\(self._api_version)/\(self._auth_class_name)/\(functionName)/"
+        return fullPath
+    }
+
+    internal func resetPassword() -> String? {
+        let functionName = "reset_password"
+        let fullPath = "\(self._base_url)\(self._api_version)/\(self._auth_class_name)/\(functionName)/"
+        return fullPath
+    }
+    
+    internal func profileUrl() -> String? {
+        let fullPath = "\(self._base_url)\(self._api_version)/\(self._profile_class_name)/"
         return fullPath
     }
 }

@@ -29,7 +29,7 @@ class DataRestAPIClass {
         
         // get additional headers from oauth
         OAuthHandlerSingleton.sharedInstance.assureAuthorized { (authenticated, error) in
-            if authenticated && error == nil {
+            if authenticated && error == .Success {
                 
                 let headers = OAuthHandlerSingleton.sharedInstance.getHeader()
                 
@@ -49,9 +49,9 @@ class DataRestAPIClass {
                     case .UnAuthorized:
                         fallthrough
                     case .ForbidenAccess:
-                        OAuthHandlerSingleton.sharedInstance.assureAuthorized(true, completion: { (authenticated, error) in
-                            if authenticated && error == nil {
-                                completion(refresh: false, data: nil, error: errorType)
+                        OAuthHandlerSingleton.sharedInstance.assureAuthorized(true, completion: { (authenticated, err) in
+                            if authenticated && err == .Success {
+                                completion(refresh: false, data: nil, error: err)
                             }
                         })
                     default:

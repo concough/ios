@@ -26,7 +26,7 @@ class MediaRestAPIClass {
             
             // get additional headers from oauth
             OAuthHandlerSingleton.sharedInstance.assureAuthorized(completion: { (authenticated, error) in
-                if authenticated && error == nil {
+                if authenticated && error == .Success {
                     let headers = OAuthHandlerSingleton.sharedInstance.getHeader()
                     
                     let request = Alamofire.request(.GET ,fullPath, parameters: nil, encoding: .URL, headers: headers).responseData() { response in
@@ -41,11 +41,11 @@ class MediaRestAPIClass {
                                 return
                             }
                             // call callback function
-                            completion(fullUrl: fullPath, data: data, error: nil)
+                            completion(fullUrl: fullPath, data: data, error: .Success)
                         case .ForbidenAccess:
-                            OAuthHandlerSingleton.sharedInstance.assureAuthorized(true, completion: { (authenticated, error) in
-                                if authenticated && error == nil {
-                                    completion(fullUrl: fullPath, data: nil, error: error)
+                            OAuthHandlerSingleton.sharedInstance.assureAuthorized(true, completion: { (authenticated, err) in
+                                if authenticated && error == .Success {
+                                    completion(fullUrl: fullPath, data: nil, error: err)
                                 }
                             })
                             break

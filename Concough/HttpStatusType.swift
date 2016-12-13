@@ -32,4 +32,21 @@ enum HTTPErrorType: Int, ErrorType {
             return .UnKnown
         }
     }
+    
+    func toString() -> String {
+        switch self {
+        case .Success:
+            return "Success"
+        case .ForbidenAccess:
+            return "ForbidenAccess"
+        case .NotFound:
+            return "NotFound"
+        case .ServerInternalError:
+            return "ServerInternalError"
+        case .UnAuthorized:
+            return "UnAuthorized"
+        case .UnKnown:
+            return "UnKnown"
+        }
+    }
 }

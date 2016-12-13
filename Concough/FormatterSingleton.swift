@@ -12,6 +12,7 @@ class FormatterSingleton {
     
     private let _IRdateFormatter: NSDateFormatter!
     private let _UTCdateFormatter: NSDateFormatter!
+    private let _UTCShortDateFormatter: NSDateFormatter!
     private let _numberFormatter: NSNumberFormatter!
     
     static let sharedInstance = FormatterSingleton()
@@ -25,6 +26,10 @@ class FormatterSingleton {
         self._UTCdateFormatter = NSDateFormatter()
         self._UTCdateFormatter.dateFormat = "yyyy-MM-dd'T'HH:mm:ss.SSSZ"
         self._UTCdateFormatter.timeZone = NSTimeZone(name: "UTS")
+
+        self._UTCShortDateFormatter = NSDateFormatter()
+        self._UTCShortDateFormatter.dateFormat = "yyyy-MM-dd"
+        self._UTCShortDateFormatter.timeZone = NSTimeZone(name: "UTS")
         
         self._numberFormatter = NSNumberFormatter()
         self._numberFormatter.numberStyle = .NoStyle
@@ -40,6 +45,12 @@ class FormatterSingleton {
     var UTCDateFormatter: NSDateFormatter {
         get {
             return self._UTCdateFormatter
+        }
+    }
+    
+    var UTCShortDateFormatter: NSDateFormatter {
+        get {
+            return self._UTCShortDateFormatter
         }
     }
     

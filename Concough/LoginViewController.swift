@@ -10,6 +10,8 @@ import UIKit
 
 class LoginViewController: UIViewController, UITextFieldDelegate {
 
+    var savedUsername: String?
+    
     private var activeTextField: UITextField?
     
     @IBOutlet weak var emailTextField: UITextField!
@@ -41,6 +43,11 @@ class LoginViewController: UIViewController, UITextFieldDelegate {
         singleTapGestureRecognizer.cancelsTouchesInView = false
         
         self.scrollView.addGestureRecognizer(singleTapGestureRecognizer)
+        
+        // Some Initializations
+        if let username = self.savedUsername {
+            self.emailTextField.text = username
+        }
     }
 
     deinit {
@@ -61,74 +68,72 @@ class LoginViewController: UIViewController, UITextFieldDelegate {
             // email and password entered correctly
             OAuthHandlerSingleton.sharedInstance.setUsernameAndPassword(username: email, password: pass)
             
-            OAuthHandlerSingleton.sharedInstance.assureAuthorized(completion: { authenticated, error in
-                if authenticated {
-                    if let err = error {
-                        switch err {
-                            case .UnAuthorized:
-                                self.showAlert("UnAuthorized")
-                            case .ForbidenAccess:
-                                self.showAlert("ForbiddenAccess")
-                            case .NotFound:
-                                fallthrough
-                            case .UnKnown:
-                                break
-                            default:
-                                break
-                        }
+            OAuthHandlerSingleton.sharedInstance.authorize({ (error) in
+                if error == .Success {
+                
+                    // login passed successfully
+                    if OAuthHandlerSingleton.sharedInstance.isAuthorized() {
+                        // ok --> now perform segue
                         
-                    } else {
-                        // login passed successfully
-                        if OAuthHandlerSingleton.sharedInstance.isAuthorized() {
-                            // ok --> now perform segue
-                            KeyChainAccessProxy.setValue(USERNAME_KEY, value: email)
-                            KeyChainAccessProxy.setValue(PASSWORD_KEY, value: pass)
-                            
-                            NSOperationQueue.mainQueue().addOperationWithBlock({
-                                self.performSegueWithIdentifier("HomeVCSegue", sender: self)
-                            })
-                        }
+                        KeyChainAccessProxy.setValue(USERNAME_KEY, value: email)
+                        KeyChainAccessProxy.setValue(PASSWORD_KEY, value: pass)
+
+                        // get profile date
+                        ProfileRestAPIClass.getProfileData({ (data, error) in
+                            if error != HTTPErrorType.Success {
+                                // sometimes happened
+                            } else {
+                                if let localData = data {
+                                    if let status = localData["status"].string {
+                                        switch status {
+                                        case "OK":
+                                            // profile exist
+                                            let profile = localData["record"][0]
+                                            
+                                            // save profile
+                                            if let gender = profile["gender"].string, let grade = profile["grade"].string, let birthday = profile["birthday"].string, let modified = profile["modified"].string, let firstname = profile["user"]["first_name"].string, let lastname = profile["user"]["last_name"].string {
+                                                
+                                                let modifiedDate = FormatterSingleton.sharedInstance.UTCDateFormatter.dateFromString(modified)
+                                                let birthdayDate = FormatterSingleton.sharedInstance.UTCShortDateFormatter.dateFromString(birthday)
+                                                
+                                                UserDefaultsSingleton.sharedInstance.createProfile(firstname: firstname, lastname: lastname, grade: grade, gender: gender, birthday: birthdayDate!, modified: modifiedDate!)
+                                            }
+                                            
+                                            if UserDefaultsSingleton.sharedInstance.hasProfile() {
+                                                NSOperationQueue.mainQueue().addOperationWithBlock({
+                                                    self.performSegueWithIdentifier("HomeVCSegue", sender: self)
+                                                })
+                                            } else {
+                                                // profile not created --> try again
+                                            }
+                                        case "Error":
+                                            if let errorType = localData["error_type"].string {
+                                                switch errorType {
+                                                case "ProfileNotExist":
+                                                    // profile not exist --> perform navigation
+                                                    NSOperationQueue.mainQueue().addOperationWithBlock({ 
+                                                        self.performSegueWithIdentifier("SignupMoreInfoVCSegue", sender: self)
+                                                    })
+                                                default:
+                                                    break
+                                                }
+                                            }
+                                        default:
+                                            break
+                                        }
+                                    }
+                                }
+                            }
+                        })
                     }
+                } else {
+                    // error exist
+                    AlertClass.showSimpleErrorMessage(viewController: self, messageType: "HTTPError", messageSubType: (error?.toString())!, completion: nil)
                 }
             })
         } else {
             // Show alert
-            self.showAlert("EmptyField")
-        }
-    }
-    
-    func showAlert(type: String) {
-        var title: String?
-        var message: String?
-        var showMsg: Bool = false
-        
-        switch type {
-        case "EmptyField":
-            showMsg = true
-            title = "خطا"
-            message = "لطفا هر دو فیلد را پر نمایید"
-        
-        case "UnAuthorized":
-            showMsg = true
-            title = "خطا"
-            message = "اطلاعات وارد شده صحیح نمی باشد."
-
-        case "ForbiddenAccess":
-            showMsg = true
-            title = "خطا"
-            message = "این دسترسی برای شما تعریف نشده است."
-
-        default:
-            break
-        }
-        
-        if showMsg {
-            NSOperationQueue.mainQueue().addOperationWithBlock({ 
-                let alertController = UIAlertController(title: title!, message: message!, preferredStyle: .Alert)
-                let action = UIAlertAction(title: "متوجه شدم", style: .Default, handler: nil)
-                alertController.addAction(action)
-                self.showViewController(alertController, sender: self)                
-            })
+            AlertClass.showSimpleErrorMessage(viewController: self, messageType: "Form", messageSubType: "EmptyFields", completion: nil)
         }
     }
     

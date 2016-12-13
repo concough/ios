@@ -43,9 +43,6 @@ class OAuthHandlerSingleton {
     }
     
     func authorize(completion: (error: HTTPErrorType?) -> ()) {
-        if _token ==  nil && _refreshToken == nil {
-            // get Token Json from server
-            //self.printData(when: "before")
 
             AccessTokenAdapter.authorize(username: self._username!, password: self._password!, completion: { data, statusCode, err in
 
@@ -83,14 +80,13 @@ class OAuthHandlerSingleton {
                             KeyChainAccessProxy.setValue(OAUTH_EXPIRES_IN_KEY, value: self._expiresIn!)
                             KeyChainAccessProxy.setValue(OAUTH_LAST_ACCESS_KEY, value: self._lastTime!)
                             
-                            completion(error: nil)
+                            completion(error: HTTPErrorType.Success)
                         }
                     }
                 } else {
                     completion(error: HTTPErrorType.UnKnown)
                 }
             })
-        }
     }
     
     func refreshToken(completion: (error: HTTPErrorType?) -> ()) {
@@ -131,7 +127,7 @@ class OAuthHandlerSingleton {
                             KeyChainAccessProxy.setValue(OAUTH_EXPIRES_IN_KEY, value: self._expiresIn!)
                             KeyChainAccessProxy.setValue(OAUTH_LAST_ACCESS_KEY, value: self._lastTime!)
                             
-                            completion(error: nil)
+                            completion(error: HTTPErrorType.Success)
                         }
                     }
                 } else {
@@ -165,7 +161,11 @@ class OAuthHandlerSingleton {
             //print ("OAuthHandlerSingleton --> assureAuthorized: Authorized\n")
             if refresh {
                 self.refreshToken({ (error) in
-                    completion(authenticated: true, error: error)
+                    if error == .Success {
+                        completion(authenticated: true, error: error)
+                    } else {
+                        completion(authenticated: false, error: error)
+                    }
                 })
             } else {
                 if let last_time = self._lastTime, let expiresIn = self._expiresIn {
@@ -173,10 +173,14 @@ class OAuthHandlerSingleton {
                     if timeDiff >= expiresIn - 60 {
                         self.refreshToken({ (error) in
                             //print ("OAuthHandlerSingleton --> assureAuthorized: Expired\n")
-                            completion(authenticated: true, error: error)
+                            if error == .Success {
+                                completion(authenticated: true, error: error)
+                            } else {
+                                completion(authenticated: false, error: error)
+                            }
                         })
                     } else {
-                        completion(authenticated: true, error: nil)
+                        completion(authenticated: true, error: .Success)
                     }
                 }
             }
@@ -184,7 +188,11 @@ class OAuthHandlerSingleton {
             if self.isAuthenticated() {
                 //print ("OAuthHandlerSingleton --> assureAuthorized: Not Authorized but Authenticated\n")
                 self.authorize({ (error) in
-                    completion(authenticated: true, error: error)
+                    if error == .Success {
+                        completion(authenticated: true, error: error)
+                    } else {
+                        completion(authenticated: false, error: error)
+                    }
                 })
             } else {
                 //print ("OAuthHandlerSingleton --> assureAuthorized: Not Authenticated\n")

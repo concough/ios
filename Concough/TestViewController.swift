@@ -45,5 +45,8 @@ class TestViewController: UIViewController {
         if KeyChainAccessProxy.clearAllValue() {
             print ("All KeyChain Value cleared")
         }
+        if UserDefaultsSingleton.sharedInstance.clearAll() {
+            print ("All UserDefaults Value cleared")
+        }
     }
 }

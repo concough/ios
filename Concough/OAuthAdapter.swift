@@ -30,6 +30,8 @@ class AccessTokenAdapter {
             Alamofire.request(.POST, path, parameters: parameters, encoding: .URL, headers: headers).responseJSON {
                 response in
                 
+                print(response)
+                
                 switch (response.result) {
                 case .Success:
                     let statusCode = response.response?.statusCode
@@ -80,9 +82,7 @@ class AccessTokenAdapter {
             
         } else {
         // Cannot make path uri
-        
         }
-
     }
 }
 

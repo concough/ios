@@ -72,7 +72,7 @@ class EntranceUpdateTableViewCell: UITableViewCell {
                     fullPath, data, error in
                     
                     MediaRequestRepositorySingleton.sharedInstance.remove(key: "\(indexPath.section):\(indexPath.row):\(esetUrl)")
-                    if error != nil {
+                    if error != .Success {
                         // print the error for now
                         print("error in downloaing image from \(fullPath!)")
                         

@@ -17,6 +17,8 @@ let BASE_URL = "http://192.168.1.15:8000/api/"
 let MEDIA_CLASS_NAME = "media"
 let ACTIVITY_CLASS_NAME = "activities"
 let OAUTH_CLASS_NAME = "oauth"
+let AUTH_CLASS_NAME = "auth"
+let PROFILE_CLASS_NAME = "profile"
 
 
 // Cache Configurations
@@ -35,3 +37,15 @@ let OAUTH_LAST_ACCESS_KEY = "oauthLastAccess"
 let OAUTH_EXPIRES_IN_KEY = "oauthExpiresIn"
 let USERNAME_KEY = "authUsername"
 let PASSWORD_KEY = "authPassword"
+
+
+// Validator Regex
+let EMAIL_VALIDATOR_REGEX = "[A-Z0-9a-z._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,64}"
+let USERNAME_VALIDATOR_REGEX = "^[A-Za-z0-9][A-Za-z0-9@+-@._]{9,29}$"
+
+
+// UI Constants
+let BLUE_COLOR_HEX: Int = 0x1007AFF
+let RED_COLOR_HEX:Int = 0x960000
+let GREEN_COLOR_HEX:Int = 0x1008000
+let GRAY_COLOR_HEX_1: Int = 0xB7B7B7

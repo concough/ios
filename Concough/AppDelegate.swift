@@ -16,6 +16,11 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
 
     func application(application: UIApplication, didFinishLaunchingWithOptions launchOptions: [NSObject: AnyObject]?) -> Bool {
         // Override point for customization after application launch.
+        
+        let attributes = NSDictionary(object: UIFont(name: "IRANYekanMobile-Bold", size: 14)! , forKey: NSFontAttributeName) as! [String: AnyObject]
+        
+        UIBarButtonItem.appearance().setTitleTextAttributes(attributes, forState: .Normal)
+    
         return true
     }
 
