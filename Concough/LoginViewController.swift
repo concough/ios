@@ -63,78 +63,111 @@ class LoginViewController: UIViewController, UITextFieldDelegate {
     // MARK: - Actions
     
     @IBAction func loginButtonPressed(sender: UIButton) {
+        self.login()
+    }
+    
+    // MARK: - Functions
+    private func login() {
         if let email = emailTextField.text where email != "", let pass = passwordTextField.text where pass != "" {
             
             // email and password entered correctly
-            OAuthHandlerSingleton.sharedInstance.setUsernameAndPassword(username: email, password: pass)
+            TokenHandlerSingleton.sharedInstance.setUsernameAndPassword(username: email, password: pass)
             
-            OAuthHandlerSingleton.sharedInstance.authorize({ (error) in
+            TokenHandlerSingleton.sharedInstance.authorize({ (error) in
                 if error == .Success {
-                
+                    
                     // login passed successfully
-                    if OAuthHandlerSingleton.sharedInstance.isAuthorized() {
+                    if TokenHandlerSingleton.sharedInstance.isAuthorized() {
                         // ok --> now perform segue
                         
                         KeyChainAccessProxy.setValue(USERNAME_KEY, value: email)
                         KeyChainAccessProxy.setValue(PASSWORD_KEY, value: pass)
-
-                        // get profile date
-                        ProfileRestAPIClass.getProfileData({ (data, error) in
-                            if error != HTTPErrorType.Success {
-                                // sometimes happened
-                            } else {
-                                if let localData = data {
-                                    if let status = localData["status"].string {
-                                        switch status {
-                                        case "OK":
-                                            // profile exist
-                                            let profile = localData["record"][0]
-                                            
-                                            // save profile
-                                            if let gender = profile["gender"].string, let grade = profile["grade"].string, let birthday = profile["birthday"].string, let modified = profile["modified"].string, let firstname = profile["user"]["first_name"].string, let lastname = profile["user"]["last_name"].string {
-                                                
-                                                let modifiedDate = FormatterSingleton.sharedInstance.UTCDateFormatter.dateFromString(modified)
-                                                let birthdayDate = FormatterSingleton.sharedInstance.UTCShortDateFormatter.dateFromString(birthday)
-                                                
-                                                UserDefaultsSingleton.sharedInstance.createProfile(firstname: firstname, lastname: lastname, grade: grade, gender: gender, birthday: birthdayDate!, modified: modifiedDate!)
-                                            }
-                                            
-                                            if UserDefaultsSingleton.sharedInstance.hasProfile() {
-                                                NSOperationQueue.mainQueue().addOperationWithBlock({
-                                                    self.performSegueWithIdentifier("HomeVCSegue", sender: self)
-                                                })
-                                            } else {
-                                                // profile not created --> try again
-                                            }
-                                        case "Error":
-                                            if let errorType = localData["error_type"].string {
-                                                switch errorType {
-                                                case "ProfileNotExist":
-                                                    // profile not exist --> perform navigation
-                                                    NSOperationQueue.mainQueue().addOperationWithBlock({ 
-                                                        self.performSegueWithIdentifier("SignupMoreInfoVCSegue", sender: self)
-                                                    })
-                                                default:
-                                                    break
-                                                }
-                                            }
-                                        default:
-                                            break
-                                        }
-                                    }
-                                }
-                            }
-                        })
+                        
+                        // get profile data
+                        self.getProfile()
                     }
                 } else {
                     // error exist
                     AlertClass.showSimpleErrorMessage(viewController: self, messageType: "HTTPError", messageSubType: (error?.toString())!, completion: nil)
                 }
+                }, failure: { (error) in
+                    if let err = error {
+                        switch err {
+                        case .NoInternetAccess:
+                            AlertClass.showSimpleErrorMessage(viewController: self, messageType: "NetworkError", messageSubType: err.rawValue, completion: {
+                                NSOperationQueue.mainQueue().addOperationWithBlock({ 
+                                    self.login()
+                                })
+                            })
+                        default:
+                            break
+                        }
+                    }
             })
         } else {
             // Show alert
             AlertClass.showSimpleErrorMessage(viewController: self, messageType: "Form", messageSubType: "EmptyFields", completion: nil)
         }
+    }
+    
+    private func getProfile() {
+        ProfileRestAPIClass.getProfileData({ (data, error) in
+            if error != HTTPErrorType.Success {
+                // sometimes happened
+            } else {
+                if let localData = data {
+                    if let status = localData["status"].string {
+                        switch status {
+                        case "OK":
+                            // profile exist
+                            let profile = localData["record"][0]
+                            
+                            // save profile
+                            if let gender = profile["gender"].string, let grade = profile["grade"].string, let birthday = profile["birthday"].string, let modified = profile["modified"].string, let firstname = profile["user"]["first_name"].string, let lastname = profile["user"]["last_name"].string {
+                                
+                                let modifiedDate = FormatterSingleton.sharedInstance.UTCDateFormatter.dateFromString(modified)
+                                let birthdayDate = FormatterSingleton.sharedInstance.UTCShortDateFormatter.dateFromString(birthday)
+                                
+                                UserDefaultsSingleton.sharedInstance.createProfile(firstname: firstname, lastname: lastname, grade: grade, gender: gender, birthday: birthdayDate!, modified: modifiedDate!)
+                            }
+                            
+                            if UserDefaultsSingleton.sharedInstance.hasProfile() {
+                                NSOperationQueue.mainQueue().addOperationWithBlock({
+                                    self.performSegueWithIdentifier("HomeVCSegue", sender: self)
+                                })
+                            } else {
+                                // profile not created --> try again
+                            }
+                        case "Error":
+                            if let errorType = localData["error_type"].string {
+                                switch errorType {
+                                case "ProfileNotExist":
+                                    // profile not exist --> perform navigation
+                                    NSOperationQueue.mainQueue().addOperationWithBlock({
+                                        self.performSegueWithIdentifier("SignupMoreInfoVCSegue", sender: self)
+                                    })
+                                default:
+                                    break
+                                }
+                            }
+                        default:
+                            break
+                        }
+                    }
+                }
+            }
+        }, failure: { (error) in
+                if let err = error {
+                    switch err {
+                    case .NoInternetAccess:
+                        AlertClass.showSimpleErrorMessage(viewController: self, messageType: "NetworkError", messageSubType: err.rawValue, completion: {
+                            self.getProfile()
+                        })
+                    default:
+                        break
+                    }
+                }
+        })
     }
     
     // MARK: - TextField Delegate Methods

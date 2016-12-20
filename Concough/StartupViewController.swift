@@ -21,45 +21,10 @@ class StartupViewController: UIViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
-
-        // Do any additional setup after loading the view.
         
-        // load data from keyChain --> get token if exist else show login viewController
-        if OAuthHandlerSingleton.sharedInstance.isAuthorized() {            
-            if UserDefaultsSingleton.sharedInstance.hasProfile() {
-                NSOperationQueue.mainQueue().addOperationWithBlock {
-                    self.performSegueWithIdentifier("HomeVCSegue", sender: self)
-                }
-            } else {
-                // get profile
-                self.getProfile()
-            }
-        } else if OAuthHandlerSingleton.sharedInstance.isAuthenticated() {
-            OAuthHandlerSingleton.sharedInstance.assureAuthorized(true) { (authenticated, error) in
-                if authenticated {
-                    print("StartupViewController: Authenticated")
-                    if UserDefaultsSingleton.sharedInstance.hasProfile() {
-                        NSOperationQueue.mainQueue().addOperationWithBlock {
-                            self.performSegueWithIdentifier("HomeVCSegue", sender: self)
-                        }
-                    } else {
-                        // get profile
-                        self.getProfile()
-                    }
-                } else {
-                    print("StartupViewController: Not Authenticated")
-                    NSOperationQueue.mainQueue().addOperationWithBlock {
-                        self.performSegueWithIdentifier("LogInVCSegue", sender: self)
-                    }
-                }
-            }
-        } else {
-            NSOperationQueue.mainQueue().addOperationWithBlock {
-                self.performSegueWithIdentifier("LogInVCSegue", sender: self)
-            }            
-        }
+        self.startup()
     }
-
+    
     override func viewDidAppear(animated: Bool) {
         switch returnFormVC {
             case .ForgotPasswordVC:
@@ -84,6 +49,55 @@ class StartupViewController: UIViewController {
     }
     
     // MARK: - Functions
+    private func startup() {
+        if TokenHandlerSingleton.sharedInstance.isAuthorized() {
+            if UserDefaultsSingleton.sharedInstance.hasProfile() {
+                NSOperationQueue.mainQueue().addOperationWithBlock {
+                    self.performSegueWithIdentifier("HomeVCSegue", sender: self)
+                }
+            } else {
+                // get profile
+                self.getProfile()
+            }
+        } else if TokenHandlerSingleton.sharedInstance.isAuthenticated() {
+            TokenHandlerSingleton.sharedInstance.assureAuthorized(true, completion: { (authenticated, error) in
+                if authenticated {
+                    print("StartupViewController: Authenticated")
+                    if UserDefaultsSingleton.sharedInstance.hasProfile() {
+                        NSOperationQueue.mainQueue().addOperationWithBlock {
+                            self.performSegueWithIdentifier("HomeVCSegue", sender: self)
+                        }
+                    } else {
+                        // get profile
+                        self.getProfile()
+                    }
+                } else {
+                    print("StartupViewController: Not Authenticated")
+                    NSOperationQueue.mainQueue().addOperationWithBlock {
+                        self.performSegueWithIdentifier("LogInVCSegue", sender: self)
+                    }
+                }
+                }, failure: { (error) in
+                    if let err = error {
+                        switch err {
+                        case .NoInternetAccess:
+                            AlertClass.showSimpleErrorMessage(viewController: self, messageType: "NetworkError", messageSubType: err.rawValue, completion: {
+                                NSOperationQueue.mainQueue().addOperationWithBlock({ 
+                                    self.startup()
+                                })
+                            })
+                        default:
+                            break
+                        }
+                    }
+            })
+        } else {
+            NSOperationQueue.mainQueue().addOperationWithBlock {
+                self.performSegueWithIdentifier("LogInVCSegue", sender: self)
+            }            
+        }
+    }
+    
     private func getProfile() {
         ProfileRestAPIClass.getProfileData({ (data, error) in
             if error != HTTPErrorType.Success {
@@ -130,6 +144,19 @@ class StartupViewController: UIViewController {
                             break
                         }
                     }
+                }
+            }
+        }, failure: { (error) in
+            if let err = error {
+                switch err {
+                case .NoInternetAccess:
+                    AlertClass.showSimpleErrorMessage(viewController: self, messageType: "NetworkError", messageSubType: err.rawValue, completion: {
+                        NSOperationQueue.mainQueue().addOperationWithBlock({ 
+                            self.getProfile()
+                        })
+                    })
+                default:
+                    break
                 }
             }
         })

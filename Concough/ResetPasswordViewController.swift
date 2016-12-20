@@ -64,57 +64,7 @@ class ResetPasswordViewController: UIViewController, UITextFieldDelegate {
             
             if pass1 == pass2 {
                 // make request
-                AuthRestAPIClass.resetPassword(username: self.signupStruct.username!, id: self.signupStruct.preSignupId!, password: pass1, rpassword: pass2, code: self.resetCode, completion: { (data, error) in
-                    
-                    if error != HTTPErrorType.Success {
-                        AlertClass.showSimpleErrorMessage(viewController: self, messageType: "HTTPError", messageSubType: (error?.toString())!, completion: nil)
-                    } else {
-                        if let localData = data {
-                            if let status = localData["status"].string {
-                                switch status {
-                                case "OK":
-                                    // forgot password generate
-                                    NSOperationQueue.mainQueue().addOperationWithBlock({
-                                        self.performSegueWithIdentifier("StartupVCSegue", sender: self)
-                                    })
-                                    
-                                case "Error":
-                                    if let errorType = localData["error_type"].string {
-                                        switch errorType {
-                                        case "ExpiredCode":
-                                            AlertClass.showSimpleErrorMessage(viewController: self, messageType: "ErrorResult", messageSubType: errorType) {
-                                                NSOperationQueue.mainQueue().addOperationWithBlock({
-                                                    self.performSegueWithIdentifier("ForgotPasswordResendVCUnSegue", sender: self)
-                                                })
-                                            }
-                                            break
-                                        case "MultiRecord":
-                                            fallthrough
-                                        case "BadData":
-                                            fallthrough
-                                        case "RemoteDBError":
-                                            AlertClass.showSimpleErrorMessage(viewController: self, messageType: "ErrorResult", messageSubType: errorType, completion: nil)
-                                        case "UserNotExist":
-                                            fallthrough
-                                        case "PreAuthNotExist":
-                                            AlertClass.showSimpleErrorMessage(viewController: self, messageType: "AuthProfile", messageSubType: errorType, completion: { 
-                                                NSOperationQueue.mainQueue().addOperationWithBlock({
-                                                    self.performSegueWithIdentifier("ForgotPasswordVCUnSegue", sender: self)
-                                                })
-                                                
-                                            })
-                                        default:
-                                            break
-                                        }
-                                    }
-                                    break
-                                default:
-                                    break
-                                }
-                            }
-                        }
-                    }
-                })
+                self.resetPassword(password1: pass1, password2: pass2)
             } else {
                 AlertClass.showSimpleErrorMessage(viewController: self, messageType: "Form", messageSubType: "NotSameFields", completion: nil)
             }
@@ -122,6 +72,74 @@ class ResetPasswordViewController: UIViewController, UITextFieldDelegate {
         } else {
             AlertClass.showSimpleErrorMessage(viewController: self, messageType: "Form", messageSubType: "EmptyFields", completion: nil)
         }
+    }
+    
+    // MARK: - Functions
+    private func resetPassword(password1 pass1: String, password2 pass2: String) {
+        AuthRestAPIClass.resetPassword(username: self.signupStruct.username!, id: self.signupStruct.preSignupId!, password: pass1, rpassword: pass2, code: self.resetCode, completion: { (data, error) in
+            
+            if error != HTTPErrorType.Success {
+                AlertClass.showSimpleErrorMessage(viewController: self, messageType: "HTTPError", messageSubType: (error?.toString())!, completion: nil)
+            } else {
+                if let localData = data {
+                    if let status = localData["status"].string {
+                        switch status {
+                        case "OK":
+                            // forgot password generate
+                            NSOperationQueue.mainQueue().addOperationWithBlock({
+                                self.performSegueWithIdentifier("StartupVCSegue", sender: self)
+                            })
+                            
+                        case "Error":
+                            if let errorType = localData["error_type"].string {
+                                switch errorType {
+                                case "ExpiredCode":
+                                    AlertClass.showSimpleErrorMessage(viewController: self, messageType: "ErrorResult", messageSubType: errorType) {
+                                        NSOperationQueue.mainQueue().addOperationWithBlock({
+                                            self.performSegueWithIdentifier("ForgotPasswordResendVCUnSegue", sender: self)
+                                        })
+                                    }
+                                    break
+                                case "MultiRecord":
+                                    fallthrough
+                                case "BadData":
+                                    fallthrough
+                                case "RemoteDBError":
+                                    AlertClass.showSimpleErrorMessage(viewController: self, messageType: "ErrorResult", messageSubType: errorType, completion: nil)
+                                case "UserNotExist":
+                                    fallthrough
+                                case "PreAuthNotExist":
+                                    AlertClass.showSimpleErrorMessage(viewController: self, messageType: "AuthProfile", messageSubType: errorType, completion: {
+                                        NSOperationQueue.mainQueue().addOperationWithBlock({
+                                            self.performSegueWithIdentifier("ForgotPasswordVCUnSegue", sender: self)
+                                        })
+                                        
+                                    })
+                                default:
+                                    break
+                                }
+                            }
+                            break
+                        default:
+                            break
+                        }
+                    }
+                }
+            }
+        }, failure: { (error) in
+            if let err = error {
+                switch err {
+                case .NoInternetAccess:
+                    AlertClass.showSimpleErrorMessage(viewController: self, messageType: "NetworkError", messageSubType: err.rawValue, completion: { 
+                        NSOperationQueue.mainQueue().addOperationWithBlock({ 
+                            self.resetPassword(password1: pass1, password2: pass2)
+                        })
+                    })
+                default:
+                    break
+                }
+            }
+        })
     }
     
     // MARK: - TextField Delegate Methods
@@ -169,7 +187,7 @@ class ResetPasswordViewController: UIViewController, UITextFieldDelegate {
         self.scrollView.scrollIndicatorInsets = contentInsets
     }
 
-    // Gusture Recognizer implementations
+    // MARK: - Gusture Recognizer implementations
     func singleTapped(sender: UITapGestureRecognizer) {
         view.endEditing(true)
     }

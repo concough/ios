@@ -68,34 +68,52 @@ class SubmitSignupCodeViewController: UIViewController, UITextFieldDelegate {
     }
     
     @IBAction func resendPreAuthCode(sender: UIButton) {
+        self.preSignup()
+    }
+    
+    // MARK: - Functions
+    private func preSignup() {
         switch self.fromVC {
-            case "SignupVC":
-                AuthRestAPIClass.preSignup(username: self.signupStruct.username!, email: self.signupStruct.email!) { (data, error) in
-                    if error == HTTPErrorType.Success {
-                        // data will returned
-                        if let localData = data {
-                            if let status = localData["status"].string {
-                                switch status {
-                                case "OK":
-                                    AlertClass.showSimpleErrorMessage(viewController: self, messageType: "ActionResult", messageSubType: "ResendCodeSuccess", completion: nil)
-                                case "Error":
-                                    if let errorType = localData["error_type"].string {
-                                        switch errorType {
-                                        case "ExistUsername":
-                                            AlertClass.showSimpleErrorMessage(viewController: self, messageType: "AuthProfile", messageSubType: errorType, completion: nil)
-                                        default:
-                                            AlertClass.showSimpleErrorMessage(viewController: self, messageType: "ErrorResult", messageSubType: errorType, completion: nil)
-                                        }
+        case "SignupVC":
+            AuthRestAPIClass.preSignup(username: self.signupStruct.username!, email: self.signupStruct.email!, completion: { (data, error) in
+                if error == HTTPErrorType.Success {
+                    // data will returned
+                    if let localData = data {
+                        if let status = localData["status"].string {
+                            switch status {
+                            case "OK":
+                                AlertClass.showSimpleErrorMessage(viewController: self, messageType: "ActionResult", messageSubType: "ResendCodeSuccess", completion: nil)
+                            case "Error":
+                                if let errorType = localData["error_type"].string {
+                                    switch errorType {
+                                    case "ExistUsername":
+                                        AlertClass.showSimpleErrorMessage(viewController: self, messageType: "AuthProfile", messageSubType: errorType, completion: nil)
+                                    default:
+                                        AlertClass.showSimpleErrorMessage(viewController: self, messageType: "ErrorResult", messageSubType: errorType, completion: nil)
                                     }
-                                default: break
                                 }
+                            default: break
                             }
                         }
-                    } else {
-                        // error exist with network
-                        AlertClass.showSimpleErrorMessage(viewController: self, messageType: "HTTPError", messageSubType: (error?.toString())!, completion: nil)
+                    }
+                } else {
+                    // error exist with network
+                    AlertClass.showSimpleErrorMessage(viewController: self, messageType: "HTTPError", messageSubType: (error?.toString())!, completion: nil)
+                }
+            }, failure: { (error) in
+                if let err = error {
+                    switch err {
+                    case .NoInternetAccess:
+                        AlertClass.showSimpleErrorMessage(viewController: self, messageType: "NetworkError", messageSubType: err.rawValue, completion: { 
+                            NSOperationQueue.mainQueue().addOperationWithBlock({ 
+                                self.preSignup()
+                            })
+                        })
+                    default:
+                        break
                     }
                 }
+            })
         case "ForgotPasswordVC":
             AuthRestAPIClass.forgotPassword(username: self.signupStruct.username!, completion: { (data, error) in
                 if error == HTTPErrorType.Success {
@@ -125,13 +143,25 @@ class SubmitSignupCodeViewController: UIViewController, UITextFieldDelegate {
                     AlertClass.showSimpleErrorMessage(viewController: self, messageType: "HTTPError", messageSubType: (error?.toString())!, completion: nil)
                 }
                 
+            }, failure: { (error) in
+                if let err = error {
+                    switch err {
+                    case .NoInternetAccess:
+                        AlertClass.showSimpleErrorMessage(viewController: self, messageType: "NetworkError", messageSubType: err.rawValue, completion: {
+                            NSOperationQueue.mainQueue().addOperationWithBlock({
+                                self.preSignup()
+                            })
+                        })
+                    default:
+                        break
+                    }
+                }
             })
         default:
             break
         }
     }
     
-    // MARK: - Functions
     func SendForgotPasswordCode() {
         if let code = self.codeTextField.text?.stringByTrimmingCharactersInSet(NSCharacterSet.whitespaceAndNewlineCharacterSet()) {
             if let intCode:Int = (code as NSString).integerValue {
@@ -183,6 +213,19 @@ class SubmitSignupCodeViewController: UIViewController, UITextFieldDelegate {
                             }
                         }
                     }
+                }, failure: { (error) in
+                    if let err = error {
+                        switch err {
+                        case .NoInternetAccess:
+                            AlertClass.showSimpleErrorMessage(viewController: self, messageType: "NetworkError", messageSubType: err.rawValue, completion: {
+                                NSOperationQueue.mainQueue().addOperationWithBlock({
+                                    self.SendPreSignupCode()
+                                })
+                            })
+                        default:
+                            break
+                        }
+                    }
                 })
             }
             // send code and perform to next page if successful
@@ -190,13 +233,13 @@ class SubmitSignupCodeViewController: UIViewController, UITextFieldDelegate {
     }
     
     func makeLoginRequest() {
-        OAuthHandlerSingleton.sharedInstance.setUsernameAndPassword(username: self.signupStruct.username!, password: self.signupStruct.password!)
+        TokenHandlerSingleton.sharedInstance.setUsernameAndPassword(username: self.signupStruct.username!, password: self.signupStruct.password!)
         
-        OAuthHandlerSingleton.sharedInstance.authorize({ (error) in
+        TokenHandlerSingleton.sharedInstance.authorize({ (error) in
             if error == .Success {
                 
                 // login passed successfully
-                if OAuthHandlerSingleton.sharedInstance.isAuthorized() {
+                if TokenHandlerSingleton.sharedInstance.isAuthorized() {
                     // ok --> now perform segue
                     
                     KeyChainAccessProxy.setValue(USERNAME_KEY, value: self.signupStruct.username!)
@@ -218,9 +261,22 @@ class SubmitSignupCodeViewController: UIViewController, UITextFieldDelegate {
                     })
                 }
             }
-        })        
+        }, failure: { (error) in
+            if let err = error {
+                switch err {
+                case .NoInternetAccess:
+                    AlertClass.showSimpleErrorMessage(viewController: self, messageType: "NetworkError", messageSubType: err.rawValue, completion: {
+                        NSOperationQueue.mainQueue().addOperationWithBlock({
+                            self.makeLoginRequest()
+                        })
+                    })
+                default:
+                    break
+                }
+            }
+        })
     }
-        
+    
     // MARK: - Unwind Segues
     @IBAction func unwindResendForgotPasswordPressed(segue: UIStoryboardSegue) {
         //print("Reset Password Unwind Segue")

@@ -92,9 +92,10 @@ class SignUpViewController: UIViewController, UITextFieldDelegate {
             AlertClass.showSimpleErrorMessage(viewController: self, messageType: "Form", messageSubType: "EmptyFields", completion: nil)
         }
     }
-        
+    
+    // MARK: - Functions
     private func makePreSignup(username username: String, email: String, password: String) {
-        AuthRestAPIClass.preSignup(username: username, email: email) { (data, error) in
+        AuthRestAPIClass.preSignup(username: username, email: email, completion: { (data, error) in
             if error == HTTPErrorType.Success {
                 // data will returned
                 if let localData = data {
@@ -132,7 +133,74 @@ class SignUpViewController: UIViewController, UITextFieldDelegate {
                 // error exist with network
                 AlertClass.showSimpleErrorMessage(viewController: self, messageType: "HTTPError", messageSubType: (error?.toString())!, completion: nil)
             }
-        }
+        }, failure: { (error) in
+            if let err = error {
+                switch err {
+                case .NoInternetAccess:
+                    AlertClass.showSimpleErrorMessage(viewController: self, messageType: "NetworkError", messageSubType: err.rawValue, completion: {
+                        NSOperationQueue.mainQueue().addOperationWithBlock({ 
+                            self.makePreSignup(username: username, email: email, password: password)
+                        })
+                    })
+                default:
+                    break
+                }
+            }
+        })
+    }
+    
+    private func checkUsername(username username: String) {
+        AuthRestAPIClass.checkUsername(username: username, completion: { (data, error) in
+            self.usernameMsgRefreshControl.stopAnimating()
+            if error == HTTPErrorType.Success {
+                if let localData = data {
+                    if let status = localData["status"].string {
+                        switch status {
+                        case "OK":
+                            //print("Signup OK received")
+                            self.isUsernameValid = true
+                            self.usernameMsgLabel.text = "نام کاربری انتخاب شده صحیح است"
+                            self.usernameMsgLabel.textColor = UIColor(netHex: GREEN_COLOR_HEX, alpha: 1.0)
+                            
+                        case "Error":
+                            if let errorType = localData["error_type"].string {
+                                switch errorType {
+                                case "ExistUsername":
+                                    self.usernameMsgRefreshControl.stopAnimating()
+                                    self.usernameMsgLabel.text = "این نام کاربری قبلا انتخاب شده است"
+                                    self.usernameMsgLabel.textColor = UIColor(netHex: RED_COLOR_HEX, alpha: 1.0)
+                                    
+                                default:
+                                    self.usernameMsgLabel.text = self.mainUsernameText
+                                    self.usernameMsgLabel.textColor = UIColor(netHex: GRAY_COLOR_HEX_1, alpha: 1.0)
+                                    AlertClass.showSimpleErrorMessage(viewController: self, messageType: "ErrorResult", messageSubType: errorType, completion: nil)
+                                }
+                            }
+                        default:
+                            break
+                        }
+                    }
+                }
+            } else {
+                // show alert
+                self.usernameMsgLabel.text = self.mainUsernameText
+                self.usernameMsgLabel.textColor = UIColor(netHex: GRAY_COLOR_HEX_1, alpha: 1.0)
+                AlertClass.showSimpleErrorMessage(viewController: self, messageType: "HTTPError", messageSubType: (error?.toString())!, completion: nil)
+            }
+        }, failure: { (error) in
+            if let err = error {
+                switch err {
+                case .NoInternetAccess:
+                    AlertClass.showSimpleErrorMessage(viewController: self, messageType: "NetworkError", messageSubType: err.rawValue, completion: { 
+                        NSOperationQueue.mainQueue().addOperationWithBlock({ 
+                            self.checkUsername(username: username)
+                        })
+                    })
+                default:
+                    break
+                }
+            }
+        })
     }
     
     // MARK: - TextField Delegate Methods
@@ -154,44 +222,8 @@ class SignUpViewController: UIViewController, UITextFieldDelegate {
                 if username.isValidUsername {
                     self.emailMsgStackView.hidden = false
                     self.usernameMsgRefreshControl.startAnimating()
-                    AuthRestAPIClass.checkUsername(username: username, completion: { (data, error) in
-                        self.usernameMsgRefreshControl.stopAnimating()
-                        if error == HTTPErrorType.Success {
-                            if let localData = data {
-                                if let status = localData["status"].string {
-                                    switch status {
-                                        case "OK":
-                                            //print("Signup OK received")
-                                            self.isUsernameValid = true
-                                            self.usernameMsgLabel.text = "نام کاربری انتخاب شده صحیح است"
-                                            self.usernameMsgLabel.textColor = UIColor(netHex: GREEN_COLOR_HEX, alpha: 1.0)
-                                        
-                                        case "Error":
-                                            if let errorType = localData["error_type"].string {
-                                                switch errorType {
-                                                    case "ExistUsername":
-                                                        self.usernameMsgRefreshControl.stopAnimating()
-                                                        self.usernameMsgLabel.text = "این نام کاربری قبلا انتخاب شده است"
-                                                        self.usernameMsgLabel.textColor = UIColor(netHex: RED_COLOR_HEX, alpha: 1.0)
-                                                    
-                                                    default:
-                                                        self.usernameMsgLabel.text = self.mainUsernameText
-                                                        self.usernameMsgLabel.textColor = UIColor(netHex: GRAY_COLOR_HEX_1, alpha: 1.0)
-                                                        AlertClass.showSimpleErrorMessage(viewController: self, messageType: "ErrorResult", messageSubType: errorType, completion: nil)
-                                                }
-                                            }
-                                        default:
-                                            break
-                                    }
-                                }
-                            }
-                        } else {
-                            // show alert
-                            self.usernameMsgLabel.text = self.mainUsernameText
-                            self.usernameMsgLabel.textColor = UIColor(netHex: GRAY_COLOR_HEX_1, alpha: 1.0)
-                            AlertClass.showSimpleErrorMessage(viewController: self, messageType: "HTTPError", messageSubType: (error?.toString())!, completion: nil)
-                        }
-                    })
+                    
+                    self.checkUsername(username: username)
                 } else {
                     //print("invalid username")
                     self.usernameMsgLabel.text = "نام کاربری وارد شده صحیح نمی باشد"

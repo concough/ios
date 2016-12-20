@@ -19,39 +19,47 @@ class MediaRestAPIClass {
     }
     
     
-    class func downloadEsetImage(indexPath: NSIndexPath, imageId: Int, completion: (fullUrl: String?, data: NSData?, error: HTTPErrorType?) -> ()) {
+    class func downloadEsetImage(indexPath: NSIndexPath, imageId: Int, completion: (fullUrl: String?, data: NSData?, error: HTTPErrorType?) -> (), failure: (error: NetworkErrorType?) -> ()) {
         if let fullPath = MediaRestAPIClass.makeEsetImageUri(imageId) {
             
             
             
             // get additional headers from oauth
-            OAuthHandlerSingleton.sharedInstance.assureAuthorized(completion: { (authenticated, error) in
+            TokenHandlerSingleton.sharedInstance.assureAuthorized(completion: { (authenticated, error) in
                 if authenticated && error == .Success {
-                    let headers = OAuthHandlerSingleton.sharedInstance.getHeader()
+                    let headers = TokenHandlerSingleton.sharedInstance.getHeader()
                     
                     let request = Alamofire.request(.GET ,fullPath, parameters: nil, encoding: .URL, headers: headers).responseData() { response in
                         //print("download index:\(imageId)")
-                        let statusCode = response.response?.statusCode
-                        let errorType = HTTPErrorType.toType(statusCode!)
-
                         
-                        switch errorType {
+                        switch response.result {
                         case .Success:
-                            guard let data = response.result.value else {
-                                return
-                            }
-                            // call callback function
-                            completion(fullUrl: fullPath, data: data, error: .Success)
-                        case .ForbidenAccess:
-                            OAuthHandlerSingleton.sharedInstance.assureAuthorized(true, completion: { (authenticated, err) in
-                                if authenticated && error == .Success {
-                                    completion(fullUrl: fullPath, data: nil, error: err)
+                            let statusCode = response.response?.statusCode
+                            let errorType = HTTPErrorType.toType(statusCode!)
+
+                            
+                            switch errorType {
+                            case .Success:
+                                guard let data = response.result.value else {
+                                    return
                                 }
-                            })
-                            break
-                        default:
-                            // failure occured --> in future must be replace with error detector
-                            completion(fullUrl: fullPath, data: nil, error: errorType)
+                                // call callback function
+                                completion(fullUrl: fullPath, data: data, error: .Success)
+                            case .ForbidenAccess:
+                                TokenHandlerSingleton.sharedInstance.assureAuthorized(true, completion: { (authenticated, err) in
+                                    if authenticated && error == .Success {
+                                        completion(fullUrl: fullPath, data: nil, error: err)
+                                    }
+                                }, failure: { (error) in
+                                    failure(error: error)
+                                })
+                                break
+                            default:
+                                // failure occured --> in future must be replace with error detector
+                                completion(fullUrl: fullPath, data: nil, error: errorType)
+                            }
+                        case .Failure(let error):
+                            failure(error: NetworkErrorType.toType(error))
                         }
                     }
                     
@@ -62,6 +70,8 @@ class MediaRestAPIClass {
                 } else {
                     completion(fullUrl: fullPath, data: nil, error: error)
                 }
+            }, failure: { (error) in
+                failure(error: error)
             })
         } else {
             // can not make url --> must return an error

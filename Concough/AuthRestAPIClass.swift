@@ -11,7 +11,7 @@ import Alamofire
 import SwiftyJSON
 
 class AuthRestAPIClass {
-    class func checkUsername(username username: String, completion: (data: JSON?, error: HTTPErrorType?) -> ()) {
+    class func checkUsername(username username: String, completion: (data: JSON?, error: HTTPErrorType?) -> (), failure: (error: NetworkErrorType?) -> ()) {
         
         guard let fullPath = UrlMakerSingleton.sharedInstance.checkUsername() else {
             return
@@ -24,24 +24,29 @@ class AuthRestAPIClass {
         Alamofire.request(.POST, fullPath, parameters: parameteres, encoding: .JSON, headers: headers).responseJSON { response in
             
             //debugPrint(response)
-            let statusCode = response.response?.statusCode
-            let errorType = HTTPErrorType.toType(statusCode!)
-            
-            switch errorType {
+            switch response.result {
             case .Success:
-                if let json = response.result.value {
-                    let jsonData = JSON(json)
-                    
-                    completion(data: jsonData, error: .Success)
+                let statusCode = response.response?.statusCode
+                let errorType = HTTPErrorType.toType(statusCode!)
+                
+                switch errorType {
+                case .Success:
+                    if let json = response.result.value {
+                        let jsonData = JSON(json)
+                        
+                        completion(data: jsonData, error: .Success)
+                    }
+                default:
+                    completion(data: nil, error: errorType)
                 }
-            default:
-                completion(data: nil, error: errorType)
+            case .Failure(let error):
+                failure(error: NetworkErrorType.toType(error))
             }
         }
         
     }
     
-    class func preSignup(username username: String, email: String, completion: (data: JSON?, error: HTTPErrorType?) -> ()) {
+    class func preSignup(username username: String, email: String, completion: (data: JSON?, error: HTTPErrorType?) -> (), failure: (error: NetworkErrorType?) -> ()) {
         
         guard let fullPath = UrlMakerSingleton.sharedInstance.preSignupUrl() else {
             return
@@ -54,24 +59,28 @@ class AuthRestAPIClass {
         
         Alamofire.request(.POST, fullPath, parameters: parameters, encoding: .JSON, headers: headers).responseJSON { response in
             
-            let statusCode = response.response?.statusCode
-            let errorType = HTTPErrorType.toType(statusCode!)
-            
-            switch errorType {
+            switch response.result {
             case .Success:
-                if let json = response.result.value {
-                    let jsonData = JSON(json)
-                    
-                    completion(data: jsonData, error: .Success)
+                let statusCode = response.response?.statusCode
+                let errorType = HTTPErrorType.toType(statusCode!)
+                
+                switch errorType {
+                case .Success:
+                    if let json = response.result.value {
+                        let jsonData = JSON(json)
+                        
+                        completion(data: jsonData, error: .Success)
+                    }
+                default:
+                    completion(data: nil, error: errorType)
                 }
-            default:
-                completion(data: nil, error: errorType)
+            case .Failure(let error):
+                failure(error: NetworkErrorType.toType(error))
             }
-            
         }
     }
     
-    class func signup(username username: String, id: Int, code: Int, email: String, password: String, completion: (data: JSON?, error: HTTPErrorType?) -> ()) {
+    class func signup(username username: String, id: Int, code: Int, email: String, password: String, completion: (data: JSON?, error: HTTPErrorType?) -> (), failure: (error: NetworkErrorType?) -> ()) {
         guard let fullPath = UrlMakerSingleton.sharedInstance.signupUrl() else {
             return
         }
@@ -85,24 +94,29 @@ class AuthRestAPIClass {
                                          "Accept": "application/json"]
         
         Alamofire.request(.POST, fullPath, parameters: parameters, encoding: .JSON, headers: headers).responseJSON { response in
-            
-            let statusCode = response.response?.statusCode
-            let errorType = HTTPErrorType.toType(statusCode!)
-            
-            switch errorType {
+
+            switch response.result {
             case .Success:
-                if let json = response.result.value {
-                    let jsonData = JSON(json)
-                    
-                    completion(data: jsonData, error: .Success)
+                let statusCode = response.response?.statusCode
+                let errorType = HTTPErrorType.toType(statusCode!)
+                
+                switch errorType {
+                case .Success:
+                    if let json = response.result.value {
+                        let jsonData = JSON(json)
+                        
+                        completion(data: jsonData, error: .Success)
+                    }
+                default:
+                    completion(data: nil, error: errorType)
                 }
-            default:
-                completion(data: nil, error: errorType)
+            case .Failure(let error):
+                failure(error: NetworkErrorType.toType(error))
             }
         }
     }
     
-    class func forgotPassword(username username: String, completion: (data: JSON?, error: HTTPErrorType?) -> ()) {
+    class func forgotPassword(username username: String, completion: (data: JSON?, error: HTTPErrorType?) -> (), failure: (error: NetworkErrorType?) -> ()) {
         
         guard let fullPath = UrlMakerSingleton.sharedInstance.forgotPassword() else {
             return
@@ -113,24 +127,29 @@ class AuthRestAPIClass {
                                          "Accept": "application/json"]
         
         Alamofire.request(.POST, fullPath, parameters: parameters, encoding: .JSON, headers: headers).responseJSON { response in
-            
-            let statusCode = response.response?.statusCode
-            let errorType = HTTPErrorType.toType(statusCode!)
-            
-            switch errorType {
+
+            switch response.result {
             case .Success:
-                if let json = response.result.value {
-                    let jsonData = JSON(json)
-                    
-                    completion(data: jsonData, error: .Success)
+                let statusCode = response.response?.statusCode
+                let errorType = HTTPErrorType.toType(statusCode!)
+                
+                switch errorType {
+                case .Success:
+                    if let json = response.result.value {
+                        let jsonData = JSON(json)
+                        
+                        completion(data: jsonData, error: .Success)
+                    }
+                default:
+                    completion(data: nil, error: errorType)
                 }
-            default:
-                completion(data: nil, error: errorType)
+            case .Failure(let error):
+                failure(error: NetworkErrorType.toType(error))
             }
         }
     }
 
-    class func resetPassword(username username: String, id: Int, password: String, rpassword: String, code: Int, completion: (data: JSON?, error: HTTPErrorType?) -> ()) {
+    class func resetPassword(username username: String, id: Int, password: String, rpassword: String, code: Int, completion: (data: JSON?, error: HTTPErrorType?) -> (), failure: (error: NetworkErrorType?) -> ()) {
         
         guard let fullPath = UrlMakerSingleton.sharedInstance.resetPassword() else {
             return
@@ -146,20 +165,24 @@ class AuthRestAPIClass {
         
         Alamofire.request(.POST, fullPath, parameters: parameters, encoding: .JSON, headers: headers).responseJSON { response in
             
-            let statusCode = response.response?.statusCode
-            let errorType = HTTPErrorType.toType(statusCode!)
-            
-            switch errorType {
+            switch response.result {
             case .Success:
-                if let json = response.result.value {
-                    let jsonData = JSON(json)
-                    
-                    completion(data: jsonData, error: .Success)
+                let statusCode = response.response?.statusCode
+                let errorType = HTTPErrorType.toType(statusCode!)
+                
+                switch errorType {
+                case .Success:
+                    if let json = response.result.value {
+                        let jsonData = JSON(json)
+                        
+                        completion(data: jsonData, error: .Success)
+                    }
+                default:
+                    completion(data: nil, error: errorType)
                 }
-            default:
-                completion(data: nil, error: errorType)
+            case .Failure(let error):
+                failure(error: NetworkErrorType.toType(error))
             }
-            
         }
     }
     

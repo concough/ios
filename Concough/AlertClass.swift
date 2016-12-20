@@ -73,6 +73,8 @@ class AlertClass {
             }
         case "HTTPError":
             switch messageSubType {
+            case "BadRequest":
+                fallthrough
             case "UnAuthorized":
                 title = "خطای دسترسی"
                 message = "اطلاعات وارد شده صحیح نمی باشد."
@@ -84,6 +86,14 @@ class AlertClass {
             case "NetworkError":
                 title = "خطای دسترسی"
                 message = "برقراری ارتباط با سرور مقدور نیست." + "\n" + "مجددا سعی نمایید"
+            default:
+                showMessage = false
+            }
+        case "NetworkError":
+            switch messageSubType {
+            case "NoInternetAccess":
+                title = "خطای اینترنت"
+                message = "لطفا اینترنت خود را فعال و مجددا سعی نمایید"
             default:
                 showMessage = false
             }

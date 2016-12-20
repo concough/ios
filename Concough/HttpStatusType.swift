@@ -10,6 +10,7 @@ import Foundation
 
 enum HTTPErrorType: Int, ErrorType {
     case Success = 200
+    case BadRequest = 400
     case UnAuthorized = 401
     case ForbidenAccess = 403
     case NotFound = 404
@@ -20,6 +21,8 @@ enum HTTPErrorType: Int, ErrorType {
         switch item {
         case 200...209:
             return .Success
+        case 400:
+            return .BadRequest
         case 401:
             return .UnAuthorized
         case 403:
@@ -37,6 +40,8 @@ enum HTTPErrorType: Int, ErrorType {
         switch self {
         case .Success:
             return "Success"
+        case .BadRequest:
+            return "BadRequest"
         case .ForbidenAccess:
             return "ForbidenAccess"
         case .NotFound:

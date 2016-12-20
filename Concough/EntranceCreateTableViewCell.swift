@@ -68,7 +68,7 @@ class EntranceCreateTableViewCell: UITableViewCell {
                 
                 // cancel download image request
                 
-                MediaRestAPIClass.downloadEsetImage(indexPath, imageId: imageID) {
+                MediaRestAPIClass.downloadEsetImage(indexPath, imageId: imageID, completion: {
                     fullPath, data, error in
                     
                     MediaRequestRepositorySingleton.sharedInstance.remove(key: "\(indexPath.section):\(indexPath.row):\(esetUrl)")
@@ -88,8 +88,16 @@ class EntranceCreateTableViewCell: UITableViewCell {
                             }
                         }
                     }
-                }
-                
+                }, failure: { (error) in
+                    if let err = error {
+                        switch err {
+                        case .NoInternetAccess:
+                            break
+                        default:
+                            break
+                        }
+                    }
+                })
             }
         }
         

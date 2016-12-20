@@ -108,51 +108,69 @@ class ForgotPasswordViewController: UIViewController, UITextFieldDelegate {
     @IBAction func sendCodeButtonPressed(sender: UIButton) {
         // sending procedure
         if let username = self.usernameTextField.text?.trim() where username != "" {
-            AuthRestAPIClass.forgotPassword(username: username, completion: { (data, error) in
-                if error != HTTPErrorType.Success {
-                    AlertClass.showSimpleErrorMessage(viewController: self, messageType: "HTTPError", messageSubType: (error?.toString())!, completion: nil)
-                } else {
-                    if let localData = data {
-                        if let status = localData["status"].string {
-                            switch status {
-                            case "OK":
-                                // forgot password generate
-                                self.signupStruct.username = username
-                                self.signupStruct.preSignupId = localData["id"].intValue
-                                
-                                NSOperationQueue.mainQueue().addOperationWithBlock({ 
-                                    self.performSegueWithIdentifier("SubmitSignupCodeVCSegue", sender: self)
-                                })
-
-                            case "Error":
-                                if let errorType = localData["error_type"].string {
-                                    switch errorType {
-                                    case "BadData":
-                                        fallthrough
-                                    case "RemoteDBError":
-                                        AlertClass.showSimpleErrorMessage(viewController: self, messageType: "HTTPError", messageSubType: errorType, completion: nil)
-                                        break
-                                    case "UserNotExist":
-                                        AlertClass.showSimpleErrorMessage(viewController: self, messageType: "AuthProfile", messageSubType: errorType, completion: nil)
-                                        break
-                                    default:
-                                        break
-                                    }
-                                }
-                                break
-                            default:
-                                break
-                            }
-                        }
-                    }
-                }
-            })
+            self.forgotPassword(username: username)
         } else {
             AlertClass.showSimpleErrorMessage(viewController: self, messageType: "Form", messageSubType: "EmptyFields", completion: nil)
         }
     }
-        
-    // Gusture Recognizer implementations
+    
+    // MARK: - Functions
+    private func forgotPassword(username username: String) {
+        AuthRestAPIClass.forgotPassword(username: username, completion: { (data, error) in
+            if error != HTTPErrorType.Success {
+                AlertClass.showSimpleErrorMessage(viewController: self, messageType: "HTTPError", messageSubType: (error?.toString())!, completion: nil)
+            } else {
+                if let localData = data {
+                    if let status = localData["status"].string {
+                        switch status {
+                        case "OK":
+                            // forgot password generate
+                            self.signupStruct.username = username
+                            self.signupStruct.preSignupId = localData["id"].intValue
+                            
+                            NSOperationQueue.mainQueue().addOperationWithBlock({
+                                self.performSegueWithIdentifier("SubmitSignupCodeVCSegue", sender: self)
+                            })
+                            
+                        case "Error":
+                            if let errorType = localData["error_type"].string {
+                                switch errorType {
+                                case "BadData":
+                                    fallthrough
+                                case "RemoteDBError":
+                                    AlertClass.showSimpleErrorMessage(viewController: self, messageType: "HTTPError", messageSubType: errorType, completion: nil)
+                                    break
+                                case "UserNotExist":
+                                    AlertClass.showSimpleErrorMessage(viewController: self, messageType: "AuthProfile", messageSubType: errorType, completion: nil)
+                                    break
+                                default:
+                                    break
+                                }
+                            }
+                            break
+                        default:
+                            break
+                        }
+                    }
+                }
+            }
+        }, failure: { (error) in
+            if let err = error {
+                switch err {
+                case .NoInternetAccess:
+                    AlertClass.showSimpleErrorMessage(viewController: self, messageType: "NetworkError", messageSubType: err.rawValue, completion: {
+                        NSOperationQueue.mainQueue().addOperationWithBlock({ 
+                            self.forgotPassword(username: username)
+                        })
+                    })
+                default:
+                    break
+                }
+            }
+        })
+    }
+    
+    // MARK: - Gusture Recognizer implementations
     func singleTapped(sender: UITapGestureRecognizer) {
         view.endEditing(true)
     }

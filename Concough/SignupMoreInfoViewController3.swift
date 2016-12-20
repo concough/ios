@@ -84,9 +84,14 @@ class SignupMoreInfoViewController3: UIViewController, UINavigationControllerDel
     
     @IBAction func nextButtonPressed(sender: AnyObject) {
         // main action here
+        self.postProfile()
+    }
+    
+    // MARK: - Functions
+    private func postProfile() {
         self.infoStruct.grade = self.selectedGrade.rawValue
-        
-        ProfileRestAPIClass.postProfileData(info: self.infoStruct) { (data, error) in
+
+        ProfileRestAPIClass.postProfileData(info: self.infoStruct, completion: { (data, error) in
             if error != HTTPErrorType.Success {
             } else {
                 if let localData = data {
@@ -107,7 +112,7 @@ class SignupMoreInfoViewController3: UIViewController, UINavigationControllerDel
                             // perform segue navigation to home controller
                             let vc : UIViewController = self.storyboard?.instantiateViewControllerWithIdentifier("NHomeTableViewController") as! UINavigationController;
                             
-                            NSOperationQueue.mainQueue().addOperationWithBlock({ 
+                            NSOperationQueue.mainQueue().addOperationWithBlock({
                                 self.presentViewController(vc, animated: true, completion: nil)
                                 //self.performSegueWithIdentifier("HomeVCSegue", sender: self)
                             })
@@ -136,7 +141,20 @@ class SignupMoreInfoViewController3: UIViewController, UINavigationControllerDel
                     }
                 }
             }
-        }
+        }, failure: { (error) in
+            if let err = error {
+                switch err {
+                case .NoInternetAccess:
+                    AlertClass.showSimpleErrorMessage(viewController: self, messageType: "NetworkError", messageSubType: err.rawValue, completion: { 
+                        NSOperationQueue.mainQueue().addOperationWithBlock({ 
+                            self.postProfile()
+                        })
+                    })
+                default:
+                    break
+                }
+            }
+        })
     }
 
     // MARK: - Navigations

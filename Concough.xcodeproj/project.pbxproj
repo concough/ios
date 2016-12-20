@@ -16,6 +16,9 @@
 		EB762F5B1DCF99D10084CA1D /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = EB762F5A1DCF99D10084CA1D /* Assets.xcassets */; };
 		EB762F5E1DCF99D10084CA1D /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = EB762F5C1DCF99D10084CA1D /* LaunchScreen.storyboard */; };
 		EB762F671DCF9A430084CA1D /* AppSettings.plist in Resources */ = {isa = PBXBuildFile; fileRef = EB762F661DCF9A430084CA1D /* AppSettings.plist */; };
+		EBA657881E07E3FE00F0DC84 /* JwtAdapter.swift in Sources */ = {isa = PBXBuildFile; fileRef = EBA657871E07E3FE00F0DC84 /* JwtAdapter.swift */; };
+		EBA6578A1E08033E00F0DC84 /* NetworkStatusType.swift in Sources */ = {isa = PBXBuildFile; fileRef = EBA657891E08033E00F0DC84 /* NetworkStatusType.swift */; };
+		EBA6578C1E09189200F0DC84 /* JwtHandler.swift in Sources */ = {isa = PBXBuildFile; fileRef = EBA6578B1E09189200F0DC84 /* JwtHandler.swift */; };
 		EBB68D001DE48022003792B3 /* Constants.swift in Sources */ = {isa = PBXBuildFile; fileRef = EBB68CFF1DE48022003792B3 /* Constants.swift */; };
 		EBB68D051DE488D9003792B3 /* WhitePanelUI.swift in Sources */ = {isa = PBXBuildFile; fileRef = EBB68D041DE488D9003792B3 /* WhitePanelUI.swift */; };
 		EBB68D101DE585E5003792B3 /* IRANSansMobile_Bold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = EBB68D0B1DE585E5003792B3 /* IRANSansMobile_Bold.ttf */; };
@@ -33,7 +36,7 @@
 		EBB68D281DE6FFCC003792B3 /* DataRestAPIClass.swift in Sources */ = {isa = PBXBuildFile; fileRef = EBB68D271DE6FFCC003792B3 /* DataRestAPIClass.swift */; };
 		EBB68D2A1DE9C31E003792B3 /* TestViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = EBB68D291DE9C31E003792B3 /* TestViewController.swift */; };
 		EBB68D2D1DE9DC8C003792B3 /* OAuthAdapter.swift in Sources */ = {isa = PBXBuildFile; fileRef = EBB68D2C1DE9DC8C003792B3 /* OAuthAdapter.swift */; };
-		EBB68D311DEAC7B6003792B3 /* OAuthHandlerSingleton.swift in Sources */ = {isa = PBXBuildFile; fileRef = EBB68D301DEAC7B6003792B3 /* OAuthHandlerSingleton.swift */; };
+		EBB68D311DEAC7B6003792B3 /* TokenHandlerSingleton.swift in Sources */ = {isa = PBXBuildFile; fileRef = EBB68D301DEAC7B6003792B3 /* TokenHandlerSingleton.swift */; };
 		EBB68D341DEAD926003792B3 /* KeyChainAccessProxy.swift in Sources */ = {isa = PBXBuildFile; fileRef = EBB68D331DEAD926003792B3 /* KeyChainAccessProxy.swift */; };
 		EBB68D361DEBF3F0003792B3 /* StartupViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = EBB68D351DEBF3F0003792B3 /* StartupViewController.swift */; };
 		EBB68D381DEBFAA7003792B3 /* LoginViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = EBB68D371DEBFAA7003792B3 /* LoginViewController.swift */; };
@@ -95,6 +98,9 @@
 		EB762F5F1DCF99D10084CA1D /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		EB762F661DCF9A430084CA1D /* AppSettings.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = AppSettings.plist; sourceTree = "<group>"; };
 		EB95BB811DD3214B0040CA48 /* SwiftyJSON.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SwiftyJSON.framework; path = "Pods/../build/Debug-iphoneos/SwiftyJSON/SwiftyJSON.framework"; sourceTree = "<group>"; };
+		EBA657871E07E3FE00F0DC84 /* JwtAdapter.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = JwtAdapter.swift; sourceTree = "<group>"; };
+		EBA657891E08033E00F0DC84 /* NetworkStatusType.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = NetworkStatusType.swift; sourceTree = "<group>"; };
+		EBA6578B1E09189200F0DC84 /* JwtHandler.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = JwtHandler.swift; sourceTree = "<group>"; };
 		EBB68CFF1DE48022003792B3 /* Constants.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Constants.swift; sourceTree = "<group>"; };
 		EBB68D041DE488D9003792B3 /* WhitePanelUI.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = WhitePanelUI.swift; sourceTree = "<group>"; };
 		EBB68D0B1DE585E5003792B3 /* IRANSansMobile_Bold.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = IRANSansMobile_Bold.ttf; sourceTree = "<group>"; };
@@ -112,7 +118,7 @@
 		EBB68D271DE6FFCC003792B3 /* DataRestAPIClass.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DataRestAPIClass.swift; sourceTree = "<group>"; };
 		EBB68D291DE9C31E003792B3 /* TestViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = TestViewController.swift; sourceTree = "<group>"; };
 		EBB68D2C1DE9DC8C003792B3 /* OAuthAdapter.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = OAuthAdapter.swift; sourceTree = "<group>"; };
-		EBB68D301DEAC7B6003792B3 /* OAuthHandlerSingleton.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = OAuthHandlerSingleton.swift; sourceTree = "<group>"; };
+		EBB68D301DEAC7B6003792B3 /* TokenHandlerSingleton.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = TokenHandlerSingleton.swift; sourceTree = "<group>"; };
 		EBB68D331DEAD926003792B3 /* KeyChainAccessProxy.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = KeyChainAccessProxy.swift; sourceTree = "<group>"; };
 		EBB68D351DEBF3F0003792B3 /* StartupViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = StartupViewController.swift; sourceTree = "<group>"; };
 		EBB68D371DEBFAA7003792B3 /* LoginViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = LoginViewController.swift; sourceTree = "<group>"; };
@@ -173,6 +179,7 @@
 				EB1AA8DD1DD386CA00F0CED9 /* EntranceActivity.swift */,
 				EBB68D3E1DED6018003792B3 /* HttpStatusType.swift */,
 				EBB68D511DF6E7CB003792B3 /* SignupStructure.swift */,
+				EBA657891E08033E00F0DC84 /* NetworkStatusType.swift */,
 			);
 			name = Structures;
 			sourceTree = "<group>";
@@ -239,7 +246,7 @@
 			isa = PBXGroup;
 			children = (
 				EBB68D321DEAD90C003792B3 /* Utils */,
-				EBB68D2B1DE9DC6D003792B3 /* OAuth */,
+				EBB68D2B1DE9DC6D003792B3 /* TokenService */,
 				EBB68D221DE6D00B003792B3 /* Rest */,
 				EBB68D1D1DE5D6B8003792B3 /* Singletons */,
 				EB1AA8DC1DD3868E00F0CED9 /* Structures */,
@@ -303,7 +310,7 @@
 				EBB68D1E1DE5D7AA003792B3 /* MediaCacheSingleton.swift */,
 				EBB68D201DE6CD01003792B3 /* UrlMakerSingleton.swift */,
 				EBB68D251DE6DB47003792B3 /* FormatterSingleton.swift */,
-				EBB68D301DEAC7B6003792B3 /* OAuthHandlerSingleton.swift */,
+				EBB68D301DEAC7B6003792B3 /* TokenHandlerSingleton.swift */,
 				EBB68D491DF327EE003792B3 /* MediaRequestRepositorySingleton.swift */,
 				EBB68D551DF7EED4003792B3 /* UserDefaultsSingleton.swift */,
 			);
@@ -321,12 +328,13 @@
 			name = Rest;
 			sourceTree = "<group>";
 		};
-		EBB68D2B1DE9DC6D003792B3 /* OAuth */ = {
+		EBB68D2B1DE9DC6D003792B3 /* TokenService */ = {
 			isa = PBXGroup;
 			children = (
 				EBB68D2C1DE9DC8C003792B3 /* OAuthAdapter.swift */,
+				EBA657871E07E3FE00F0DC84 /* JwtAdapter.swift */,
 			);
-			name = OAuth;
+			name = TokenService;
 			sourceTree = "<group>";
 		};
 		EBB68D321DEAD90C003792B3 /* Utils */ = {
@@ -335,6 +343,7 @@
 				EBB68D331DEAD926003792B3 /* KeyChainAccessProxy.swift */,
 				EBB68D431DF312F6003792B3 /* ObjectiveCHelpers.swift */,
 				EBB68D471DF3203C003792B3 /* CriticalSectionHelpers.swift */,
+				EBA6578B1E09189200F0DC84 /* JwtHandler.swift */,
 			);
 			name = Utils;
 			sourceTree = "<group>";
@@ -540,22 +549,25 @@
 				EBB68D481DF3203C003792B3 /* CriticalSectionHelpers.swift in Sources */,
 				EBB68D261DE6DB47003792B3 /* FormatterSingleton.swift in Sources */,
 				EBB68D601DFDA00C003792B3 /* ProfileRestAPIClass.swift in Sources */,
+				EBA6578A1E08033E00F0DC84 /* NetworkStatusType.swift in Sources */,
 				EBB68D581DFC386E003792B3 /* SignupMoreInfoViewController1.swift in Sources */,
 				EBB68D361DEBF3F0003792B3 /* StartupViewController.swift in Sources */,
 				EBFF8AA91DD4BF010002D03C /* EntranceCreateTableViewCell.swift in Sources */,
 				EBB68D501DF6CE02003792B3 /* SubmitSignupCodeViewController.swift in Sources */,
 				EB1AA8DB1DD332B500F0CED9 /* HomeTableViewController.swift in Sources */,
 				EBB68D5E1DFD7CB3003792B3 /* SignupMoreInfoViewController3.swift in Sources */,
+				EBA657881E07E3FE00F0DC84 /* JwtAdapter.swift in Sources */,
 				EBB68D441DF312F6003792B3 /* ObjectiveCHelpers.swift in Sources */,
 				EBB68D4C1DF40C04003792B3 /* ValidatorExtensions.swift in Sources */,
 				EBB68D4A1DF327EE003792B3 /* MediaRequestRepositorySingleton.swift in Sources */,
-				EBB68D311DEAC7B6003792B3 /* OAuthHandlerSingleton.swift in Sources */,
+				EBB68D311DEAC7B6003792B3 /* TokenHandlerSingleton.swift in Sources */,
 				EBB68D2D1DE9DC8C003792B3 /* OAuthAdapter.swift in Sources */,
 				EBB68D421DF31221003792B3 /* UIExtensions.swift in Sources */,
 				EBB68D241DE6D025003792B3 /* MediaRestAPIClass.swift in Sources */,
 				EBB68D281DE6FFCC003792B3 /* DataRestAPIClass.swift in Sources */,
 				EBB68D341DEAD926003792B3 /* KeyChainAccessProxy.swift in Sources */,
 				EBB68D621DFE891A003792B3 /* ForgotPasswordViewController.swift in Sources */,
+				EBA6578C1E09189200F0DC84 /* JwtHandler.swift in Sources */,
 				EBB68D521DF6E7CB003792B3 /* SignupStructure.swift in Sources */,
 				EB1AA8DE1DD386CA00F0CED9 /* EntranceActivity.swift in Sources */,
 				EB762F541DCF99D10084CA1D /* AppDelegate.swift in Sources */,
@@ -628,6 +640,7 @@
 				ONLY_ACTIVE_ARCH = YES;
 				SDKROOT = iphoneos;
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_VERSION = 2.3;
 				TARGETED_DEVICE_FAMILY = "1,2";
 			};
 			name = Debug;
@@ -668,6 +681,7 @@
 				MTL_ENABLE_DEBUG_INFO = NO;
 				SDKROOT = iphoneos;
 				SWIFT_OPTIMIZATION_LEVEL = "-Owholemodule";
+				SWIFT_VERSION = 2.3;
 				TARGETED_DEVICE_FAMILY = "1,2";
 				VALIDATE_PRODUCT = YES;
 			};

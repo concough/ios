@@ -147,7 +147,7 @@ class HomeTableViewController: UITableViewController {
     private func loadFeeds(next next: String?) {
         UIApplication.sharedApplication().networkActivityIndicatorVisible = true
         
-        DataRestAPIClass.updateActivity(next: next) {
+        DataRestAPIClass.updateActivity(next: next, completion: {
             refresh, data, error in
                         
             NSOperationQueue.mainQueue().addOperationWithBlock {
@@ -202,6 +202,19 @@ class HomeTableViewController: UITableViewController {
                     print("HomeTableViewController --> loadFeeds: error = \(err)")
                 }
             }
-        }
+        }, failure: { (error) in
+            if let err = error {
+                switch err {
+                case .NoInternetAccess:
+                    AlertClass.showSimpleErrorMessage(viewController: self, messageType: "NetworkError", messageSubType: err.rawValue, completion: { 
+                        NSOperationQueue.mainQueue().addOperationWithBlock({ 
+                            self.loadFeeds(next: next)
+                        })
+                    })
+                default:
+                    break
+                }
+            }
+        })
     }
 }

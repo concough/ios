@@ -11,60 +11,69 @@ import Alamofire
 import SwiftyJSON
 
 class ProfileRestAPIClass {
-    class func getProfileData(completion: (data: JSON?, error: HTTPErrorType?) -> ()) {
+    class func getProfileData(completion: (data: JSON?, error: HTTPErrorType?) -> (), failure: (error: NetworkErrorType?) -> ()) {
         guard let fullPath = UrlMakerSingleton.sharedInstance.profileUrl() else {
             return
         }
         
         // get additional headers from oauth
-        OAuthHandlerSingleton.sharedInstance.assureAuthorized { (authenticated, error) in
+        TokenHandlerSingleton.sharedInstance.assureAuthorized(completion: { (authenticated, error) in
             if authenticated && error == .Success {
                 
-                let headers = OAuthHandlerSingleton.sharedInstance.getHeader()
+                let headers = TokenHandlerSingleton.sharedInstance.getHeader()
                 
                 Alamofire.request(.GET, fullPath, parameters: nil, encoding: .URL, headers: headers).responseJSON { response in
                     
-                    //debugPrint(response)
-                    let statusCode = response.response?.statusCode
-                    let errorType = HTTPErrorType.toType(statusCode!)
-                    
-                    switch errorType {
+                    switch response.result {
                     case .Success:
-                        if let json = response.result.value {
-                            let jsonData = JSON(json)
-                            
-                            
-                            completion(data: jsonData, error: .Success)
-                        }
-                    case .UnAuthorized:
-                        fallthrough
-                    case .ForbidenAccess:
-                        OAuthHandlerSingleton.sharedInstance.assureAuthorized(true, completion: { (authenticated, error) in
-                            if authenticated && error == .Success {
-                                completion(data: nil, error: error)
+                        //debugPrint(response)
+                        let statusCode = response.response?.statusCode
+                        let errorType = HTTPErrorType.toType(statusCode!)
+                        
+                        switch errorType {
+                        case .Success:
+                            if let json = response.result.value {
+                                let jsonData = JSON(json)
+                                
+                                
+                                completion(data: jsonData, error: .Success)
                             }
-                        })
-                    default:
-                        completion(data: nil, error: errorType)
+                        case .UnAuthorized:
+                            fallthrough
+                        case .ForbidenAccess:
+                            TokenHandlerSingleton.sharedInstance.assureAuthorized(true, completion: { (authenticated, error) in
+                                if authenticated && error == .Success {
+                                    completion(data: nil, error: error)
+                                }
+                            }, failure: { (error) in
+                                failure(error: error)
+                            })
+                        default:
+                            completion(data: nil, error: errorType)
+                        }
+                    case .Failure(let error):
+                        failure(error: NetworkErrorType.toType(error))
                     }
                 }
             } else {
                 completion(data: nil, error: error)
             }
-        }
+        }, failure: { (error) in
+            failure(error: error)
+        })
         
     }
 
-    class func postProfileData(info info: SignupMoreInfoStruct, completion: (data: JSON?, error: HTTPErrorType?) -> ()) {
+    class func postProfileData(info info: SignupMoreInfoStruct, completion: (data: JSON?, error: HTTPErrorType?) -> (), failure: (error: NetworkErrorType?) -> ()) {
         guard let fullPath = UrlMakerSingleton.sharedInstance.profileUrl() else {
             return
         }
         
         // get additional headers from oauth
-        OAuthHandlerSingleton.sharedInstance.assureAuthorized { (authenticated, error) in
+        TokenHandlerSingleton.sharedInstance.assureAuthorized(completion: { (authenticated, error) in
             if authenticated && error == .Success {
                 
-                let headers = OAuthHandlerSingleton.sharedInstance.getHeader()
+                let headers = TokenHandlerSingleton.sharedInstance.getHeader()
                 
                 // make parameters
                 let calendar = NSCalendar.currentCalendar()
@@ -81,35 +90,44 @@ class ProfileRestAPIClass {
             
                 Alamofire.request(.POST, fullPath, parameters: parameters as? [String : AnyObject], encoding: .JSON, headers: headers).responseJSON { response in
                     
-                    //debugPrint(response)
-                    let statusCode = response.response?.statusCode
-                    let errorType = HTTPErrorType.toType(statusCode!)
-                    
-                    switch errorType {
+                    switch response.result {
                     case .Success:
-                        if let json = response.result.value {
-                            let jsonData = JSON(json)
-                            
-                            
-                            completion(data: jsonData, error: .Success)
-                        }
-                    case .UnAuthorized:
-                        fallthrough
-                    case .ForbidenAccess:
-                        OAuthHandlerSingleton.sharedInstance.assureAuthorized(true, completion: { (authenticated, err) in
-                            if authenticated && error == .Success {
-                                completion(data: nil, error: err)
+                        //debugPrint(response)
+                        let statusCode = response.response?.statusCode
+                        let errorType = HTTPErrorType.toType(statusCode!)
+                        
+                        switch errorType {
+                        case .Success:
+                            if let json = response.result.value {
+                                let jsonData = JSON(json)
+                                
+                                
+                                completion(data: jsonData, error: .Success)
                             }
-                        })
-                    default:
-                        completion(data: nil, error: errorType)
+                        case .UnAuthorized:
+                            fallthrough
+                        case .ForbidenAccess:
+                            TokenHandlerSingleton.sharedInstance.assureAuthorized(true, completion: { (authenticated, err) in
+                                if authenticated && error == .Success {
+                                    completion(data: nil, error: err)
+                                }
+                            }, failure: { (error) in
+                                failure(error: error)
+                            })
+                        default:
+                            completion(data: nil, error: errorType)
+                        }
+                    case .Failure(let error):
+                        failure(error: NetworkErrorType.toType(error))
                     }
                 }
             } else {
                 completion(data: nil, error: error)
             }
-        }
         
+        }, failure: { (error) in
+            failure(error: error)
+        })
     }
 
 }

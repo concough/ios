@@ -68,7 +68,7 @@ class EntranceUpdateTableViewCell: UITableViewCell {
             } else {
                 self.entranceImage.assicatedObject = esetUrl
 
-                MediaRestAPIClass.downloadEsetImage(indexPath, imageId: imageID) {
+                MediaRestAPIClass.downloadEsetImage(indexPath, imageId: imageID, completion: {
                     fullPath, data, error in
                     
                     MediaRequestRepositorySingleton.sharedInstance.remove(key: "\(indexPath.section):\(indexPath.row):\(esetUrl)")
@@ -87,8 +87,16 @@ class EntranceUpdateTableViewCell: UITableViewCell {
                             }
                         }
                     }
-                }
-                
+                }, failure: { (error) in
+                    if let err = error {
+                        switch err {
+                        case .NoInternetAccess:
+                            break
+                        default:
+                            break
+                        }
+                    }
+                })
             }
         }
         

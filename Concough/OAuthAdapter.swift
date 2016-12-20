@@ -13,7 +13,7 @@ import SwiftyJSON
 class AccessTokenAdapter {
     
     // Authorization Class Method
-    class func authorize(username username: String, password: String, completion: (data: JSON?, statusCode: Int, error: NSError?) -> ()) {
+    class func authorize(username username: String, password: String, completion: (data: JSON?, statusCode: Int, error: NSError?) -> (), failure: (error: NSError?) -> ()) {
         if let path = UrlMakerSingleton.sharedInstance.tokenUrl() {
         
             let parameters: [String: String] = ["grant_type": "password",
@@ -30,8 +30,6 @@ class AccessTokenAdapter {
             Alamofire.request(.POST, path, parameters: parameters, encoding: .URL, headers: headers).responseJSON {
                 response in
                 
-                print(response)
-                
                 switch (response.result) {
                 case .Success:
                     let statusCode = response.response?.statusCode
@@ -41,7 +39,7 @@ class AccessTokenAdapter {
                     
                 case .Failure(let error):
                     // cannot access serever
-                    completion(data: nil, statusCode: 0, error: error)
+                    failure(error: error)
                 }
             }
 
@@ -52,7 +50,7 @@ class AccessTokenAdapter {
     }
     
     // Refresh Token Class Method
-    class func refreshToken(refToken token: String, completion: (data: JSON?, statusCode: Int, error: NSError?) -> ()) {
+    class func refreshToken(refToken token: String, completion: (data: JSON?, statusCode: Int, error: NSError?) -> (), failure: (error: NSError?) -> ()) {
         if let path = UrlMakerSingleton.sharedInstance.tokenUrl() {
 
             let parameters: [String: String] = ["grant_type": "refresh_token",
@@ -76,7 +74,7 @@ class AccessTokenAdapter {
                     
                 case .Failure(let error):
                     // cannot access serever
-                    completion(data: nil, statusCode: 0, error: error)
+                    failure(error: error)
                 }
             }
             
