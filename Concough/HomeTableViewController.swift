@@ -12,12 +12,10 @@ import SwiftyJSON
 
 class HomeTableViewController: UITableViewController {
 
-    var baseUrl = BASE_URL
-    var apiVersion = API_VERSION
-    
     var moreFeedExist = true
     var activityList = [ConcoughActivity]()
     var localImageStorage = Dictionary<String, Dictionary<Int, NSData>>()
+    private var selectedActivityIndex: Int = -1
     
     let queue = NSOperationQueue()
     var oldOperation: NSBlockOperation? = nil
@@ -25,13 +23,9 @@ class HomeTableViewController: UITableViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
 
-        // Uncomment the following line to preserve selection between presentations
-        // self.clearsSelectionOnViewWillAppear = false
-
-        // Uncomment the following line to display an Edit button in the navigation bar for this view controller.
-        // self.navigationItem.rightBarButtonItem = self.editButtonItem()
         
         // Initialization
+        
         self.localImageStorage.updateValue(Dictionary<Int, NSData>(), forKey: "eset")
         self.queue.maxConcurrentOperationCount = 1  // make serial queue
         
@@ -45,6 +39,10 @@ class HomeTableViewController: UITableViewController {
         loadFeeds(next: nil)
     }
 
+    override func viewWillAppear(animated: Bool) {
+        self.selectedActivityIndex = -1
+    }
+    
     func refreshTableView(refreshControl_: UIRefreshControl) {
         let operation = NSBlockOperation() {
             self.loadFeeds(next: nil)
@@ -139,7 +137,17 @@ class HomeTableViewController: UITableViewController {
     }
     
     override func tableView(tableView: UITableView, didSelectRowAtIndexPath indexPath: NSIndexPath) {
-        print("\(indexPath.row) has been selected")
+        if indexPath.row < self.activityList.count {
+            
+            let activity = self.activityList[indexPath.row]
+            if activity.activityType == "ENTRANCE_CREATE" {
+                
+                self.selectedActivityIndex = indexPath.row
+                NSOperationQueue.mainQueue().addOperationWithBlock {
+                    self.performSegueWithIdentifier("EntranceDetailVCSegue", sender: self)
+                }                
+            }
+        }
     }
 
     // MARK: Private Functions
@@ -216,5 +224,13 @@ class HomeTableViewController: UITableViewController {
                 }
             }
         })
+    }
+    
+    override func prepareForSegue(segue: UIStoryboardSegue, sender: AnyObject?) {
+        if segue.identifier == "EntranceDetailVCSegue" {
+            if let vc = segue.destinationViewController as? EntranceDetailTableViewController {
+                vc.entranceActivity = self.activityList[self.selectedActivityIndex]
+            }
+        }
     }
 }
