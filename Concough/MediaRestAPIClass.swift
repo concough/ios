@@ -19,7 +19,7 @@ class MediaRestAPIClass {
     }
     
     
-    class func downloadEsetImage(indexPath: NSIndexPath, imageId: Int, completion: (fullUrl: String?, data: NSData?, error: HTTPErrorType?) -> (), failure: (error: NetworkErrorType?) -> ()) {
+    class func downloadEsetImage(localName name: String, indexPath: NSIndexPath, imageId: Int, completion: (fullUrl: String?, data: NSData?, error: HTTPErrorType?) -> (), failure: (error: NetworkErrorType?) -> ()) {
         if let fullPath = MediaRestAPIClass.makeEsetImageUri(imageId) {
             
             
@@ -64,7 +64,7 @@ class MediaRestAPIClass {
                     }
                     
                     // cache Request for future use
-                    let key = "\(indexPath.section):\(indexPath.row):\(fullPath)"
+                    let key = "\(name):\(indexPath.section):\(indexPath.row):\(fullPath)"
                     MediaRequestRepositorySingleton.sharedInstance.add(key: key, value: request)
                     
                 } else {

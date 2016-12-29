@@ -11,6 +11,8 @@ import SwiftyJSON
 
 class EntranceUpdateTableViewCell: UITableViewCell {
 
+    private let localName: String = "HomeVC"
+    
     @IBOutlet weak var containerUIView: UIView!
     @IBOutlet weak var entranceTitleUILabel: UILabel!
     @IBOutlet weak var entranceSetUILabel: UILabel!
@@ -64,7 +66,7 @@ class EntranceUpdateTableViewCell: UITableViewCell {
         let imageID = target["entrance_set"]["id"].intValue
         
         if let esetUrl = MediaRestAPIClass.makeEsetImageUri(imageID) {
-            MediaRequestRepositorySingleton.sharedInstance.cancel(key: "\(indexPath.section):\(indexPath.row):\(esetUrl)")
+            MediaRequestRepositorySingleton.sharedInstance.cancel(key: "\(self.localName):\(indexPath.section):\(indexPath.row):\(esetUrl)")
             
             if let myData = MediaCacheSingleton.sharedInstance[esetUrl] {
                 self.entranceImage.image = UIImage(data: myData)
@@ -72,10 +74,10 @@ class EntranceUpdateTableViewCell: UITableViewCell {
             } else {
                 self.entranceImage.assicatedObject = esetUrl
 
-                MediaRestAPIClass.downloadEsetImage(indexPath, imageId: imageID, completion: {
+                MediaRestAPIClass.downloadEsetImage(localName: self.localName, indexPath: indexPath, imageId: imageID, completion: {
                     fullPath, data, error in
                     
-                    MediaRequestRepositorySingleton.sharedInstance.remove(key: "\(indexPath.section):\(indexPath.row):\(esetUrl)")
+                    MediaRequestRepositorySingleton.sharedInstance.remove(key: "\(self.localName):\(indexPath.section):\(indexPath.row):\(esetUrl)")
                     if error != .Success {
                         // print the error for now
                         print("error in downloaing image from \(fullPath!)")

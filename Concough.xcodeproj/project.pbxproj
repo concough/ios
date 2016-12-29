@@ -24,6 +24,18 @@
 		EBA657941E095C4E00F0DC84 /* GrayPanelUI.swift in Sources */ = {isa = PBXBuildFile; fileRef = EBA657931E095C4E00F0DC84 /* GrayPanelUI.swift */; };
 		EBA657981E09830F00F0DC84 /* EDHeaderSectionTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = EBA657971E09830F00F0DC84 /* EDHeaderSectionTableViewCell.swift */; };
 		EBA6579A1E0984F700F0DC84 /* EDInformationSectionTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = EBA657991E0984F700F0DC84 /* EDInformationSectionTableViewCell.swift */; };
+		EBA6579C1E0AAE5700F0DC84 /* ArchiveTableViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = EBA6579B1E0AAE5700F0DC84 /* ArchiveTableViewController.swift */; };
+		EBA6579E1E0AC06500F0DC84 /* ArchiveRestAPIClass.swift in Sources */ = {isa = PBXBuildFile; fileRef = EBA6579D1E0AC06500F0DC84 /* ArchiveRestAPIClass.swift */; };
+		EBA657A01E0FC1CB00F0DC84 /* ArchiveBasicTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = EBA6579F1E0FC1CB00F0DC84 /* ArchiveBasicTableViewCell.swift */; };
+		EBA657A21E0FC73F00F0DC84 /* ArchiveEsetStructure.swift in Sources */ = {isa = PBXBuildFile; fileRef = EBA657A11E0FC73F00F0DC84 /* ArchiveEsetStructure.swift */; };
+		EBA657A41E0FE7A400F0DC84 /* ArchiveAdvanceTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = EBA657A31E0FE7A400F0DC84 /* ArchiveAdvanceTableViewCell.swift */; };
+		EBA657A61E111A7D00F0DC84 /* ArchiveDetailTableViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = EBA657A51E111A7D00F0DC84 /* ArchiveDetailTableViewController.swift */; };
+		EBA657A81E111BAF00F0DC84 /* ArchiveEsetDetailStructure.swift in Sources */ = {isa = PBXBuildFile; fileRef = EBA657A71E111BAF00F0DC84 /* ArchiveEsetDetailStructure.swift */; };
+		EBA657AA1E1133B700F0DC84 /* AEDHeaderTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = EBA657A91E1133B700F0DC84 /* AEDHeaderTableViewCell.swift */; };
+		EBA657AC1E11389200F0DC84 /* ArchiveEntranceStructure.swift in Sources */ = {isa = PBXBuildFile; fileRef = EBA657AB1E11389200F0DC84 /* ArchiveEntranceStructure.swift */; };
+		EBA657AE1E114DF600F0DC84 /* AEDBasicTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = EBA657AD1E114DF600F0DC84 /* AEDBasicTableViewCell.swift */; };
+		EBA657B01E143EF300F0DC84 /* WhitePanelUI2.swift in Sources */ = {isa = PBXBuildFile; fileRef = EBA657AF1E143EF300F0DC84 /* WhitePanelUI2.swift */; };
+		EBA657B21E14DA0900F0DC84 /* AEDAdvanceTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = EBA657B11E14DA0900F0DC84 /* AEDAdvanceTableViewCell.swift */; };
 		EBB68D001DE48022003792B3 /* Constants.swift in Sources */ = {isa = PBXBuildFile; fileRef = EBB68CFF1DE48022003792B3 /* Constants.swift */; };
 		EBB68D051DE488D9003792B3 /* WhitePanelUI.swift in Sources */ = {isa = PBXBuildFile; fileRef = EBB68D041DE488D9003792B3 /* WhitePanelUI.swift */; };
 		EBB68D101DE585E5003792B3 /* IRANSansMobile_Bold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = EBB68D0B1DE585E5003792B3 /* IRANSansMobile_Bold.ttf */; };
@@ -111,6 +123,18 @@
 		EBA657931E095C4E00F0DC84 /* GrayPanelUI.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = GrayPanelUI.swift; sourceTree = "<group>"; };
 		EBA657971E09830F00F0DC84 /* EDHeaderSectionTableViewCell.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = EDHeaderSectionTableViewCell.swift; sourceTree = "<group>"; };
 		EBA657991E0984F700F0DC84 /* EDInformationSectionTableViewCell.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = EDInformationSectionTableViewCell.swift; sourceTree = "<group>"; };
+		EBA6579B1E0AAE5700F0DC84 /* ArchiveTableViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ArchiveTableViewController.swift; sourceTree = "<group>"; };
+		EBA6579D1E0AC06500F0DC84 /* ArchiveRestAPIClass.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ArchiveRestAPIClass.swift; sourceTree = "<group>"; };
+		EBA6579F1E0FC1CB00F0DC84 /* ArchiveBasicTableViewCell.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ArchiveBasicTableViewCell.swift; sourceTree = "<group>"; };
+		EBA657A11E0FC73F00F0DC84 /* ArchiveEsetStructure.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ArchiveEsetStructure.swift; sourceTree = "<group>"; };
+		EBA657A31E0FE7A400F0DC84 /* ArchiveAdvanceTableViewCell.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ArchiveAdvanceTableViewCell.swift; sourceTree = "<group>"; };
+		EBA657A51E111A7D00F0DC84 /* ArchiveDetailTableViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ArchiveDetailTableViewController.swift; sourceTree = "<group>"; };
+		EBA657A71E111BAF00F0DC84 /* ArchiveEsetDetailStructure.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ArchiveEsetDetailStructure.swift; sourceTree = "<group>"; };
+		EBA657A91E1133B700F0DC84 /* AEDHeaderTableViewCell.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AEDHeaderTableViewCell.swift; sourceTree = "<group>"; };
+		EBA657AB1E11389200F0DC84 /* ArchiveEntranceStructure.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ArchiveEntranceStructure.swift; sourceTree = "<group>"; };
+		EBA657AD1E114DF600F0DC84 /* AEDBasicTableViewCell.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AEDBasicTableViewCell.swift; sourceTree = "<group>"; };
+		EBA657AF1E143EF300F0DC84 /* WhitePanelUI2.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = WhitePanelUI2.swift; sourceTree = "<group>"; };
+		EBA657B11E14DA0900F0DC84 /* AEDAdvanceTableViewCell.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AEDAdvanceTableViewCell.swift; sourceTree = "<group>"; };
 		EBB68CFF1DE48022003792B3 /* Constants.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Constants.swift; sourceTree = "<group>"; };
 		EBB68D041DE488D9003792B3 /* WhitePanelUI.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = WhitePanelUI.swift; sourceTree = "<group>"; };
 		EBB68D0B1DE585E5003792B3 /* IRANSansMobile_Bold.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = IRANSansMobile_Bold.ttf; sourceTree = "<group>"; };
@@ -190,6 +214,9 @@
 				EBB68D3E1DED6018003792B3 /* HttpStatusType.swift */,
 				EBB68D511DF6E7CB003792B3 /* SignupStructure.swift */,
 				EBA657891E08033E00F0DC84 /* NetworkStatusType.swift */,
+				EBA657A11E0FC73F00F0DC84 /* ArchiveEsetStructure.swift */,
+				EBA657A71E111BAF00F0DC84 /* ArchiveEsetDetailStructure.swift */,
+				EBA657AB1E11389200F0DC84 /* ArchiveEntranceStructure.swift */,
 			);
 			name = Structures;
 			sourceTree = "<group>";
@@ -251,6 +278,11 @@
 				EBA657911E09506D00F0DC84 /* EDInitialSectionTableViewCell.swift */,
 				EBA657971E09830F00F0DC84 /* EDHeaderSectionTableViewCell.swift */,
 				EBA657991E0984F700F0DC84 /* EDInformationSectionTableViewCell.swift */,
+				EBA6579F1E0FC1CB00F0DC84 /* ArchiveBasicTableViewCell.swift */,
+				EBA657A31E0FE7A400F0DC84 /* ArchiveAdvanceTableViewCell.swift */,
+				EBA657A91E1133B700F0DC84 /* AEDHeaderTableViewCell.swift */,
+				EBA657AD1E114DF600F0DC84 /* AEDBasicTableViewCell.swift */,
+				EBA657B11E14DA0900F0DC84 /* AEDAdvanceTableViewCell.swift */,
 			);
 			name = Views;
 			sourceTree = "<group>";
@@ -284,6 +316,8 @@
 				EBB68D611DFE891A003792B3 /* ForgotPasswordViewController.swift */,
 				EBB68D631DFE9F7B003792B3 /* ResetPasswordViewController.swift */,
 				EBA6578F1E09500E00F0DC84 /* EntranceDetailTableViewController.swift */,
+				EBA6579B1E0AAE5700F0DC84 /* ArchiveTableViewController.swift */,
+				EBA657A51E111A7D00F0DC84 /* ArchiveDetailTableViewController.swift */,
 			);
 			name = Controllers;
 			sourceTree = "<group>";
@@ -299,6 +333,7 @@
 			isa = PBXGroup;
 			children = (
 				EBB68D041DE488D9003792B3 /* WhitePanelUI.swift */,
+				EBA657AF1E143EF300F0DC84 /* WhitePanelUI2.swift */,
 				EBA657931E095C4E00F0DC84 /* GrayPanelUI.swift */,
 			);
 			name = Customs;
@@ -339,6 +374,7 @@
 				EBB68D271DE6FFCC003792B3 /* DataRestAPIClass.swift */,
 				EBB68D4D1DF41EE7003792B3 /* AuthRestAPIClass.swift */,
 				EBB68D5F1DFDA00C003792B3 /* ProfileRestAPIClass.swift */,
+				EBA6579D1E0AC06500F0DC84 /* ArchiveRestAPIClass.swift */,
 			);
 			name = Rest;
 			sourceTree = "<group>";
@@ -547,6 +583,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				EBB68D381DEBFAA7003792B3 /* LoginViewController.swift in Sources */,
+				EBA657A61E111A7D00F0DC84 /* ArchiveDetailTableViewController.swift in Sources */,
 				EBA657941E095C4E00F0DC84 /* GrayPanelUI.swift in Sources */,
 				EBB68D5C1DFD31E3003792B3 /* SignupMoreInfoViewController2.swift in Sources */,
 				EBB68D5A1DFC3A2D003792B3 /* TypeExtensions.swift in Sources */,
@@ -555,6 +592,7 @@
 				EBB68D1F1DE5D7AA003792B3 /* MediaCacheSingleton.swift in Sources */,
 				EBB68D051DE488D9003792B3 /* WhitePanelUI.swift in Sources */,
 				EBB68D4E1DF41EE7003792B3 /* AuthRestAPIClass.swift in Sources */,
+				EBA657B01E143EF300F0DC84 /* WhitePanelUI2.swift in Sources */,
 				EBB68D001DE48022003792B3 /* Constants.swift in Sources */,
 				EBB68D641DFE9F7B003792B3 /* ResetPasswordViewController.swift in Sources */,
 				EBB68D211DE6CD01003792B3 /* UrlMakerSingleton.swift in Sources */,
@@ -567,6 +605,7 @@
 				EBB68D261DE6DB47003792B3 /* FormatterSingleton.swift in Sources */,
 				EBB68D601DFDA00C003792B3 /* ProfileRestAPIClass.swift in Sources */,
 				EBA6578A1E08033E00F0DC84 /* NetworkStatusType.swift in Sources */,
+				EBA657A81E111BAF00F0DC84 /* ArchiveEsetDetailStructure.swift in Sources */,
 				EBB68D581DFC386E003792B3 /* SignupMoreInfoViewController1.swift in Sources */,
 				EBB68D361DEBF3F0003792B3 /* StartupViewController.swift in Sources */,
 				EBFF8AA91DD4BF010002D03C /* EntranceCreateTableViewCell.swift in Sources */,
@@ -578,20 +617,29 @@
 				EBB68D441DF312F6003792B3 /* ObjectiveCHelpers.swift in Sources */,
 				EBB68D4C1DF40C04003792B3 /* ValidatorExtensions.swift in Sources */,
 				EBB68D4A1DF327EE003792B3 /* MediaRequestRepositorySingleton.swift in Sources */,
+				EBA6579C1E0AAE5700F0DC84 /* ArchiveTableViewController.swift in Sources */,
 				EBA657981E09830F00F0DC84 /* EDHeaderSectionTableViewCell.swift in Sources */,
 				EBB68D311DEAC7B6003792B3 /* TokenHandlerSingleton.swift in Sources */,
+				EBA657AE1E114DF600F0DC84 /* AEDBasicTableViewCell.swift in Sources */,
+				EBA657B21E14DA0900F0DC84 /* AEDAdvanceTableViewCell.swift in Sources */,
+				EBA657AC1E11389200F0DC84 /* ArchiveEntranceStructure.swift in Sources */,
 				EBB68D2D1DE9DC8C003792B3 /* OAuthAdapter.swift in Sources */,
+				EBA6579E1E0AC06500F0DC84 /* ArchiveRestAPIClass.swift in Sources */,
 				EBB68D421DF31221003792B3 /* UIExtensions.swift in Sources */,
 				EBB68D241DE6D025003792B3 /* MediaRestAPIClass.swift in Sources */,
+				EBA657AA1E1133B700F0DC84 /* AEDHeaderTableViewCell.swift in Sources */,
 				EBB68D281DE6FFCC003792B3 /* DataRestAPIClass.swift in Sources */,
 				EBB68D341DEAD926003792B3 /* KeyChainAccessProxy.swift in Sources */,
 				EBB68D621DFE891A003792B3 /* ForgotPasswordViewController.swift in Sources */,
 				EBA6578C1E09189200F0DC84 /* JwtHandler.swift in Sources */,
 				EBB68D521DF6E7CB003792B3 /* SignupStructure.swift in Sources */,
 				EB1AA8DE1DD386CA00F0CED9 /* EntranceActivity.swift in Sources */,
+				EBA657A21E0FC73F00F0DC84 /* ArchiveEsetStructure.swift in Sources */,
 				EBA6579A1E0984F700F0DC84 /* EDInformationSectionTableViewCell.swift in Sources */,
+				EBA657A01E0FC1CB00F0DC84 /* ArchiveBasicTableViewCell.swift in Sources */,
 				EB762F541DCF99D10084CA1D /* AppDelegate.swift in Sources */,
 				EBB68D661DFEE414003792B3 /* AlertClass.swift in Sources */,
+				EBA657A41E0FE7A400F0DC84 /* ArchiveAdvanceTableViewCell.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

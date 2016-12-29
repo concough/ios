@@ -19,6 +19,7 @@ class UrlMakerSingleton {
     private var _jauth_class_name: String!
     private var _auth_class_name: String!
     private var _profile_class_name: String!
+    private var _archive_class_name: String!
     
     static let sharedInstance = UrlMakerSingleton()
     
@@ -33,6 +34,7 @@ class UrlMakerSingleton {
         self._jauth_class_name = JAUTH_CLASS_NAME
         self._auth_class_name = AUTH_CLASS_NAME
         self._profile_class_name = PROFILE_CLASS_NAME
+        self._archive_class_name = ARCHIVE_CLASS_NAME
     }
     
     internal func mediaUrlFor(type: String, mediaId: AnyObject) -> String? {
@@ -160,4 +162,53 @@ class UrlMakerSingleton {
         }
         return fullPath
     }
+    
+    internal func archiveEntranceTypesUrl() -> String? {
+        var fullPath: String?
+        let functionName = "entrance/types"
+        
+        if OAUTH_METHOD == "jwt" {
+            fullPath = "\(self._base_url)\(self._api_version)/\(self._jwt_prefix)/\(self._archive_class_name)/\(functionName)/"
+        } else if OAUTH_METHOD == "oauth" {
+            fullPath = "\(self._base_url)\(self._api_version)/\(self._archive_class_name)/\(functionName)/"
+        }
+        return fullPath
+    }
+
+    internal func archiveEntranceGroupsUrl(etypeId etypeId: Int) -> String? {
+        var fullPath: String?
+        let functionName = "entrance/groups/\(etypeId)"
+        
+        if OAUTH_METHOD == "jwt" {
+            fullPath = "\(self._base_url)\(self._api_version)/\(self._jwt_prefix)/\(self._archive_class_name)/\(functionName)/"
+        } else if OAUTH_METHOD == "oauth" {
+            fullPath = "\(self._base_url)\(self._api_version)/\(self._archive_class_name)/\(functionName)/"
+        }
+        return fullPath
+    }
+    
+    internal func archiveEntranceSetsUrl(egroupId egroupId: Int) -> String? {
+        var fullPath: String?
+        let functionName = "entrance/sets/\(egroupId)"
+        
+        if OAUTH_METHOD == "jwt" {
+            fullPath = "\(self._base_url)\(self._api_version)/\(self._jwt_prefix)/\(self._archive_class_name)/\(functionName)/"
+        } else if OAUTH_METHOD == "oauth" {
+            fullPath = "\(self._base_url)\(self._api_version)/\(self._archive_class_name)/\(functionName)/"
+        }
+        return fullPath
+    }
+
+    internal func archiveEntrancesUrl(esetId esetId: Int) -> String? {
+        var fullPath: String?
+        let functionName = "entrance/\(esetId)"
+        
+        if OAUTH_METHOD == "jwt" {
+            fullPath = "\(self._base_url)\(self._api_version)/\(self._jwt_prefix)/\(self._archive_class_name)/\(functionName)/"
+        } else if OAUTH_METHOD == "oauth" {
+            fullPath = "\(self._base_url)\(self._api_version)/\(self._archive_class_name)/\(functionName)/"
+        }
+        return fullPath
+    }
+    
 }

@@ -211,6 +211,11 @@ class HomeTableViewController: UITableViewController {
                 }
             }
         }, failure: { (error) in
+            NSOperationQueue.mainQueue().addOperationWithBlock {
+                self.refreshControl?.endRefreshing()
+                UIApplication.sharedApplication().networkActivityIndicatorVisible = false
+            }
+            
             if let err = error {
                 switch err {
                 case .NoInternetAccess:
@@ -218,6 +223,12 @@ class HomeTableViewController: UITableViewController {
                         NSOperationQueue.mainQueue().addOperationWithBlock({ 
                             self.loadFeeds(next: next)
                         })
+                    })
+                case .HostUnreachable:
+                    AlertClass.showSimpleErrorMessage(viewController: self, messageType: "NetworkError", messageSubType: err.rawValue, completion: {
+                            NSOperationQueue.mainQueue().addOperationWithBlock({
+                                self.refreshControl?.endRefreshing()
+                            })
                     })
                 default:
                     break
@@ -232,5 +243,10 @@ class HomeTableViewController: UITableViewController {
                 vc.entranceActivity = self.activityList[self.selectedActivityIndex]
             }
         }
+    }
+    
+    // MARK: - Unwind Segue Handlers
+    @IBAction func unwindArchiveViewController(segue: UIStoryboardSegue) {
+        print("Unwind: ArchiveViewController")
     }
 }

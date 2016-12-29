@@ -94,6 +94,9 @@ class AlertClass {
             case "NoInternetAccess":
                 title = "خطای اینترنت"
                 message = "لطفا اینترنت خود را فعال و مجددا سعی نمایید"
+            case "HostUnreachable":
+                title = "خطای اینترنت"
+                message = "در حال حاضر کنکوق پاسخگو نمی باشد. لطفا لحظاتی دیگر سعی نمایید."
             default:
                 showMessage = false
             }

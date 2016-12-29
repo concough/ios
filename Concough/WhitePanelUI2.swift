@@ -8,19 +8,16 @@
 
 import UIKit
 
-class GrayPanelUI: UIView {
+class WhitePanelUI2: UIView {
 
     override func awakeFromNib() {
-        layer.cornerRadius = 5
         //layer.masksToBounds = true
-        layer.borderColor = UIColor(white: 0.95, alpha: 1).CGColor
+        layer.borderColor = UIColor(white: 0.90, alpha: 1).CGColor
         layer.borderWidth = 1.0
         
-        layer.shadowColor = UIColor(white: 0.95, alpha: 1).CGColor
-        layer.shadowOpacity = 0.8
-        layer.shadowRadius = 2.0
+        layer.shadowColor = UIColor(white: 0.9, alpha: 1).CGColor
+        layer.shadowOpacity = 0.9
+        layer.shadowRadius = 1.0
         layer.shadowOffset = CGSizeMake(0.0, 0.0)
-        
     }
-
 }
