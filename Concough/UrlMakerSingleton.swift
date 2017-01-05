@@ -20,6 +20,10 @@ class UrlMakerSingleton {
     private var _auth_class_name: String!
     private var _profile_class_name: String!
     private var _archive_class_name: String!
+    private var _entrance_class_name: String!
+    private var _purchased_class_name: String!
+    private var _product_class_name: String!
+    private var _basket_class_name: String!
     
     static let sharedInstance = UrlMakerSingleton()
     
@@ -35,6 +39,10 @@ class UrlMakerSingleton {
         self._auth_class_name = AUTH_CLASS_NAME
         self._profile_class_name = PROFILE_CLASS_NAME
         self._archive_class_name = ARCHIVE_CLASS_NAME
+        self._entrance_class_name = ENTRANCE_CLASS_NAME
+        self._purchased_class_name = PURCHASED_CLASS_NAME
+        self._product_class_name = PRODUCT_CLASS_NAME
+        self._basket_class_name = BASKET_CLASS_NAME
     }
     
     internal func mediaUrlFor(type: String, mediaId: AnyObject) -> String? {
@@ -211,4 +219,83 @@ class UrlMakerSingleton {
         return fullPath
     }
     
+    internal func getEnranceUrl(uniqueId uniqueId: String) -> String? {
+        var fullPath: String?
+        let functionName = "\(uniqueId)"
+        
+        if OAUTH_METHOD == "jwt" {
+            fullPath = "\(self._base_url)\(self._api_version)/\(self._jwt_prefix)/\(self._entrance_class_name)/\(functionName)/"
+        } else if OAUTH_METHOD == "oauth" {
+            fullPath = "\(self._base_url)\(self._api_version)/\(self._entrance_class_name)/\(functionName)/"
+        }
+        return fullPath        
+    }
+    
+    private func getPurchasedUrl(functionName functionName: String) -> String? {
+        var fullPath: String?
+        
+        if OAUTH_METHOD == "jwt" {
+            fullPath = "\(self._base_url)\(self._api_version)/\(self._jwt_prefix)/\(self._purchased_class_name)/\(functionName)/"
+        } else if OAUTH_METHOD == "oauth" {
+            fullPath = "\(self._base_url)\(self._api_version)/\(self._purchased_class_name)/\(functionName)/"
+        }
+        return fullPath
+    }
+    
+    internal func getPurchasedForEntranceUrl(uniqueId uniqueId: String) -> String? {
+        let functionName = "entrance/\(uniqueId)"
+        return self.getPurchasedUrl(functionName: functionName)
+    }
+
+    private func getProductUrl(functionName functionName: String) -> String? {
+        var fullPath: String?
+        
+        if OAUTH_METHOD == "jwt" {
+            fullPath = "\(self._base_url)\(self._api_version)/\(self._jwt_prefix)/\(self._product_class_name)/\(functionName)/"
+        } else if OAUTH_METHOD == "oauth" {
+            fullPath = "\(self._base_url)\(self._api_version)/\(self._product_class_name)/\(functionName)/"
+        }
+        return fullPath        
+    }
+    
+    internal func getProductDataForEntranceUrl(uniqueId uniqueId: String) -> String? {
+        let functionName = "entrance/\(uniqueId)/sale"
+        return self.getProductUrl(functionName: functionName)
+    }
+
+    internal func getProductStatForEntranceUrl(uniqueId uniqueId: String) -> String? {
+        let functionName = "entrance/\(uniqueId)/stat"
+        return self.getProductUrl(functionName: functionName)
+    }
+    
+    private func getBasketUrl(functionName functionName: String) -> String? {
+        var fullPath: String?
+        
+        if OAUTH_METHOD == "jwt" {
+            fullPath = "\(self._base_url)\(self._api_version)/\(self._jwt_prefix)/\(self._basket_class_name)/\(functionName)/"
+        } else if OAUTH_METHOD == "oauth" {
+            fullPath = "\(self._base_url)\(self._api_version)/\(self._basket_class_name)/\(functionName)/"
+        }
+        return fullPath
+    }
+    
+    internal func getCreateBasketUrl() -> String? {
+        let functionName = "create"
+        return self.getBasketUrl(functionName: functionName)
+    }
+    
+    internal func getAddEntranceToBasketUrl(basketId basketId: String) -> String? {
+        let functionName = "\(basketId)/add"
+        return self.getBasketUrl(functionName: functionName)
+    }
+    
+    internal func getRemoveSaleFormBasketUrl(basketId basketId: String, saleId: Int) -> String? {
+        let functionName = "\(basketId)/sale/\(saleId)"
+        return self.getBasketUrl(functionName: functionName)
+    }
+
+    internal func getLoadBasketItemsUrl() -> String? {
+        let functionName = "list"
+        return self.getBasketUrl(functionName: functionName)
+    }
 }

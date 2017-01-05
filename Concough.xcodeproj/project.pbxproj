@@ -36,6 +36,16 @@
 		EBA657AE1E114DF600F0DC84 /* AEDBasicTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = EBA657AD1E114DF600F0DC84 /* AEDBasicTableViewCell.swift */; };
 		EBA657B01E143EF300F0DC84 /* WhitePanelUI2.swift in Sources */ = {isa = PBXBuildFile; fileRef = EBA657AF1E143EF300F0DC84 /* WhitePanelUI2.swift */; };
 		EBA657B21E14DA0900F0DC84 /* AEDAdvanceTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = EBA657B11E14DA0900F0DC84 /* AEDAdvanceTableViewCell.swift */; };
+		EBA657CD1E1A909F00F0DC84 /* EntranceRestAPIClass.swift in Sources */ = {isa = PBXBuildFile; fileRef = EBA657CC1E1A909F00F0DC84 /* EntranceRestAPIClass.swift */; };
+		EBA657CF1E1B787000F0DC84 /* EntranceVCStateEnum.swift in Sources */ = {isa = PBXBuildFile; fileRef = EBA657CE1E1B787000F0DC84 /* EntranceVCStateEnum.swift */; };
+		EBA657D11E1B79E000F0DC84 /* EntranceStructure.swift in Sources */ = {isa = PBXBuildFile; fileRef = EBA657D01E1B79E000F0DC84 /* EntranceStructure.swift */; };
+		EBA657D31E1B96A300F0DC84 /* PurchasedRestAPIClass.swift in Sources */ = {isa = PBXBuildFile; fileRef = EBA657D21E1B96A300F0DC84 /* PurchasedRestAPIClass.swift */; };
+		EBA657D51E1BA40900F0DC84 /* ProductRestAPIClass.swift in Sources */ = {isa = PBXBuildFile; fileRef = EBA657D41E1BA40900F0DC84 /* ProductRestAPIClass.swift */; };
+		EBA657D71E1BB0E900F0DC84 /* EntranceStatStructure.swift in Sources */ = {isa = PBXBuildFile; fileRef = EBA657D61E1BB0E900F0DC84 /* EntranceStatStructure.swift */; };
+		EBA657D91E1BB4A600F0DC84 /* EntranceSaleStructure.swift in Sources */ = {isa = PBXBuildFile; fileRef = EBA657D81E1BB4A600F0DC84 /* EntranceSaleStructure.swift */; };
+		EBA657DB1E1BC2A100F0DC84 /* EDSaleSectionTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = EBA657DA1E1BC2A100F0DC84 /* EDSaleSectionTableViewCell.swift */; };
+		EBA657DD1E1BF31700F0DC84 /* BasketSingleton.swift in Sources */ = {isa = PBXBuildFile; fileRef = EBA657DC1E1BF31700F0DC84 /* BasketSingleton.swift */; };
+		EBA657E11E1CC59700F0DC84 /* BasketRestAPIClass.swift in Sources */ = {isa = PBXBuildFile; fileRef = EBA657E01E1CC59700F0DC84 /* BasketRestAPIClass.swift */; };
 		EBB68D001DE48022003792B3 /* Constants.swift in Sources */ = {isa = PBXBuildFile; fileRef = EBB68CFF1DE48022003792B3 /* Constants.swift */; };
 		EBB68D051DE488D9003792B3 /* WhitePanelUI.swift in Sources */ = {isa = PBXBuildFile; fileRef = EBB68D041DE488D9003792B3 /* WhitePanelUI.swift */; };
 		EBB68D101DE585E5003792B3 /* IRANSansMobile_Bold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = EBB68D0B1DE585E5003792B3 /* IRANSansMobile_Bold.ttf */; };
@@ -135,6 +145,16 @@
 		EBA657AD1E114DF600F0DC84 /* AEDBasicTableViewCell.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AEDBasicTableViewCell.swift; sourceTree = "<group>"; };
 		EBA657AF1E143EF300F0DC84 /* WhitePanelUI2.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = WhitePanelUI2.swift; sourceTree = "<group>"; };
 		EBA657B11E14DA0900F0DC84 /* AEDAdvanceTableViewCell.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AEDAdvanceTableViewCell.swift; sourceTree = "<group>"; };
+		EBA657CC1E1A909F00F0DC84 /* EntranceRestAPIClass.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = EntranceRestAPIClass.swift; sourceTree = "<group>"; };
+		EBA657CE1E1B787000F0DC84 /* EntranceVCStateEnum.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = EntranceVCStateEnum.swift; sourceTree = "<group>"; };
+		EBA657D01E1B79E000F0DC84 /* EntranceStructure.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = EntranceStructure.swift; sourceTree = "<group>"; };
+		EBA657D21E1B96A300F0DC84 /* PurchasedRestAPIClass.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PurchasedRestAPIClass.swift; sourceTree = "<group>"; };
+		EBA657D41E1BA40900F0DC84 /* ProductRestAPIClass.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ProductRestAPIClass.swift; sourceTree = "<group>"; };
+		EBA657D61E1BB0E900F0DC84 /* EntranceStatStructure.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = EntranceStatStructure.swift; sourceTree = "<group>"; };
+		EBA657D81E1BB4A600F0DC84 /* EntranceSaleStructure.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = EntranceSaleStructure.swift; sourceTree = "<group>"; };
+		EBA657DA1E1BC2A100F0DC84 /* EDSaleSectionTableViewCell.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = EDSaleSectionTableViewCell.swift; sourceTree = "<group>"; };
+		EBA657DC1E1BF31700F0DC84 /* BasketSingleton.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = BasketSingleton.swift; sourceTree = "<group>"; };
+		EBA657E01E1CC59700F0DC84 /* BasketRestAPIClass.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = BasketRestAPIClass.swift; sourceTree = "<group>"; };
 		EBB68CFF1DE48022003792B3 /* Constants.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Constants.swift; sourceTree = "<group>"; };
 		EBB68D041DE488D9003792B3 /* WhitePanelUI.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = WhitePanelUI.swift; sourceTree = "<group>"; };
 		EBB68D0B1DE585E5003792B3 /* IRANSansMobile_Bold.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = IRANSansMobile_Bold.ttf; sourceTree = "<group>"; };
@@ -217,6 +237,10 @@
 				EBA657A11E0FC73F00F0DC84 /* ArchiveEsetStructure.swift */,
 				EBA657A71E111BAF00F0DC84 /* ArchiveEsetDetailStructure.swift */,
 				EBA657AB1E11389200F0DC84 /* ArchiveEntranceStructure.swift */,
+				EBA657CE1E1B787000F0DC84 /* EntranceVCStateEnum.swift */,
+				EBA657D01E1B79E000F0DC84 /* EntranceStructure.swift */,
+				EBA657D61E1BB0E900F0DC84 /* EntranceStatStructure.swift */,
+				EBA657D81E1BB4A600F0DC84 /* EntranceSaleStructure.swift */,
 			);
 			name = Structures;
 			sourceTree = "<group>";
@@ -283,6 +307,7 @@
 				EBA657A91E1133B700F0DC84 /* AEDHeaderTableViewCell.swift */,
 				EBA657AD1E114DF600F0DC84 /* AEDBasicTableViewCell.swift */,
 				EBA657B11E14DA0900F0DC84 /* AEDAdvanceTableViewCell.swift */,
+				EBA657DA1E1BC2A100F0DC84 /* EDSaleSectionTableViewCell.swift */,
 			);
 			name = Views;
 			sourceTree = "<group>";
@@ -363,6 +388,7 @@
 				EBB68D301DEAC7B6003792B3 /* TokenHandlerSingleton.swift */,
 				EBB68D491DF327EE003792B3 /* MediaRequestRepositorySingleton.swift */,
 				EBB68D551DF7EED4003792B3 /* UserDefaultsSingleton.swift */,
+				EBA657DC1E1BF31700F0DC84 /* BasketSingleton.swift */,
 			);
 			name = Singletons;
 			sourceTree = "<group>";
@@ -375,6 +401,10 @@
 				EBB68D4D1DF41EE7003792B3 /* AuthRestAPIClass.swift */,
 				EBB68D5F1DFDA00C003792B3 /* ProfileRestAPIClass.swift */,
 				EBA6579D1E0AC06500F0DC84 /* ArchiveRestAPIClass.swift */,
+				EBA657CC1E1A909F00F0DC84 /* EntranceRestAPIClass.swift */,
+				EBA657D21E1B96A300F0DC84 /* PurchasedRestAPIClass.swift */,
+				EBA657D41E1BA40900F0DC84 /* ProductRestAPIClass.swift */,
+				EBA657E01E1CC59700F0DC84 /* BasketRestAPIClass.swift */,
 			);
 			name = Rest;
 			sourceTree = "<group>";
@@ -590,9 +620,12 @@
 				EBB68D461DF31A13003792B3 /* RequestRepositoryClass.swift in Sources */,
 				EBFF8AAB1DD4C98C0002D03C /* EntranceUpdateTableViewCell.swift in Sources */,
 				EBB68D1F1DE5D7AA003792B3 /* MediaCacheSingleton.swift in Sources */,
+				EBA657DD1E1BF31700F0DC84 /* BasketSingleton.swift in Sources */,
 				EBB68D051DE488D9003792B3 /* WhitePanelUI.swift in Sources */,
 				EBB68D4E1DF41EE7003792B3 /* AuthRestAPIClass.swift in Sources */,
+				EBA657CD1E1A909F00F0DC84 /* EntranceRestAPIClass.swift in Sources */,
 				EBA657B01E143EF300F0DC84 /* WhitePanelUI2.swift in Sources */,
+				EBA657DB1E1BC2A100F0DC84 /* EDSaleSectionTableViewCell.swift in Sources */,
 				EBB68D001DE48022003792B3 /* Constants.swift in Sources */,
 				EBB68D641DFE9F7B003792B3 /* ResetPasswordViewController.swift in Sources */,
 				EBB68D211DE6CD01003792B3 /* UrlMakerSingleton.swift in Sources */,
@@ -600,6 +633,7 @@
 				EBB68D561DF7EED4003792B3 /* UserDefaultsSingleton.swift in Sources */,
 				EBB68D3A1DEC1015003792B3 /* SignUpViewController.swift in Sources */,
 				EBB68D3F1DED6018003792B3 /* HttpStatusType.swift in Sources */,
+				EBA657D71E1BB0E900F0DC84 /* EntranceStatStructure.swift in Sources */,
 				EBB68D481DF3203C003792B3 /* CriticalSectionHelpers.swift in Sources */,
 				EBA657921E09506D00F0DC84 /* EDInitialSectionTableViewCell.swift in Sources */,
 				EBB68D261DE6DB47003792B3 /* FormatterSingleton.swift in Sources */,
@@ -608,6 +642,7 @@
 				EBA657A81E111BAF00F0DC84 /* ArchiveEsetDetailStructure.swift in Sources */,
 				EBB68D581DFC386E003792B3 /* SignupMoreInfoViewController1.swift in Sources */,
 				EBB68D361DEBF3F0003792B3 /* StartupViewController.swift in Sources */,
+				EBA657E11E1CC59700F0DC84 /* BasketRestAPIClass.swift in Sources */,
 				EBFF8AA91DD4BF010002D03C /* EntranceCreateTableViewCell.swift in Sources */,
 				EBA657901E09500E00F0DC84 /* EntranceDetailTableViewController.swift in Sources */,
 				EBB68D501DF6CE02003792B3 /* SubmitSignupCodeViewController.swift in Sources */,
@@ -615,6 +650,7 @@
 				EBB68D5E1DFD7CB3003792B3 /* SignupMoreInfoViewController3.swift in Sources */,
 				EBA657881E07E3FE00F0DC84 /* JwtAdapter.swift in Sources */,
 				EBB68D441DF312F6003792B3 /* ObjectiveCHelpers.swift in Sources */,
+				EBA657D51E1BA40900F0DC84 /* ProductRestAPIClass.swift in Sources */,
 				EBB68D4C1DF40C04003792B3 /* ValidatorExtensions.swift in Sources */,
 				EBB68D4A1DF327EE003792B3 /* MediaRequestRepositorySingleton.swift in Sources */,
 				EBA6579C1E0AAE5700F0DC84 /* ArchiveTableViewController.swift in Sources */,
@@ -630,8 +666,12 @@
 				EBA657AA1E1133B700F0DC84 /* AEDHeaderTableViewCell.swift in Sources */,
 				EBB68D281DE6FFCC003792B3 /* DataRestAPIClass.swift in Sources */,
 				EBB68D341DEAD926003792B3 /* KeyChainAccessProxy.swift in Sources */,
+				EBA657D31E1B96A300F0DC84 /* PurchasedRestAPIClass.swift in Sources */,
 				EBB68D621DFE891A003792B3 /* ForgotPasswordViewController.swift in Sources */,
 				EBA6578C1E09189200F0DC84 /* JwtHandler.swift in Sources */,
+				EBA657CF1E1B787000F0DC84 /* EntranceVCStateEnum.swift in Sources */,
+				EBA657D91E1BB4A600F0DC84 /* EntranceSaleStructure.swift in Sources */,
+				EBA657D11E1B79E000F0DC84 /* EntranceStructure.swift in Sources */,
 				EBB68D521DF6E7CB003792B3 /* SignupStructure.swift in Sources */,
 				EB1AA8DE1DD386CA00F0CED9 /* EntranceActivity.swift in Sources */,
 				EBA657A21E0FC73F00F0DC84 /* ArchiveEsetStructure.swift in Sources */,

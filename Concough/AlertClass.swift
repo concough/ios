@@ -54,6 +54,22 @@ class AlertClass {
             default:
                 showMessage = false
             }
+        case "EntranceResult":
+            switch messageSubType {
+            case "EntranceNotExist":
+                title = "خطا"
+                message = "کنکور درخواستی موجود نمی باشد"
+            default:
+                showMessage = false
+            }
+        case "BasketResult":
+            switch messageSubType {
+            case "SaleNotExist":
+                title = "خطا"
+                message = "چنین خریدی موجود نیست"                
+            default:
+                showMessage = false
+            }
         case "AuthProfile":
             switch messageSubType {
             case "ExistUsername":

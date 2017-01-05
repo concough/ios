@@ -162,10 +162,25 @@ class StartupViewController: UIViewController {
         })
     }
     
+    private func loadBasket() {
+        BasketSingleton.sharedInstance.loadBasketItems(viewController: self) { (count) in
+            // basket items loaded
+            print("basket items loaded: \(count)")
+        }
+    }
+    
     // MARK: - Navigation
 
     // In a storyboard-based application, you will often want to do a little preparation before navigation
+    override func shouldPerformSegueWithIdentifier(identifier: String, sender: AnyObject?) -> Bool {
+        return true
+    }
+    
     override func prepareForSegue(segue: UIStoryboardSegue, sender: AnyObject?) {
+        if segue.identifier == "HomeVCSegue" {
+            print("--> basket items load started")
+            self.loadBasket()
+        }
     }
     
     // MARK: - Unwind Segue Operations

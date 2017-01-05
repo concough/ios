@@ -15,5 +15,6 @@ struct ArchiveEntranceStructure {
     var extraData: JSON?
     var buyCount: Int?
     var lastPablished: NSDate?
+    var uniqueId: String?
 }
 

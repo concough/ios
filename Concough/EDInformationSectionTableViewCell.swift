@@ -35,18 +35,9 @@ class EDInformationSectionTableViewCell: UITableViewCell {
         //self.buttonLineView.hidden = !showButtonView
     }
 
-    internal func configureCell(data data: [(title: String, image: String)]) {
-        let booklet = data[1]
-        let time = data[2]
-        let year = data[0]
-        
-        self.bookletImageView.image = UIImage(named: booklet.image)
-        self.bookletLable.text = booklet.title
-        
-        self.timeImageView.image = UIImage(named: time.image)
-        self.timeLable.text = time.title
-        
-        self.yearImageView.image = UIImage(named: year.image)
-        self.yearLable.text = year.title
+    internal func configureCell(bookletCount booklet: Int, duration: Int, year: Int) {
+        self.bookletLable.text = FormatterSingleton.sharedInstance.NumberFormatter.stringFromNumber(booklet)! + " دفترچه"
+        self.timeLable.text = FormatterSingleton.sharedInstance.NumberFormatter.stringFromNumber(duration)! + " دقیقه"
+        self.yearLable.text = FormatterSingleton.sharedInstance.NumberFormatter.stringFromNumber(year)!
     }
 }

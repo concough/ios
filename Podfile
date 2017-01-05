@@ -11,4 +11,6 @@ target 'Concough' do
     pod 'BTNavigationDropdownMenu'
     #pod 'CarbonKit'
     pod 'EHHorizontalSelectionView'
+    pod 'DZNEmptyDataSet'
+    pod 'BBBadgeBarButtonItem'
 end

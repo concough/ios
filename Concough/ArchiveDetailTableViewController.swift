@@ -14,6 +14,8 @@ class ArchiveDetailTableViewController: UITableViewController {
     internal var esetDetail: ArchiveEsetDetailStructure!
     
     private var entrances: [ArchiveEntranceStructure] = []
+    private var queue: NSOperationQueue!
+    private var selectedIndex = -1
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -25,7 +27,20 @@ class ArchiveDetailTableViewController: UITableViewController {
         // self.navigationItem.rightBarButtonItem = self.editButtonItem()
         
         self.title = self.esetDetail.entranceTypeTitle
-        self.getEntrances()
+        
+        // uitableview refresh control setup
+        if self.refreshControl == nil {
+            self.refreshControl = UIRefreshControl()
+            self.refreshControl?.attributedTitle = NSAttributedString(string: "برای به روز رسانی به پایین بکشید")
+        }
+        self.refreshControl?.addTarget(self, action: #selector(self.refreshTableView(_:)), forControlEvents: .ValueChanged)
+
+        // configure queue and add operation of loading entrances to it
+        self.queue = NSOperationQueue()
+        let operation = NSBlockOperation() {
+            self.getEntrances()
+        }
+        queue.addOperation(operation)
     }
 
     override func didReceiveMemoryWarning() {
@@ -34,10 +49,25 @@ class ArchiveDetailTableViewController: UITableViewController {
     }
 
     // Functions
+    func refreshTableView(refreshControl_: UIRefreshControl) {
+        // refresh control triggered
+        let operation = NSBlockOperation() {
+            self.getEntrances()
+        }
+        
+        queue.addOperation(operation)
+    }
+    
     private func getEntrances() {
+        UIApplication.sharedApplication().networkActivityIndicatorVisible = true
         
         if let setId = self.esetDetail.entranceEset?.id {
             ArchiveRestAPIClass.getEntrances(entranceSetId: setId, completion: { (data, error) in
+                NSOperationQueue.mainQueue().addOperationWithBlock {
+                    self.refreshControl?.endRefreshing()
+                    UIApplication.sharedApplication().networkActivityIndicatorVisible = false
+                }
+
                 if error != HTTPErrorType.Success {
                     AlertClass.showSimpleErrorMessage(viewController: self, messageType: "HTTPError", messageSubType: (error?.toString())!, completion: nil)
                 } else {
@@ -47,7 +77,34 @@ class ArchiveDetailTableViewController: UITableViewController {
                             case "OK":
                                 // get record
                                 let record = localData["record"]
-                                print(record)
+                                
+                                
+                                var localArray: [ArchiveEntranceStructure] = []
+                                for (_, item) in record {
+                                    let organization_title = item["organization"]["title"].stringValue
+                                    let entrance_year = item["year"].intValue
+                                    let last_published_str = item["last_published"].stringValue
+                                    let unique_id = item["unique_key"].stringValue
+                                    let buy_count = 0
+                                    let extra_data = JSON(data: item["extra_data"].stringValue.dataUsingEncoding(NSUTF8StringEncoding)!)
+                                    
+                                    print("\(extra_data)")
+                                    
+                                    var entrance = ArchiveEntranceStructure()
+                                    entrance.year = entrance_year
+                                    entrance.organization = organization_title
+                                    entrance.extraData = extra_data
+                                    entrance.buyCount = buy_count
+                                    entrance.lastPablished = FormatterSingleton.sharedInstance.UTCDateFormatter.dateFromString(last_published_str)
+                                    entrance.uniqueId = unique_id
+                                    
+                                    localArray.append(entrance)
+                                }
+                                
+                                self.entrances = localArray
+                                NSOperationQueue.mainQueue().addOperationWithBlock({ 
+                                    self.tableView.reloadData()
+                                })
                                 
                             case "Error":
                                 if let errorType = localData["error_type"].string {
@@ -65,7 +122,12 @@ class ArchiveDetailTableViewController: UITableViewController {
                         }
                     }
                 }
-            }) { (error) in
+            }, failure:  { (error) in
+                NSOperationQueue.mainQueue().addOperationWithBlock {
+                    self.refreshControl?.endRefreshing()
+                    UIApplication.sharedApplication().networkActivityIndicatorVisible = false
+                }
+                
                 if let err = error {
                     switch err {
                     case .NoInternetAccess:
@@ -78,9 +140,10 @@ class ArchiveDetailTableViewController: UITableViewController {
                         AlertClass.showSimpleErrorMessage(viewController: self, messageType: "NetworkError", messageSubType: err.rawValue, completion: nil)
                     }
                 }
-            }
+            })
         }
-        
+
+        /*
         let dict = "{\"زبان\": \"انگلیسی\", \"دین\": \"اسلام\"}"
         var e = ArchiveEntranceStructure()
         e.buyCount = 32
@@ -89,33 +152,9 @@ class ArchiveDetailTableViewController: UITableViewController {
         e.organization = "دولتی"
         e.year = 1394
         
-        var e2 = ArchiveEntranceStructure()
-        e2.buyCount = 45
-        e2.extraData = JSON(data: dict.dataUsingEncoding(NSUTF8StringEncoding)!)
-        e2.lastPablished = NSDate()
-        e2.organization = "آزاد"
-        e2.year = 1393
-
-        var e3 = ArchiveEntranceStructure()
-        e3.buyCount = 1234
-        e3.extraData = JSON(data: dict.dataUsingEncoding(NSUTF8StringEncoding)!)
-        e3.lastPablished = NSDate()
-        e3.organization = "دولتی"
-        e3.year = 1390
-
-        var e4 = ArchiveEntranceStructure()
-        e4.buyCount = 8
-        e4.extraData = JSON(data: dict.dataUsingEncoding(NSUTF8StringEncoding)!)
-        e4.lastPablished = NSDate()
-        e4.organization = "آزاد"
-        e4.year = 1390
-        
         self.entrances.append(e)
-        self.entrances.append(e2)
-        self.entrances.append(e3)
-        self.entrances.append(e4)
-        
         self.tableView.reloadData()
+ */
     }
     
     // MARK: - Table view data source
@@ -147,7 +186,7 @@ class ArchiveDetailTableViewController: UITableViewController {
         case 0:
             return 110.0
         case 1:
-            return 70.0
+            return 80.0
         default:
             break
         }
@@ -190,5 +229,44 @@ class ArchiveDetailTableViewController: UITableViewController {
         return UITableViewCell()
     }
     
+    override func tableView(tableView: UITableView, didSelectRowAtIndexPath indexPath: NSIndexPath) {
+        
+        switch indexPath.section {
+        case 1:
+            // perform segue
+            self.selectedIndex = indexPath.row
+            NSOperationQueue.mainQueue().addOperationWithBlock({ 
+                self.performSegueWithIdentifier("EntranceDetailVCSegue", sender: self)
+            })
+            
+        case 0:
+            fallthrough
+        default:
+            break
+        }
+    }
+    
     // MARK: - Navigation
+    override func shouldPerformSegueWithIdentifier(identifier: String, sender: AnyObject?) -> Bool {
+        if identifier == "EntranceDetailVCSegue" {
+            if self.selectedIndex < 0 {
+                return false
+            }
+        }
+        return true
+    }
+    
+    override func prepareForSegue(segue: UIStoryboardSegue, sender: AnyObject?) {
+        if segue.identifier == "EntranceDetailVCSegue" {
+            if let vc = segue.destinationViewController as? EntranceDetailTableViewController {
+                let entrance = self.entrances[self.selectedIndex]
+                let uniqueId = entrance.uniqueId!
+                
+                vc.entranceUniqueId = uniqueId
+                
+                self.navigationItem.backBarButtonItem = UIBarButtonItem(title: "آرشیو", style: .Plain, target: self, action: nil)
+                
+            }
+        }
+    }
 }

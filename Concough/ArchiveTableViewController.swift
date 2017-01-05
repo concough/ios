@@ -11,21 +11,28 @@ import SwiftyJSON
 import BTNavigationDropdownMenu
 //import CarbonKit
 import EHHorizontalSelectionView
+import DZNEmptyDataSet
 
-class ArchiveTableViewController: UITableViewController, EHHorizontalSelectionViewProtocol {
+class ArchiveTableViewController: UITableViewController, EHHorizontalSelectionViewProtocol, DZNEmptyDataSetSource, DZNEmptyDataSetDelegate  {
 
     //@IBOutlet weak var hSelView: EHHorizontalSelectionView!
     private var hSelView: EHHorizontalSelectionView!
     private var menuView: BTNavigationDropdownMenu?
+    private var queue: NSOperationQueue!
     
     private var typeTitle: String?
     private var selectedTableIndex: Int = -1
+    private var selectedEntranceTypeIndex: Int = -1
+    private var selectedEntranceGroupIndex: Int = -1
     
     private var types: [String: Int]! = [:]
     private var typesString: [String]! = []
     private var groupsString: [String]! = []
     private var groups: [String: Int]! = [:]
     private var sets: [ArchiveEsetStructure]! = []
+    
+    private var groupsRepo: [Int: [String: Int]] = [:]
+    private var setsRepo: [String: [ArchiveEsetStructure]] = [:]
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -37,10 +44,20 @@ class ArchiveTableViewController: UITableViewController, EHHorizontalSelectionVi
         // self.navigationItem.rightBarButtonItem = self.editButtonItem()
 
         // Initialization
-        self.tableView.tableFooterView = UIView()
+        self.queue = NSOperationQueue()
+        self.queue.maxConcurrentOperationCount = 1
         
+        self.tableView.tableFooterView = UIView()
         self.initializeHorizontalView()
-        self.getEntranceTypes()
+        
+        self.tableView.emptyDataSetSource = self
+        self.tableView.emptyDataSetDelegate = self
+        
+        // create operation and call it
+        let operation = NSBlockOperation(block: { 
+            self.getEntranceTypes()
+        })
+        self.queue.addOperation(operation)
     }
     
     override func didReceiveMemoryWarning() {
@@ -70,7 +87,12 @@ class ArchiveTableViewController: UITableViewController, EHHorizontalSelectionVi
     
     private func menuItemSelected(indexPath indexPath: Int) {
         self.typeTitle = self.typesString[indexPath]
-        self.getEntranceGroups(entranceTypeId: self.types[self.typesString[indexPath]]!)
+        self.selectedEntranceTypeIndex = self.types[self.typesString[indexPath]]!
+
+        let operation = NSBlockOperation(block: {
+            self.getEntranceGroups(entranceTypeId: self.types[self.typesString[indexPath]]!)
+        })
+        self.queue.addOperation(operation)
     }
     
     // EHHorizontalSelectionView methods
@@ -103,7 +125,12 @@ class ArchiveTableViewController: UITableViewController, EHHorizontalSelectionVi
     }
     
     func horizontalSelection(hSelView: EHHorizontalSelectionView, didSelectObjectAtIndex index: UInt) {
-        self.getEntranceSets(entranceGroupId: self.groups[self.groupsString[Int(index)]]!)
+        self.selectedEntranceGroupIndex = self.groups[self.groupsString[Int(index)]]!
+        
+        let operation = NSBlockOperation(block: {
+            self.getEntranceSets(entranceGroupId: self.groups[self.groupsString[Int(index)]]!)
+        })
+        self.queue.addOperation(operation)
     }
     
     private func getEntranceTypes() {
@@ -128,7 +155,12 @@ class ArchiveTableViewController: UITableViewController, EHHorizontalSelectionVi
                             self.configureMenu()
                             if self.types.count > 0 {
                                 self.typeTitle = self.typesString[0]
-                                self.getEntranceGroups(entranceTypeId: self.types[self.typesString[0]]!)
+                                self.selectedEntranceTypeIndex = self.types[self.typesString[0]]!
+                                
+                                let operation = NSBlockOperation(block: { 
+                                    self.getEntranceGroups(entranceTypeId: self.types[self.typesString[0]]!)
+                                })
+                                self.queue.addOperation(operation)
                             }
                             
                         case "Error":
@@ -153,9 +185,10 @@ class ArchiveTableViewController: UITableViewController, EHHorizontalSelectionVi
                 switch err {
                 case .NoInternetAccess:
                     AlertClass.showSimpleErrorMessage(viewController: self, messageType: "NetworkError", messageSubType: err.rawValue, completion: { 
-                        NSOperationQueue.mainQueue().addOperationWithBlock({ 
+                        let operation = NSBlockOperation(block: {
                             self.getEntranceTypes()
                         })
+                        self.queue.addOperation(operation)
                     })
                 case .HostUnreachable:
                     AlertClass.showSimpleErrorMessage(viewController: self, messageType: "NetworkError", messageSubType: err.rawValue, completion: { 
@@ -171,6 +204,25 @@ class ArchiveTableViewController: UITableViewController, EHHorizontalSelectionVi
     }
     
     private func getEntranceGroups(entranceTypeId etypeId: Int) {
+        if self.groupsRepo.keys.contains(etypeId) == true {
+            self.groups = self.groupsRepo[etypeId]
+            self.groupsString = self.groups.keys.reverse()
+            
+            // update horizontal Menu
+            NSOperationQueue.mainQueue().addOperationWithBlock({
+                self.hSelView?.reloadData()
+                
+                if self.groups.count > 0 {
+                    self.hSelView?.selectIndex(UInt(self.groupsString.count - 1))
+                    // get first item sets from server
+                    //self.getEntranceSets(entranceGroupId: self.groups[self.groupsString.last!]!)
+                }
+            })
+            
+            print("groups repo fetched: etype=\(etypeId)")
+            return
+        }
+        
         ArchiveRestAPIClass.getEntranceGroups(entranceTypeId: etypeId, completion: { (data, error) in
             if error != HTTPErrorType.Success {
                 AlertClass.showSimpleErrorMessage(viewController: self, messageType: "HTTPError", messageSubType: (error?.toString())!, completion: nil)
@@ -195,14 +247,15 @@ class ArchiveTableViewController: UITableViewController, EHHorizontalSelectionVi
                             self.groups = localGroups
                             self.groupsString = localGroupsString.reverse()
                             
+                            // make repo
+                            self.groupsRepo.updateValue(localGroups, forKey: etypeId)
+                            
                             // update horizontal Menu
                             NSOperationQueue.mainQueue().addOperationWithBlock({
                                 self.hSelView?.reloadData()
 
                                 if self.groups.count > 0 {
                                     self.hSelView?.selectIndex(UInt(self.groupsString.count - 1))
-                                    // get first item sets from server
-                                    //self.getEntranceSets(entranceGroupId: self.groups[self.groupsString.last!]!)
                                 }
                             })
                             
@@ -234,9 +287,10 @@ class ArchiveTableViewController: UITableViewController, EHHorizontalSelectionVi
                 switch err {
                 case .NoInternetAccess:
                     AlertClass.showSimpleErrorMessage(viewController: self, messageType: "NetworkError", messageSubType: err.rawValue, completion: {
-                        NSOperationQueue.mainQueue().addOperationWithBlock({
+                        let operation = NSBlockOperation(block: {
                             self.getEntranceGroups(entranceTypeId: etypeId)
                         })
+                        self.queue.addOperation(operation)
                     })
                 default:
                     AlertClass.showSimpleErrorMessage(viewController: self, messageType: "NetworkError", messageSubType: err.rawValue, completion: nil)
@@ -246,6 +300,18 @@ class ArchiveTableViewController: UITableViewController, EHHorizontalSelectionVi
     }
     
     private func getEntranceSets(entranceGroupId groupId: Int) {
+        if self.setsRepo.keys.contains("\(self.selectedEntranceTypeIndex):\(groupId)") {
+            self.sets = self.setsRepo["\(self.selectedEntranceTypeIndex):\(groupId)"]
+            
+            NSOperationQueue.mainQueue().addOperationWithBlock({
+                self.tableView.reloadData()
+            })
+            
+            print("sets repo fetched: group=\(self.selectedEntranceTypeIndex):\(groupId)")
+            
+            return
+        }
+        
         ArchiveRestAPIClass.getEntranceSets(entranceGroupId: groupId, completion: { (data, error) in
             if error != HTTPErrorType.Success {
                 AlertClass.showSimpleErrorMessage(viewController: self, messageType: "HTTPError", messageSubType: (error?.toString())!, completion: nil)
@@ -277,6 +343,8 @@ class ArchiveTableViewController: UITableViewController, EHHorizontalSelectionVi
                                 localSets.append(archiveSet)
                             }
                             self.sets = localSets
+                            self.setsRepo.updateValue(self.sets, forKey: "\(self.selectedEntranceTypeIndex):\(groupId)")
+                            
                             NSOperationQueue.mainQueue().addOperationWithBlock({ 
                                 self.tableView.reloadData()
                             })
@@ -305,9 +373,10 @@ class ArchiveTableViewController: UITableViewController, EHHorizontalSelectionVi
                 switch err {
                 case .NoInternetAccess:
                     AlertClass.showSimpleErrorMessage(viewController: self, messageType: "NetworkError", messageSubType: err.rawValue, completion: {
-                        NSOperationQueue.mainQueue().addOperationWithBlock({
+                        let operation = NSBlockOperation(block: {
                             self.getEntranceSets(entranceGroupId: groupId)
                         })
+                        self.queue.addOperation(operation)
                     })
                 default:
                     AlertClass.showSimpleErrorMessage(viewController: self, messageType: "NetworkError", messageSubType: err.rawValue, completion: nil)
@@ -369,6 +438,19 @@ class ArchiveTableViewController: UITableViewController, EHHorizontalSelectionVi
                 })
             }
         }
+    }
+    
+    // MARK: - DZN
+    func titleForEmptyDataSet(scrollView: UIScrollView!) -> NSAttributedString! {
+        let title = "مجموعه ای ثبت نشده است."
+        let attributes = [NSFontAttributeName: UIFont(name: "IRANYekanMobile-Bold", size: 14)!,
+                          NSForegroundColorAttributeName: UIColor.darkGrayColor()]
+        
+        return NSAttributedString(string: title, attributes: attributes)
+    }
+    
+    func backgroundColorForEmptyDataSet(scrollView: UIScrollView!) -> UIColor! {
+        return UIColor.whiteColor()
     }
     
     // MARK: - Navigation

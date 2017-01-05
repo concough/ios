@@ -9,8 +9,9 @@
 import UIKit
 import Alamofire
 import SwiftyJSON
+import DZNEmptyDataSet
 
-class HomeTableViewController: UITableViewController {
+class HomeTableViewController: UITableViewController, DZNEmptyDataSetDelegate, DZNEmptyDataSetSource {
 
     var moreFeedExist = true
     var activityList = [ConcoughActivity]()
@@ -28,6 +29,11 @@ class HomeTableViewController: UITableViewController {
         
         self.localImageStorage.updateValue(Dictionary<Int, NSData>(), forKey: "eset")
         self.queue.maxConcurrentOperationCount = 1  // make serial queue
+        
+        // tableView Initilization
+        self.tableView.emptyDataSetDelegate = self
+        self.tableView.emptyDataSetSource = self
+        self.tableView.tableFooterView = UIView()
         
         // uitableview refresh control setup
         if self.refreshControl == nil {
@@ -237,10 +243,40 @@ class HomeTableViewController: UITableViewController {
         })
     }
     
+    // MARK: - DZN
+    func titleForEmptyDataSet(scrollView: UIScrollView!) -> NSAttributedString! {
+        let title = "داده ای موجود نیست"
+        let attributes = [NSFontAttributeName: UIFont(name: "IRANYekanMobile-Bold", size: 16)!,
+                          NSForegroundColorAttributeName: UIColor.darkGrayColor()]
+        
+        return NSAttributedString(string: title, attributes: attributes)
+    }
+    
+    func imageForEmptyDataSet(scrollView: UIScrollView!) -> UIImage! {
+        let image = UIImage(named: "Timer")
+        return image
+    }
+    
+    func emptyDataSetShouldAllowTouch(scrollView: UIScrollView!) -> Bool {
+        return true
+    }
+    
+    func emptyDataSetDidTapView(scrollView: UIScrollView!) {
+        let operation = NSBlockOperation { 
+            self.loadFeeds(next: nil)
+        }
+        self.queue.addOperation(operation)
+    }
+    
+    // MARK: - Navigations
+    
     override func prepareForSegue(segue: UIStoryboardSegue, sender: AnyObject?) {
         if segue.identifier == "EntranceDetailVCSegue" {
             if let vc = segue.destinationViewController as? EntranceDetailTableViewController {
-                vc.entranceActivity = self.activityList[self.selectedActivityIndex]
+                // get entrance unique id
+                let activity = self.activityList[self.selectedActivityIndex]
+                let uniqueId = activity.target["unique_key"].stringValue
+                vc.entranceUniqueId = uniqueId
             }
         }
     }

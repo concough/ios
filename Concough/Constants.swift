@@ -21,6 +21,10 @@ let OAUTH_CLASS_NAME = "oauth"
 let JAUTH_CLASS_NAME = "jauth"
 let AUTH_CLASS_NAME = "auth"
 let PROFILE_CLASS_NAME = "profile"
+let ENTRANCE_CLASS_NAME = "entrance"
+let PURCHASED_CLASS_NAME = "purchased"
+let PRODUCT_CLASS_NAME = "product"
+let BASKET_CLASS_NAME = "basket"
 let JWT_URL_PREFIX = "j"
 
 // Cache Configurations
@@ -50,5 +54,6 @@ let USERNAME_VALIDATOR_REGEX = "^[A-Za-z0-9][A-Za-z0-9@+-@._]{9,29}$"
 // UI Constants
 let BLUE_COLOR_HEX: Int = 0x1007AFF
 let RED_COLOR_HEX:Int = 0x960000
+let RED_COLOR_HEX_2:Int = 0xDD0000
 let GREEN_COLOR_HEX:Int = 0x1008000
 let GRAY_COLOR_HEX_1: Int = 0xB7B7B7

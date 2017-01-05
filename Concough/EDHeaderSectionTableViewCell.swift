@@ -7,10 +7,12 @@
 //
 
 import UIKit
+import SwiftyJSON
 
 class EDHeaderSectionTableViewCell: UITableViewCell {
 
     @IBOutlet weak var headerTitle: UILabel!
+    @IBOutlet weak var headerSubTitle: UILabel!
     
     override func awakeFromNib() {
         super.awakeFromNib()
@@ -21,7 +23,19 @@ class EDHeaderSectionTableViewCell: UITableViewCell {
         
     }
     
-    internal func configureCell(title title: String) {
+    internal func configureCell(title title: String, extraData: JSON?) {
         self.headerTitle.text = title
+        
+        if let data = extraData {
+            var s = ""
+            for (key, item) in data {
+                s += "\(key): \(item.stringValue)" + " - "
+            }
+            
+            if s.characters.count > 3 {
+                s = s.substringToIndex(s.endIndex.advancedBy(-3))
+            }
+            self.headerSubTitle.text = s
+        }
     }
 }
