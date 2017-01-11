@@ -25,6 +25,10 @@ class TokenHandlerSingleton {
         self._password = password
     }
     
+    func getUsername() -> String? {
+        return self._username
+    }
+    
     private init() {
         // initialize oauth tokens
         if self._oauth_method == "oauth" {

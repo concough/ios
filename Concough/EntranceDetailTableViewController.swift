@@ -22,6 +22,7 @@ class EntranceDetailTableViewController: UITableViewController {
     private var entrance: EntranceStructure?
     private var entranceStat: EntranceStatStructure?
     private var entranceSale: EntranceSaleStructure?
+    private var entrancePurchase: EntrancePrurchasedStructure?
     
     private var selfBasketAdd: Bool = false
     
@@ -43,7 +44,12 @@ class EntranceDetailTableViewController: UITableViewController {
         self.setupBarButton()
         
         self.state = EntranceVCStateEnum.Initialize
+        self.selfBasketAdd = false
         self.stateMachine()
+    }
+
+    override func viewDidAppear(animated: Bool) {
+        self.updateBasketBadge(count: BasketSingleton.sharedInstance.SalesCount)
     }
     
     override func didReceiveMemoryWarning() {
@@ -80,11 +86,27 @@ class EntranceDetailTableViewController: UITableViewController {
         // State Machine here
         switch self.state! {
         case .Initialize:
-            // check local exist
-            let operation = NSBlockOperation(block: { 
-                self.downloadEntrance()
-            })
-            self.queue.addOperation(operation)
+            // first check local db
+            let username = UserDefaultsSingleton.sharedInstance.getUsername()!
+            if EntranceModelHandler.existById(id: self.entranceUniqueId, username: username) == true {
+                self.localEntrance()
+            }
+            else {
+                // check if exist in basket
+                if let index = BasketSingleton.sharedInstance.findSaleByTargetId(targetId: self.entranceUniqueId, type: "Entrance") {
+                    
+                    self.entrance = BasketSingleton.sharedInstance.getSaleById(saleId: index) as? EntranceStructure
+                    
+                    self.state! = .EntranceComplete
+                    self.selfBasketAdd = true
+                    self.stateMachine()
+                } else {
+                    let operation = NSBlockOperation(block: {
+                        self.downloadEntrance()
+                    })
+                    self.queue.addOperation(operation)
+                }
+            }
             
         case .EntranceComplete:
             // check local data exist
@@ -100,11 +122,39 @@ class EntranceDetailTableViewController: UITableViewController {
             self.queue.addOperation(operation)
 
         case .Purchased:
-            break
+            // create local entry if not exist
+            // also reload tableView
+            NSOperationQueue.mainQueue().addOperationWithBlock({
+                self.tableView.reloadData()
+            })
         case .ShowSaleInfo:
             NSOperationQueue.mainQueue().addOperationWithBlock({ 
                 self.tableView.reloadData()
             })
+        case .Downloaded:
+            NSOperationQueue.mainQueue().addOperationWithBlock({
+                self.tableView.reloadData()
+            })
+        }
+    }
+    
+    private func localEntrance() {
+        let username = UserDefaultsSingleton.sharedInstance.getUsername()!
+        
+        if let localEntrance = EntranceModelHandler.getByUsernameAndId(id: self.entranceUniqueId, username: username) {
+            let extra = JSON(data: localEntrance.extraData.dataUsingEncoding(NSUTF8StringEncoding)!)
+            
+            self.entrance = EntranceStructure(entranceTypeTitle: localEntrance.type, entranceOrgTitle: localEntrance.organization, entranceGroupTitle: localEntrance.group, entranceSetTitle: localEntrance.set, entranceSetId: localEntrance.setId, entranceExtraData: extra, entranceBookletCounts: localEntrance.bookletsCount, entranceYear: localEntrance.year, entranceDuration: localEntrance.duration, entranceUniqueId: localEntrance.uniqueId, entranceLastPublished: localEntrance.lastPublished)
+            
+            if let localPurchased = PurchasedModelHandler.getByProductId(productType: "Entrance", productId: self.entrance!.entranceUniqueId!, username: username) {
+                
+                if localPurchased.isDownloaded == true {
+                    // make state = Downloaded
+                }
+            }
+            
+            self.state! = .EntranceComplete
+            self.stateMachine()
         }
     }
     
@@ -194,12 +244,27 @@ class EntranceDetailTableViewController: UITableViewController {
                     if let status = localData["status"].string {
                         switch status {
                         case "OK":
+                            print("\(localData)")
                             let purchase = localData["purchase"]
                             if let purchaseStatus = purchase["status"].bool {
                                 if purchaseStatus == false {
                                     self.state = EntranceVCStateEnum.NotPurchased
                                 } else {
+                                    // get purchase record
+                                    if purchase["purchase_record"] != nil {
+                                        let purchase_record = purchase["purchase_record"]
+                                        let id = purchase_record["id"].intValue
+                                        let amount = purchase_record["payed_amount"].intValue
+                                        let downloaded = purchase_record["downloaded"].intValue
+                                        
+                                        let created_str = purchase_record["created"].stringValue
+                                        let created = FormatterSingleton.sharedInstance.UTCDateFormatter.dateFromString(created_str)
+                                        
+                                        self.entrancePurchase = EntrancePrurchasedStructure(id: id, created: created, amount: amount, downloaded: downloaded)
+                                        
+                                    }
                                     
+                                    self.state = EntranceVCStateEnum.Purchased
                                 }
                                 self.stateMachine()
                             }
@@ -438,7 +503,11 @@ class EntranceDetailTableViewController: UITableViewController {
             return 0
         case .EntranceComplete:
             return 1
+        case .Downloaded:
+            fallthrough
         case .ShowSaleInfo:
+            fallthrough
+        case .Purchased:
             return 2
         default:
             return 0
@@ -451,6 +520,10 @@ class EntranceDetailTableViewController: UITableViewController {
             return 0
         case .EntranceComplete:
             return 3
+        case .Downloaded:
+            fallthrough
+        case .Purchased:
+            fallthrough
         case .ShowSaleInfo:
             switch section {
             case 0:
@@ -458,6 +531,7 @@ class EntranceDetailTableViewController: UITableViewController {
             default:
                 return 1
             }
+            
         default:
             return 0
         }
@@ -496,6 +570,16 @@ class EntranceDetailTableViewController: UITableViewController {
                     cell.basketFinishButton.addTarget(self, action: #selector(self.basketButtonPressed(_:)), forControlEvents: .TouchUpInside)
                     return cell
                 }
+            } else if self.state! == .Purchased {
+                if let cell = self.tableView.dequeueReusableCellWithIdentifier("PURCHASED_SECTION", forIndexPath: indexPath) as? EDPurchasedSectionTableViewCell {
+                    
+                    cell.configureCell(purchased: self.entrancePurchase!)
+                    return cell
+                }
+            } else if self.state! == .Downloaded {
+                if let cell = self.tableView.dequeueReusableCellWithIdentifier("DOWNLOADED_SECTION", forIndexPath: indexPath) as? EDDownloadedTableViewCell {
+                    return cell
+                }
             }
         default:
             break
@@ -523,6 +607,8 @@ class EntranceDetailTableViewController: UITableViewController {
                 } else {
                     return 90.0
                 }
+            } else if self.state! == .Purchased || self.state! == .Downloaded {
+                return 80.0
             }
         default:
             break
@@ -531,6 +617,13 @@ class EntranceDetailTableViewController: UITableViewController {
     }
     
     // MARK: - Navigation
+    override func prepareForSegue(segue: UIStoryboardSegue, sender: AnyObject?) {
+        if segue.identifier == "BasketCheckoutVCSegue" {
+            if segue.destinationViewController is BasketCheckoutTableViewController {
+                self.navigationItem.backBarButtonItem = UIBarButtonItem(title: "ادامه خرید", style: .Plain, target: self, action: nil)
 
+            }
+        }
+    }
 
 }

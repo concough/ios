@@ -253,7 +253,7 @@ class HomeTableViewController: UITableViewController, DZNEmptyDataSetDelegate, D
     }
     
     func imageForEmptyDataSet(scrollView: UIScrollView!) -> UIImage! {
-        let image = UIImage(named: "Timer")
+        let image = UIImage(named: "Refresh")
         return image
     }
     
@@ -285,4 +285,5 @@ class HomeTableViewController: UITableViewController, DZNEmptyDataSetDelegate, D
     @IBAction func unwindArchiveViewController(segue: UIStoryboardSegue) {
         print("Unwind: ArchiveViewController")
     }
+
 }

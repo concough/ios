@@ -33,6 +33,9 @@ class AlertClass {
             case "ResendCodeSuccess":
                 title = "پیغام"
                 message = "کد فعالسازی مجددا ارسال شد"
+            case "PurchasedSuccess":
+                title = "پیغام"
+                message = "خرید با موفقیت انجام گردید"
                 
             default:
                 showMessage = false
@@ -66,7 +69,13 @@ class AlertClass {
             switch messageSubType {
             case "SaleNotExist":
                 title = "خطا"
-                message = "چنین خریدی موجود نیست"                
+                message = "چنین خریدی موجود نیست"
+            case "DuplicateSale":
+                title = "خطا"
+                message = "این خرید قبلا ثبت شده است"
+            case "EmptyBasket":
+                title = "خطا"
+                message = "سبد خرید شما خالی است"                
             default:
                 showMessage = false
             }
@@ -123,12 +132,13 @@ class AlertClass {
         if showMessage {
             NSOperationQueue.mainQueue().addOperationWithBlock({
                 let alertController = UIAlertController(title: title!, message: message!, preferredStyle: .Alert)
-                let action = UIAlertAction(title: "متوجه شدم", style: .Default, handler: nil)
-                alertController.addAction(action)
-                viewController.presentViewController(alertController, animated: true) {
+                let action = UIAlertAction(title: "متوجه شدم", style: .Default, handler: { (action) in
                     if let completeHandler = completion {
                         completeHandler()
                     }
+                })
+                alertController.addAction(action)
+                viewController.presentViewController(alertController, animated: true) {
                 }
             })
         }

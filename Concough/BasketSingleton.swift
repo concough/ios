@@ -13,12 +13,15 @@ import SwiftyJSON
 class BasketSingleton {
     static let sharedInstance = BasketSingleton()
     
+    private let _lock: NSLock!
     private var _queue: NSOperationQueue
     private var _basketId: String? = nil
+    private var _totalCost: Int = 0
     private var _sales: [(id: Int, created: NSDate, cost: Int, target: Any, type: String)] = []
     
     private init() {
         self._queue = NSOperationQueue()
+        self._lock = NSLock()
     }
     
     // MARK: - Properties
@@ -34,6 +37,12 @@ class BasketSingleton {
     internal var SalesCount: Int {
         get {
             return self._sales.count
+        }
+    }
+    
+    internal var TotalCost: Int {
+        get {
+            return self._totalCost
         }
     }
     
@@ -54,6 +63,8 @@ class BasketSingleton {
                                 let records = localData["records"]
                                 
                                 var localSales:[(id: Int, created: NSDate, cost: Int, target: Any, type: String)] = []
+                                var localCost: Int = 0
+                                
                                 for (_, item) in records {
                                     let sale_id = item["id"].intValue
                                     let cost = item["pay_amount"].intValue
@@ -78,10 +89,14 @@ class BasketSingleton {
                                         entrance.entranceUniqueId = target["unique_key"].stringValue
                                         entrance.entranceYear = target["year"].intValue
                                         
+                                        localCost += cost
                                         localSales.append((id: sale_id, created: created, cost: cost, target: entrance, type: "Entrance"))
                                     }
                                 }
-                                self._sales += localSales
+                                synchronized(self._lock, criticalSection: { 
+                                    self._sales = localSales
+                                    self._totalCost = localCost
+                                })
                             }
                             if let compl = completion {
                                 compl(count: self._sales.count)
@@ -183,7 +198,10 @@ class BasketSingleton {
     }
     
     internal func addSale(saleId saleId: Int, created: NSDate, cost: Int, target: Any, type: String) {
-        self._sales.append((id: saleId, created: created, cost: cost, target: target, type: type))
+        synchronized(self._lock, criticalSection: {
+            self._sales.append((id: saleId, created: created, cost: cost, target: target, type: type))
+            self._totalCost += cost
+        })
     }
 
     internal func addSale(viewController viewController: UIViewController, target: Any, type: String, completion: ((count: Int) -> ())?) {
@@ -220,7 +238,10 @@ class BasketSingleton {
                                             
                                             if target_product_unique_key == product_id! && target_product_type == type {
                                                 // ok save it to local db
-                                                self._sales.append((id: sale_id, created: created, cost: cost, target: target, type: type))
+                                                synchronized(self._lock, criticalSection: {
+                                                    self._sales.append((id: sale_id, created: created, cost: cost, target: target, type: type))
+                                                    self._totalCost += cost
+                                                })
                                                 
                                                 // notify upper class
                                                 if let compl = completion {
@@ -234,7 +255,7 @@ class BasketSingleton {
                                         switch errorType {
                                         case "DuplicateSale":
                                             // what i must doing here --> must user refresh table view --> for now show alert
-                                            AlertClass.showSimpleErrorMessage(viewController: viewController, messageType: "BasketError", messageSubType: errorType, completion: { 
+                                            AlertClass.showSimpleErrorMessage(viewController: viewController, messageType: "BasketResult", messageSubType: errorType, completion: {
                                                 NSOperationQueue.mainQueue().addOperationWithBlock({ 
                                                     // refresh sales here
                                                 })
@@ -276,15 +297,39 @@ class BasketSingleton {
                 })
         }
     }
-    
+
+    private func getSaleTypeById(saleId saleId: Int) -> String? {
+        var local: String? = nil
+        synchronized(self._lock, criticalSection: {
+            for item in self._sales {
+                if item.id == saleId {
+                    local = item.type
+                }
+            }
+        })
+        return local
+    }
     
     internal func getSaleById(saleId saleId: Int) -> Any? {
-        for item in self._sales {
-            if item.id == saleId {
-                return item.target
+        var local: Any? = nil
+        synchronized(self._lock, criticalSection: {
+            for item in self._sales {
+                if item.id == saleId {
+                    local = item.target
+                }
             }
-        }
-        return nil
+        })
+        return local
+    }
+    
+    internal func getSaleByIndex(index index: Int) -> Any? {
+        var local: Any? = nil
+        synchronized(self._lock, criticalSection: {
+            if index < self._sales.count {
+                local = self._sales[index]
+            }
+        })
+        return local
     }
     
     internal func removeSaleById(viewController viewController: UIViewController, saleId: Int, completion: ((count: Int) -> ())?) {
@@ -306,7 +351,7 @@ class BasketSingleton {
                                 if let errorType = localData["error_type"].string {
                                     switch errorType {
                                     case "SaleNotExist":
-                                        AlertClass.showSimpleErrorMessage(viewController: viewController, messageType: "ErrorResult", messageSubType: errorType, completion: nil)
+                                        AlertClass.showSimpleErrorMessage(viewController: viewController, messageType: "BasketResult", messageSubType: errorType, completion: nil)
                                     case "RemoteDBError":
                                         fallthrough
                                     default:
@@ -338,6 +383,96 @@ class BasketSingleton {
             })
         }
     }
+
+    internal func checkout(viewController viewController: UIViewController, completion: ((count: Int, purchased: [Int: (Int, NSDate)]?) -> ())?) {
+            BasketRestAPIClass.checkoutBasket(basketId: self._basketId!, completion: { (data, error) in
+                if error != HTTPErrorType.Success {
+                    AlertClass.showSimpleErrorMessage(viewController: viewController, messageType: "HTTPError", messageSubType: (error?.toString())!, completion: nil)
+                } else {
+                    if let localData = data {
+                        if let status = localData["status"].string {
+                            switch status {
+                            case "OK":
+                                if let purchased = localData["purchased"].array {
+                                    
+                                    let username: String? = UserDefaultsSingleton.sharedInstance.getUsername()
+                                    var localPurchased: [Int: (Int, NSDate)] = [:]
+                                    for item in purchased {
+                                        let saleId = item["sale_id"].intValue
+                                        let purchaseId = item["purchase_id"].intValue
+                                        let downloaded = item["downloaded"].intValue
+                                        
+                                        let purchased_time_str = item["purchase_time"].stringValue
+                                        let purchasedTime = FormatterSingleton.sharedInstance.UTCDateFormatter.dateFromString(purchased_time_str)!
+                                        
+                                        // Update Realm Db
+                                        if let saleType = self.getSaleTypeById(saleId: saleId) {
+                                            if saleType == "Entrance" {
+                                                let entrance = self.getSaleById(saleId: saleId) as! EntranceStructure
+                                                if EntranceModelHandler.add(entrance: entrance, username: username!) == true {
+                                                    if PurchasedModelHandler.add(id: purchaseId, username: username!, isDownloaded: false, purchaseType: "Entrance", purchaseUniqueId: entrance.entranceUniqueId!, created: purchasedTime) == false {
+                                                    
+                                                        // rollback entrance insert
+                                                        EntranceModelHandler.removeById(id: entrance.entranceUniqueId!, username: username!)
+                                                    }
+                                                }
+                                            }
+                                        }
+                                        
+                                        localPurchased.updateValue((purchaseId, purchasedTime), forKey: saleId)
+                                        self.removeSaleById(saleId: saleId)
+                                    }
+                                    
+                                    self._basketId = nil
+                                    if let compl = completion {
+                                        compl(count: self._sales.count, purchased: localPurchased)
+                                    }
+                                }
+                                break
+                            case "Error":
+                                if let errorType = localData["error_type"].string {
+                                    switch errorType {
+                                    case "EmptyBasket":
+                                        AlertClass.showSimpleErrorMessage(viewController: viewController, messageType: "ErrorResult", messageSubType: errorType, completion: {
+                                            self._basketId = nil
+                                            self.removeAllSales()
+                                            NSOperationQueue.mainQueue().addOperationWithBlock({ 
+                                                if let compl = completion {
+                                                    compl(count: 0, purchased: nil)
+                                                }
+                                            })
+                                        })
+                                    case "RemoteDBError":
+                                        fallthrough
+                                    default:
+                                        AlertClass.showSimpleErrorMessage(viewController: viewController, messageType: "ErrorResult", messageSubType: errorType, completion: nil)
+                                    }
+                                }
+                                
+                            default:
+                                break
+                            }
+                        }
+                    }
+                }
+                }, failure: { (error) in
+                    if let err = error {
+                        switch err {
+                        case .NoInternetAccess:
+                            AlertClass.showSimpleErrorMessage(viewController: viewController, messageType: "NetworkError", messageSubType: err.rawValue, completion: {
+                                let operation = NSBlockOperation(block: {
+                                    self.checkout(viewController: viewController, completion: completion)
+                                })
+                                self._queue.addOperation(operation)
+                            })
+                        default:
+                            AlertClass.showSimpleErrorMessage(viewController: viewController, messageType: "NetworkError", messageSubType: err.rawValue, completion: nil)
+                        }
+                    }
+                    
+            })
+    }
+    
     
     internal func findSaleByTargetId(targetId targetId: String, type: String) -> Int? {
         let index = self._sales.indexOf { (item) -> Bool in
@@ -384,12 +519,22 @@ class BasketSingleton {
             return item.id == saleId
         })
         if let i = index {
-            self._sales.removeAtIndex(i)
+            synchronized(self._lock, criticalSection: {
+                self._totalCost -= self._sales[i].cost
+                self._sales.removeAtIndex(i)
+            })
+        }
+        
+        if self._sales.count == 0 {
+            self._basketId = nil
         }
     }
     
     internal func removeAllSales() {
-        self._sales.removeAll()
+        synchronized(self._lock, criticalSection: {
+            self._sales.removeAll()
+            self._totalCost = 0
+        })
     }
     
 }

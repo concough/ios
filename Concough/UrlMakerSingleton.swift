@@ -298,4 +298,9 @@ class UrlMakerSingleton {
         let functionName = "list"
         return self.getBasketUrl(functionName: functionName)
     }
+    
+    internal func getCheckoutBasketUrl(basketId basketId: String) -> String? {
+        let functionName = "\(basketId)/checkout"
+        return self.getBasketUrl(functionName: functionName)
+    }
 }

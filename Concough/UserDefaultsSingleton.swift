@@ -61,4 +61,8 @@ class UserDefaultsSingleton {
         
         return nil
     }
+    
+    func getUsername() -> String? {
+        return TokenHandlerSingleton.sharedInstance.getUsername()
+    }
 }

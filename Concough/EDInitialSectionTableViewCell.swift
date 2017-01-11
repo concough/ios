@@ -67,7 +67,7 @@ class EDInitialSectionTableViewCell: UITableViewCell {
                             }
                         }
                     }
-                    }, failure: { (error) in
+                }, failure: { (error) in
                         if let err = error {
                             switch err {
                             case .NoInternetAccess:
