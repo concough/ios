@@ -14,6 +14,7 @@ target 'Concough' do
     pod 'DZNEmptyDataSet'
     pod 'BBBadgeBarButtonItem'
     #pod 'RealmSwift', '~> 1.1.0'
+    pod 'RNCryptor', '~> 4.0'
 end
 
 #

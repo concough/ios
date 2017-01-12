@@ -10,7 +10,7 @@ import Foundation
 import RealmSwift
 
 class PurchasedModelHandler {
-    class func add(id id: Int, username: String, isDownloaded: Bool, purchaseType: String, purchaseUniqueId: String, created: NSDate) -> Bool {
+    class func add(id id: Int, username: String, isDownloaded: Bool, isImageDownlaoded: Bool, purchaseType: String, purchaseUniqueId: String, created: NSDate) -> Bool {
         
         let purchased = PurchasedModel()
         purchased.created = created
@@ -19,6 +19,7 @@ class PurchasedModelHandler {
         purchased.productType = purchaseType
         purchased.productUniqueId = purchaseUniqueId
         purchased.username = username
+        purchased.isImageDownloaded = isImageDownlaoded
         
         do {
             try RealmSingleton.sharedInstance.DefaultRealm.write({
@@ -46,6 +47,34 @@ class PurchasedModelHandler {
         }
         
         return true
+    }
+    
+    class func setIsDownloadedTrue(productType pt: String, productId: String, username: String) -> Bool {
+        if let purchase = self.getByProductId(productType: pt, productId: productId, username: username) {
+            do {
+                try RealmSingleton.sharedInstance.DefaultRealm.write({ 
+                    purchase.isDownloaded = true
+                })
+                return true
+            } catch (let error as NSError) {
+                print("\(error)")
+            }
+        }
+        return false
+    }
+
+    class func setIsLocalDBCreatedTrue(productType pt: String, productId: String, username: String) -> Bool {
+        if let purchase = self.getByProductId(productType: pt, productId: productId, username: username) {
+            do {
+                try RealmSingleton.sharedInstance.DefaultRealm.write({
+                    purchase.isLocalDBCreated = true
+                })
+                return true
+            } catch (let error as NSError) {
+                print("\(error)")
+            }
+        }
+        return false
     }
     
     class func getByUsernameAndId(id id: Int, username: String) -> PurchasedModel? {

@@ -9,6 +9,7 @@
 import UIKit
 import SwiftyJSON
 import BBBadgeBarButtonItem
+import RNCryptor
 
 class EntranceDetailTableViewController: UITableViewController {
 
@@ -23,6 +24,7 @@ class EntranceDetailTableViewController: UITableViewController {
     private var entranceStat: EntranceStatStructure?
     private var entranceSale: EntranceSaleStructure?
     private var entrancePurchase: EntrancePrurchasedStructure?
+    private var entrancePackageContent: NSData?
     
     private var selfBasketAdd: Bool = false
     
@@ -435,6 +437,10 @@ class EntranceDetailTableViewController: UITableViewController {
         }
     }
     
+    private func downloadEntranePackage() {
+        
+    }
+    
     // MARK: - Actions
     @IBAction func buyButtonPressed(sender: UIButton) {
         print("buy button pressed")
@@ -494,6 +500,22 @@ class EntranceDetailTableViewController: UITableViewController {
         NSOperationQueue.mainQueue().addOperationWithBlock { 
             self.performSegueWithIdentifier("BasketCheckoutVCSegue", sender: self)
         }
+    }
+    
+    @IBAction func downloadButtonPressed(sender: UIButton) {
+        let operation = NSBlockOperation(block: {
+            
+            EntrancePackageDownloader.downloadInitialData(viewController: self, uniqueId: self.entranceUniqueId!, queue: self.queue, completion: { (result) in
+                if result == true {
+                    let username = UserDefaultsSingleton.sharedInstance.getUsername()!
+                    let valid2 = PurchasedModelHandler.setIsLocalDBCreatedTrue(productType: "Entrance", productId: self.entranceUniqueId!, username: username)
+                    
+                    if valid2 == true {
+                    }
+                }
+            })
+        })
+        self.queue.addOperation(operation)
     }
     
     // MARK: - Table view data source
@@ -574,10 +596,12 @@ class EntranceDetailTableViewController: UITableViewController {
                 if let cell = self.tableView.dequeueReusableCellWithIdentifier("PURCHASED_SECTION", forIndexPath: indexPath) as? EDPurchasedSectionTableViewCell {
                     
                     cell.configureCell(purchased: self.entrancePurchase!)
+                    cell.downloadButton.addTarget(self, action: #selector(self.downloadButtonPressed(_:)), forControlEvents: .TouchUpInside)
                     return cell
                 }
             } else if self.state! == .Downloaded {
                 if let cell = self.tableView.dequeueReusableCellWithIdentifier("DOWNLOADED_SECTION", forIndexPath: indexPath) as? EDDownloadedTableViewCell {
+                    
                     return cell
                 }
             }

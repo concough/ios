@@ -231,6 +231,30 @@ class UrlMakerSingleton {
         return fullPath        
     }
     
+    internal func getEntrancePackageDataInitUrl(uniqueId uniqueId: String) -> String? {
+        var fullPath: String?
+        let functionName = "\(uniqueId)/data/init"
+        
+        if OAUTH_METHOD == "jwt" {
+            fullPath = "\(self._base_url)\(self._api_version)/\(self._jwt_prefix)/\(self._entrance_class_name)/\(functionName)/"
+        } else if OAUTH_METHOD == "oauth" {
+            fullPath = "\(self._base_url)\(self._api_version)/\(self._entrance_class_name)/\(functionName)/"
+        }
+        return fullPath
+    }
+
+    internal func getEntrancePackageImageUrl(uniqueId uniqueId: String, packageId: String) -> String? {
+        var fullPath: String?
+        let functionName = "\(uniqueId)/package/\(packageId)"
+        
+        if OAUTH_METHOD == "jwt" {
+            fullPath = "\(self._base_url)\(self._api_version)/\(self._jwt_prefix)/\(self._entrance_class_name)/\(functionName)/"
+        } else if OAUTH_METHOD == "oauth" {
+            fullPath = "\(self._base_url)\(self._api_version)/\(self._entrance_class_name)/\(functionName)/"
+        }
+        return fullPath
+    }
+    
     private func getPurchasedUrl(functionName functionName: String) -> String? {
         var fullPath: String?
         

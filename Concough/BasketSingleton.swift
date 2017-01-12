@@ -410,7 +410,7 @@ class BasketSingleton {
                                             if saleType == "Entrance" {
                                                 let entrance = self.getSaleById(saleId: saleId) as! EntranceStructure
                                                 if EntranceModelHandler.add(entrance: entrance, username: username!) == true {
-                                                    if PurchasedModelHandler.add(id: purchaseId, username: username!, isDownloaded: false, purchaseType: "Entrance", purchaseUniqueId: entrance.entranceUniqueId!, created: purchasedTime) == false {
+                                                    if PurchasedModelHandler.add(id: purchaseId, username: username!, isDownloaded: false, isImageDownlaoded: false, purchaseType: "Entrance", purchaseUniqueId: entrance.entranceUniqueId!, created: purchasedTime) == false {
                                                     
                                                         // rollback entrance insert
                                                         EntranceModelHandler.removeById(id: entrance.entranceUniqueId!, username: username!)

@@ -23,6 +23,8 @@ class EntranceModel: Object {
     dynamic var duration: Int = 0
     dynamic var lastPublished: NSDate = NSDate()
     
+    let booklets = List<EntranceBookletModel>()
+    
     override static func primaryKey() -> String? {
         return "uniqueId"
     }
