@@ -15,4 +15,5 @@ enum EntranceVCStateEnum {
     case Purchased
     case ShowSaleInfo
     case Downloaded
+    case DownloadStarted
 }

@@ -42,4 +42,46 @@ class EntranceQuestionModelHandler {
         }
         return true
     }
+    
+    class func changeDownloadedToTrue(uniqueId uniqueId: String, entranceId: String) {
+        if let question = RealmSingleton.sharedInstance.DefaultRealm.objects(EntranceQuestionModel.self).filter("uniqueId = '\(uniqueId)' AND entrance.uniqueId = '\(entranceId)' AND isDownloaded = false").first {
+            do {
+                try RealmSingleton.sharedInstance.DefaultRealm.write({
+                    question.isDownloaded = true
+                })
+            } catch (let error as NSError) {
+                print("\(error)")
+            }
+        }
+    }
+    
+    class func getQuestions(entranceId uniqueId: String) -> Results<EntranceQuestionModel> {
+        let questions = RealmSingleton.sharedInstance.DefaultRealm.objects(EntranceQuestionModel.self).filter("entrance.uniqueId = '\(uniqueId)'").sorted("number", ascending: true)
+        
+        return questions
+    }
+
+    class func countQuestions(entranceId uniqueId: String) -> Int {
+        let count = RealmSingleton.sharedInstance.DefaultRealm.objects(EntranceQuestionModel.self).filter("entrance.uniqueId = '\(uniqueId)'").count
+        
+        return count
+    }
+    
+    class func getStarredQuestions(entranceId uniqueId: String, questions: [String]) -> Results<EntranceQuestionModel> {
+        let questions = RealmSingleton.sharedInstance.DefaultRealm.objects(EntranceQuestionModel.self).filter("entrance.uniqueId = '\(uniqueId)' AND uniqueId IN %@", questions).sorted("number", ascending: true)
+        
+        return questions
+    }
+    
+    class func getQuestionById(entranceId uniqueId: String, questionId: String) -> EntranceQuestionModel? {
+        let question = RealmSingleton.sharedInstance.DefaultRealm.objects(EntranceQuestionModel.self).filter("entrance.uniqueId = '\(uniqueId)' AND uniqueId = '\(questionId)'").first
+        
+        return question
+    }
+    
+    class func getQuestionsNotDwonloaded(entranceId uniqueId: String) -> Results<EntranceQuestionModel> {
+        let questions = RealmSingleton.sharedInstance.DefaultRealm.objects(EntranceQuestionModel.self).filter("entrance.uniqueId = '\(uniqueId)' AND isDownloaded = false").sorted("number", ascending: true)
+        
+        return questions
+    }
 }

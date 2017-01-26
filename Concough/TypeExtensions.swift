@@ -25,6 +25,12 @@ extension String {
         return decodedString!
     }
 
+    func base64DecodedUsingAscii() -> String {
+        let decodedData = NSData(base64EncodedString: self, options: NSDataBase64DecodingOptions.init(rawValue: 0))
+        let decodedString = String(data: decodedData!, encoding: NSASCIIStringEncoding)
+        return decodedString!
+    }
+    
     func base64Encoded() -> NSData {
         let plainData = dataUsingEncoding(NSUTF8StringEncoding)
         return plainData!
@@ -34,4 +40,5 @@ extension String {
         let decodedData = NSData(base64EncodedString: self, options: NSDataBase64DecodingOptions.init(rawValue: 0))
         return decodedData!
     }
+
 }

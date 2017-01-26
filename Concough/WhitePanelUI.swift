@@ -12,7 +12,7 @@ class WhitePanelUI: UIView {
 
     override func awakeFromNib() {
         layer.cornerRadius = 5
-        //layer.masksToBounds = true
+        layer.masksToBounds = true
         layer.borderColor = UIColor(white: 0.75, alpha: 1).CGColor
         layer.borderWidth = 1.0
         

@@ -12,6 +12,7 @@ import BTNavigationDropdownMenu
 //import CarbonKit
 import EHHorizontalSelectionView
 import DZNEmptyDataSet
+import BBBadgeBarButtonItem
 
 class ArchiveTableViewController: UITableViewController, EHHorizontalSelectionViewProtocol, DZNEmptyDataSetSource, DZNEmptyDataSetDelegate  {
 
@@ -19,6 +20,7 @@ class ArchiveTableViewController: UITableViewController, EHHorizontalSelectionVi
     private var hSelView: EHHorizontalSelectionView!
     private var menuView: BTNavigationDropdownMenu?
     private var queue: NSOperationQueue!
+    private var rightBarButtonItem: BBBadgeBarButtonItem!
     
     private var typeTitle: String?
     private var selectedTableIndex: Int = -1
@@ -60,6 +62,10 @@ class ArchiveTableViewController: UITableViewController, EHHorizontalSelectionVi
         self.queue.addOperation(operation)
     }
     
+    override func viewDidAppear(animated: Bool) {
+        self.setupBarButton()
+    }
+    
     override func didReceiveMemoryWarning() {
         super.didReceiveMemoryWarning()
         // Dispose of any resources that can be recreated.
@@ -77,7 +83,7 @@ class ArchiveTableViewController: UITableViewController, EHHorizontalSelectionVi
             // View Customizations
             self.menuView?.cellSeparatorColor = UIColor(netHex: GRAY_COLOR_HEX_1, alpha: 0.3)
             self.menuView?.cellTextLabelFont = UIFont(name: "IRANYekanMobile-Bold", size: 14)
-            self.menuView?.navigationBarTitleFont = UIFont(name: "IRANYekanMobile-Bold", size: 17)
+            self.menuView?.navigationBarTitleFont = UIFont(name: "IRANYekanMobile-Bold", size: 16)
             self.menuView?.cellTextLabelAlignment = NSTextAlignment.Center
             self.menuView?.arrowTintColor = UIColor(netHex: BLUE_COLOR_HEX, alpha: 1.0)
             self.menuView?.arrowTintColor = UIColor.blackColor()
@@ -100,14 +106,18 @@ class ArchiveTableViewController: UITableViewController, EHHorizontalSelectionVi
         self.hSelView = EHHorizontalSelectionView(frame: CGRectMake(0.0, 0.0, self.tableView.layer.frame.width, 45.0))
         self.hSelView?.delegate = self
 
+        let bottonView = UIView(frame:  CGRectMake(0.0, 45.0, self.tableView.layer.frame.width, 1.0))
+        bottonView.backgroundColor = UIColor(netHex: 0xDDDDDD, alpha: 1.0)
+        self.hSelView?.addSubview(bottonView)
+        
+        //self.hSelView.backgroundColor = UIColor(netHex: BLUE_COLOR_HEX, alpha: 1.0)
+        self.hSelView?.backgroundColor = UIColor(white: 0.98, alpha: 0.95)
+        
         self.hSelView?.registerCellWithClass(EHHorizontalLineViewCell)
         EHHorizontalLineViewCell.updateColorHeight(0.5)
         
         self.hSelView?.textColor = UIColor(netHex: BLUE_COLOR_HEX, alpha: 1.0)
         self.hSelView?.tintColor = UIColor(netHex: BLUE_COLOR_HEX, alpha: 1.0)
-        
-        //self.hSelView.backgroundColor = UIColor(netHex: BLUE_COLOR_HEX, alpha: 1.0)
-        self.hSelView?.backgroundColor = UIColor(white: 0.0, alpha: 0.00)
         
         self.hSelView?.font = UIFont(name: "IRANYekanMobile-Bold", size: 14)
         self.hSelView?.fontMedium = UIFont(name: "IRANYekanMobile-Bold", size: 16)
@@ -131,6 +141,36 @@ class ArchiveTableViewController: UITableViewController, EHHorizontalSelectionVi
             self.getEntranceSets(entranceGroupId: self.groups[self.groupsString[Int(index)]]!)
         })
         self.queue.addOperation(operation)
+    }
+    
+    // MARK: -Actions
+    @IBAction func basketButtonPressed(sender: AnyObject) {
+        NSOperationQueue.mainQueue().addOperationWithBlock {
+            self.performSegueWithIdentifier("BasketCheckoutVCSegue", sender: self)
+        }
+    }
+    
+    // MARK: - Functions
+    private func setupBarButton() {
+        if BasketSingleton.sharedInstance.SalesCount > 0 {
+            let b = UIButton(frame: CGRectMake(0, 0, 25, 25))
+            b.setImage(UIImage(named: "Buy_Blue"), forState: .Normal)
+            
+            b.addTarget(self, action: #selector(self.basketButtonPressed(_:)), forControlEvents: .TouchUpInside)
+            
+            self.rightBarButtonItem = BBBadgeBarButtonItem(customUIButton: b)
+            self.rightBarButtonItem.badgeValue = FormatterSingleton.sharedInstance.NumberFormatter.stringFromNumber(BasketSingleton.sharedInstance.SalesCount)!
+            self.rightBarButtonItem.badgeBGColor = UIColor(netHex: RED_COLOR_HEX_2, alpha: 0.8)
+            self.rightBarButtonItem.badgeTextColor = UIColor.whiteColor()
+            self.rightBarButtonItem.badgeFont = UIFont(name: "IRANYekanMobile-Bold", size: 12)
+            self.rightBarButtonItem.shouldHideBadgeAtZero = true
+            self.rightBarButtonItem.shouldAnimateBadge = true
+            self.rightBarButtonItem.badgeOriginX = 15.0
+            self.rightBarButtonItem.badgeOriginY = -5.0
+            
+            self.navigationItem.rightBarButtonItem = self.rightBarButtonItem
+        }
+        
     }
     
     private func getEntranceTypes() {
@@ -393,7 +433,7 @@ class ArchiveTableViewController: UITableViewController, EHHorizontalSelectionVi
     
     override func tableView(tableView: UITableView, viewForHeaderInSection section: Int) -> UIView? {
         if section == 0 {
-            let view = UIView(frame: CGRectMake(0.0, 0.0, self.tableView.layer.frame.width, 70.0))
+            let view = UIView(frame: CGRectMake(0.0, 0.0, self.tableView.layer.frame.width, 45.0))
             view.addSubview(self.hSelView)
             return view
         }
@@ -402,7 +442,7 @@ class ArchiveTableViewController: UITableViewController, EHHorizontalSelectionVi
     
     override func tableView(tableView: UITableView, heightForHeaderInSection section: Int) -> CGFloat {
         if section == 0 {
-            return 70.0
+            return 45.0
         }
         return 0.0
     }
@@ -469,6 +509,9 @@ class ArchiveTableViewController: UITableViewController, EHHorizontalSelectionVi
                     self.navigationItem.backBarButtonItem = UIBarButtonItem(title: "بازگشت", style: .Plain, target: self, action: nil)
                 }
             }
+        } else if segue.identifier == "BasketCheckoutVCSegue" {
+            self.navigationItem.backBarButtonItem = UIBarButtonItem(title: "آرشیو", style: .Plain, target: self, action: nil)
+            
         }
     }
 }

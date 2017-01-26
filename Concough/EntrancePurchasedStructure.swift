@@ -13,4 +13,7 @@ struct EntrancePrurchasedStructure {
     var created: NSDate?
     var amount: Int?
     var downloaded: Int?
+    var isDownloaded: Bool?
+    var isDataDownloaded: Bool?
+    var isImagesDownloaded: Bool?
 }

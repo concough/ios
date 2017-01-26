@@ -12,6 +12,7 @@ import RealmSwift
 class PurchasedModel: Object {
     dynamic var id: Int = 0
     dynamic var username: String = ""
+    dynamic var downloadTimes: Int = 0
     dynamic var isDownloaded: Bool = false
     dynamic var isImageDownloaded: Bool = false
     dynamic var isLocalDBCreated: Bool = false

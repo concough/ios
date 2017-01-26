@@ -18,11 +18,12 @@ class RealmSingleton {
         
         let config = Realm.Configuration()
         
-        
+        print("\(config.fileURL)")
         self.realm = try! Realm(configuration: config)
         
         // to Background App Refresh
         let folderPath = self.realm.configuration.fileURL!.URLByDeletingLastPathComponent!.path
+        print("Realm Path: \(folderPath!)")
         try! NSFileManager.defaultManager().setAttributes([NSFileAttributeKey.init(string: NSFileProtectionKey) as String: NSFileProtectionNone], ofItemAtPath: folderPath!)
     }
     

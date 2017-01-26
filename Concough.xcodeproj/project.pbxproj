@@ -10,10 +10,14 @@
 		6A7F6794B7FD418602C5E907 /* Pods_Concough.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = B82887E22296AB852B639160 /* Pods_Concough.framework */; };
 		9A8F7E2493CF3ED28767E1B0 /* Pods_Concough.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 6457DCA706C5468BE9479E6F /* Pods_Concough.framework */; };
 		EB114CD61E24B2B500D833D1 /* EDPurchasedSectionTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = EB114CD51E24B2B500D833D1 /* EDPurchasedSectionTableViewCell.swift */; };
+		EB1400EA1E2E57300029B22A /* FavoritesTableViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = EB1400E91E2E57300029B22A /* FavoritesTableViewController.swift */; };
 		EB1AA8DB1DD332B500F0CED9 /* HomeTableViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = EB1AA8DA1DD332B500F0CED9 /* HomeTableViewController.swift */; };
 		EB1AA8DE1DD386CA00F0CED9 /* EntranceActivity.swift in Sources */ = {isa = PBXBuildFile; fileRef = EB1AA8DD1DD386CA00F0CED9 /* EntranceActivity.swift */; };
+		EB2F358F1E338890009AF6CA /* StarredQuestionHeaderCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = EB2F358E1E338890009AF6CA /* StarredQuestionHeaderCell.swift */; };
+		EB2F35911E34DC93009AF6CA /* FavoriteEntranceDeleteTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = EB2F35901E34DC93009AF6CA /* FavoriteEntranceDeleteTableViewCell.swift */; };
 		EB3127D01E229B3D00F7F0AD /* BasketEntranceTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = EB3127CF1E229B3D00F7F0AD /* BasketEntranceTableViewCell.swift */; };
 		EB3127D21E23F87F00F7F0AD /* EntrancePurchasedStructure.swift in Sources */ = {isa = PBXBuildFile; fileRef = EB3127D11E23F87F00F7F0AD /* EntrancePurchasedStructure.swift */; };
+		EB3821061E2D0E9000655011 /* DownloaderSingleton.swift in Sources */ = {isa = PBXBuildFile; fileRef = EB3821051E2D0E9000655011 /* DownloaderSingleton.swift */; };
 		EB61CF011E2501B10047B942 /* PurchasedModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = EB61CF001E2501B10047B942 /* PurchasedModel.swift */; };
 		EB61CF041E2507500047B942 /* Realm.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = EB61CF021E2507500047B942 /* Realm.framework */; };
 		EB61CF051E2507500047B942 /* Realm.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = EB61CF021E2507500047B942 /* Realm.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
@@ -37,6 +41,10 @@
 		EB762F5B1DCF99D10084CA1D /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = EB762F5A1DCF99D10084CA1D /* Assets.xcassets */; };
 		EB762F5E1DCF99D10084CA1D /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = EB762F5C1DCF99D10084CA1D /* LaunchScreen.storyboard */; };
 		EB762F671DCF9A430084CA1D /* AppSettings.plist in Resources */ = {isa = PBXBuildFile; fileRef = EB762F661DCF9A430084CA1D /* AppSettings.plist */; };
+		EBA4AFA01E2E7EA1009137CB /* FavoriteEntranceNotDownloadedTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = EBA4AF9F1E2E7EA1009137CB /* FavoriteEntranceNotDownloadedTableViewCell.swift */; };
+		EBA4AFA21E2F8A9B009137CB /* FavoriteEntranceDownloadedTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = EBA4AFA11E2F8A9B009137CB /* FavoriteEntranceDownloadedTableViewCell.swift */; };
+		EBA4AFA41E2FA372009137CB /* EntranceShowTableViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = EBA4AFA31E2FA372009137CB /* EntranceShowTableViewController.swift */; };
+		EBA4AFA61E2FA4A4009137CB /* EntranceShowQuestionTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = EBA4AFA51E2FA4A4009137CB /* EntranceShowQuestionTableViewCell.swift */; };
 		EBA657881E07E3FE00F0DC84 /* JwtAdapter.swift in Sources */ = {isa = PBXBuildFile; fileRef = EBA657871E07E3FE00F0DC84 /* JwtAdapter.swift */; };
 		EBA6578A1E08033E00F0DC84 /* NetworkStatusType.swift in Sources */ = {isa = PBXBuildFile; fileRef = EBA657891E08033E00F0DC84 /* NetworkStatusType.swift */; };
 		EBA6578C1E09189200F0DC84 /* JwtHandler.swift in Sources */ = {isa = PBXBuildFile; fileRef = EBA6578B1E09189200F0DC84 /* JwtHandler.swift */; };
@@ -109,6 +117,11 @@
 		EBB68D641DFE9F7B003792B3 /* ResetPasswordViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = EBB68D631DFE9F7B003792B3 /* ResetPasswordViewController.swift */; };
 		EBB68D661DFEE414003792B3 /* AlertClass.swift in Sources */ = {isa = PBXBuildFile; fileRef = EBB68D651DFEE414003792B3 /* AlertClass.swift */; };
 		EBB932921E22627D00D14800 /* BasketCheckoutTableViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = EBB932911E22627D00D14800 /* BasketCheckoutTableViewController.swift */; };
+		EBD834521E312F6100F81635 /* EntranceStarredQuestionModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = EBD834511E312F6100F81635 /* EntranceStarredQuestionModel.swift */; };
+		EBD834541E32156400F81635 /* EntranceQuestionStarredModelHandler.swift in Sources */ = {isa = PBXBuildFile; fileRef = EBD834531E32156400F81635 /* EntranceQuestionStarredModelHandler.swift */; };
+		EBD834561E3230AA00F81635 /* EntranceOpenedCountModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = EBD834551E3230AA00F81635 /* EntranceOpenedCountModel.swift */; };
+		EBD834581E32314100F81635 /* EntranceOpenedCountModelHandler.swift in Sources */ = {isa = PBXBuildFile; fileRef = EBD834571E32314100F81635 /* EntranceOpenedCountModelHandler.swift */; };
+		EBD8345A1E32815C00F81635 /* EntranceShowInfoViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = EBD834591E32815C00F81635 /* EntranceShowInfoViewController.swift */; };
 		EBFF8AA91DD4BF010002D03C /* EntranceCreateTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = EBFF8AA81DD4BF010002D03C /* EntranceCreateTableViewCell.swift */; };
 		EBFF8AAB1DD4C98C0002D03C /* EntranceUpdateTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = EBFF8AAA1DD4C98C0002D03C /* EntranceUpdateTableViewCell.swift */; };
 /* End PBXBuildFile section */
@@ -134,10 +147,14 @@
 		7C4790EBB0F86DF94D790C1F /* Pods-Concough.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Concough.debug.xcconfig"; path = "Pods/Target Support Files/Pods-Concough/Pods-Concough.debug.xcconfig"; sourceTree = "<group>"; };
 		B82887E22296AB852B639160 /* Pods_Concough.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_Concough.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		EB114CD51E24B2B500D833D1 /* EDPurchasedSectionTableViewCell.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = EDPurchasedSectionTableViewCell.swift; sourceTree = "<group>"; };
+		EB1400E91E2E57300029B22A /* FavoritesTableViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = FavoritesTableViewController.swift; sourceTree = "<group>"; };
 		EB1AA8DA1DD332B500F0CED9 /* HomeTableViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = HomeTableViewController.swift; sourceTree = "<group>"; };
 		EB1AA8DD1DD386CA00F0CED9 /* EntranceActivity.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = EntranceActivity.swift; sourceTree = "<group>"; };
+		EB2F358E1E338890009AF6CA /* StarredQuestionHeaderCell.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = StarredQuestionHeaderCell.swift; sourceTree = "<group>"; };
+		EB2F35901E34DC93009AF6CA /* FavoriteEntranceDeleteTableViewCell.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = FavoriteEntranceDeleteTableViewCell.swift; sourceTree = "<group>"; };
 		EB3127CF1E229B3D00F7F0AD /* BasketEntranceTableViewCell.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = BasketEntranceTableViewCell.swift; sourceTree = "<group>"; };
 		EB3127D11E23F87F00F7F0AD /* EntrancePurchasedStructure.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = EntrancePurchasedStructure.swift; sourceTree = "<group>"; };
+		EB3821051E2D0E9000655011 /* DownloaderSingleton.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DownloaderSingleton.swift; sourceTree = "<group>"; };
 		EB61CF001E2501B10047B942 /* PurchasedModel.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PurchasedModel.swift; sourceTree = "<group>"; };
 		EB61CF021E2507500047B942 /* Realm.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = Realm.framework; sourceTree = "<group>"; };
 		EB61CF031E2507500047B942 /* RealmSwift.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = RealmSwift.framework; sourceTree = "<group>"; };
@@ -162,6 +179,10 @@
 		EB762F5F1DCF99D10084CA1D /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		EB762F661DCF9A430084CA1D /* AppSettings.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = AppSettings.plist; sourceTree = "<group>"; };
 		EB95BB811DD3214B0040CA48 /* SwiftyJSON.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SwiftyJSON.framework; path = "Pods/../build/Debug-iphoneos/SwiftyJSON/SwiftyJSON.framework"; sourceTree = "<group>"; };
+		EBA4AF9F1E2E7EA1009137CB /* FavoriteEntranceNotDownloadedTableViewCell.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = FavoriteEntranceNotDownloadedTableViewCell.swift; sourceTree = "<group>"; };
+		EBA4AFA11E2F8A9B009137CB /* FavoriteEntranceDownloadedTableViewCell.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = FavoriteEntranceDownloadedTableViewCell.swift; sourceTree = "<group>"; };
+		EBA4AFA31E2FA372009137CB /* EntranceShowTableViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = EntranceShowTableViewController.swift; sourceTree = "<group>"; };
+		EBA4AFA51E2FA4A4009137CB /* EntranceShowQuestionTableViewCell.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = EntranceShowQuestionTableViewCell.swift; sourceTree = "<group>"; };
 		EBA657871E07E3FE00F0DC84 /* JwtAdapter.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = JwtAdapter.swift; sourceTree = "<group>"; };
 		EBA657891E08033E00F0DC84 /* NetworkStatusType.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = NetworkStatusType.swift; sourceTree = "<group>"; };
 		EBA6578B1E09189200F0DC84 /* JwtHandler.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = JwtHandler.swift; sourceTree = "<group>"; };
@@ -235,6 +256,11 @@
 		EBB68D631DFE9F7B003792B3 /* ResetPasswordViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ResetPasswordViewController.swift; sourceTree = "<group>"; };
 		EBB68D651DFEE414003792B3 /* AlertClass.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AlertClass.swift; sourceTree = "<group>"; };
 		EBB932911E22627D00D14800 /* BasketCheckoutTableViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = BasketCheckoutTableViewController.swift; sourceTree = "<group>"; };
+		EBD834511E312F6100F81635 /* EntranceStarredQuestionModel.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = EntranceStarredQuestionModel.swift; sourceTree = "<group>"; };
+		EBD834531E32156400F81635 /* EntranceQuestionStarredModelHandler.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = EntranceQuestionStarredModelHandler.swift; sourceTree = "<group>"; };
+		EBD834551E3230AA00F81635 /* EntranceOpenedCountModel.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = EntranceOpenedCountModel.swift; sourceTree = "<group>"; };
+		EBD834571E32314100F81635 /* EntranceOpenedCountModelHandler.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = EntranceOpenedCountModelHandler.swift; sourceTree = "<group>"; };
+		EBD834591E32815C00F81635 /* EntranceShowInfoViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = EntranceShowInfoViewController.swift; sourceTree = "<group>"; };
 		EBFF8AA81DD4BF010002D03C /* EntranceCreateTableViewCell.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = EntranceCreateTableViewCell.swift; sourceTree = "<group>"; };
 		EBFF8AAA1DD4C98C0002D03C /* EntranceUpdateTableViewCell.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = EntranceUpdateTableViewCell.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -291,6 +317,8 @@
 				EB61CF1D1E2681C90047B942 /* EntranceLessonModelHandler.swift */,
 				EB61CF1F1E26830E0047B942 /* EntranceQuestionModelHandler.swift */,
 				EB61CF211E2686980047B942 /* EntrancePackageHandler.swift */,
+				EBD834531E32156400F81635 /* EntranceQuestionStarredModelHandler.swift */,
+				EBD834571E32314100F81635 /* EntranceOpenedCountModelHandler.swift */,
 			);
 			name = Models;
 			sourceTree = "<group>";
@@ -369,6 +397,11 @@
 				EB3127CF1E229B3D00F7F0AD /* BasketEntranceTableViewCell.swift */,
 				EB114CD51E24B2B500D833D1 /* EDPurchasedSectionTableViewCell.swift */,
 				EB61CF111E2551FB0047B942 /* EDDownloadedTableViewCell.swift */,
+				EBA4AF9F1E2E7EA1009137CB /* FavoriteEntranceNotDownloadedTableViewCell.swift */,
+				EBA4AFA11E2F8A9B009137CB /* FavoriteEntranceDownloadedTableViewCell.swift */,
+				EBA4AFA51E2FA4A4009137CB /* EntranceShowQuestionTableViewCell.swift */,
+				EB2F358E1E338890009AF6CA /* StarredQuestionHeaderCell.swift */,
+				EB2F35901E34DC93009AF6CA /* FavoriteEntranceDeleteTableViewCell.swift */,
 			);
 			name = Views;
 			sourceTree = "<group>";
@@ -407,6 +440,9 @@
 				EBA6579B1E0AAE5700F0DC84 /* ArchiveTableViewController.swift */,
 				EBA657A51E111A7D00F0DC84 /* ArchiveDetailTableViewController.swift */,
 				EBB932911E22627D00D14800 /* BasketCheckoutTableViewController.swift */,
+				EB1400E91E2E57300029B22A /* FavoritesTableViewController.swift */,
+				EBA4AFA31E2FA372009137CB /* EntranceShowTableViewController.swift */,
+				EBD834591E32815C00F81635 /* EntranceShowInfoViewController.swift */,
 			);
 			name = Controllers;
 			sourceTree = "<group>";
@@ -419,6 +455,8 @@
 				EB61CF151E2678530047B942 /* EntranceBookletModel.swift */,
 				EB61CF171E267B160047B942 /* EntranceLessonModel.swift */,
 				EB61CF191E267D5E0047B942 /* EntranceQuestionModel.swift */,
+				EBD834511E312F6100F81635 /* EntranceStarredQuestionModel.swift */,
+				EBD834551E3230AA00F81635 /* EntranceOpenedCountModel.swift */,
 			);
 			name = Models;
 			sourceTree = "<group>";
@@ -459,6 +497,7 @@
 				EBB68D551DF7EED4003792B3 /* UserDefaultsSingleton.swift */,
 				EBA657DC1E1BF31700F0DC84 /* BasketSingleton.swift */,
 				EB61CF0A1E250E880047B942 /* RealmSingleton.swift */,
+				EB3821051E2D0E9000655011 /* DownloaderSingleton.swift */,
 			);
 			name = Singletons;
 			sourceTree = "<group>";
@@ -685,7 +724,9 @@
 				EBB68D381DEBFAA7003792B3 /* LoginViewController.swift in Sources */,
 				EB61CF221E2686980047B942 /* EntrancePackageHandler.swift in Sources */,
 				EBA657A61E111A7D00F0DC84 /* ArchiveDetailTableViewController.swift in Sources */,
+				EB2F35911E34DC93009AF6CA /* FavoriteEntranceDeleteTableViewCell.swift in Sources */,
 				EBA657941E095C4E00F0DC84 /* GrayPanelUI.swift in Sources */,
+				EBA4AFA21E2F8A9B009137CB /* FavoriteEntranceDownloadedTableViewCell.swift in Sources */,
 				EBB68D5C1DFD31E3003792B3 /* SignupMoreInfoViewController2.swift in Sources */,
 				EB61CF011E2501B10047B942 /* PurchasedModel.swift in Sources */,
 				EBB68D5A1DFC3A2D003792B3 /* TypeExtensions.swift in Sources */,
@@ -695,23 +736,28 @@
 				EB61CF181E267B160047B942 /* EntranceLessonModel.swift in Sources */,
 				EBB68D1F1DE5D7AA003792B3 /* MediaCacheSingleton.swift in Sources */,
 				EB61CF1A1E267D5E0047B942 /* EntranceQuestionModel.swift in Sources */,
+				EBD834561E3230AA00F81635 /* EntranceOpenedCountModel.swift in Sources */,
 				EB61CF0B1E250E880047B942 /* RealmSingleton.swift in Sources */,
 				EBA657DD1E1BF31700F0DC84 /* BasketSingleton.swift in Sources */,
 				EBB68D051DE488D9003792B3 /* WhitePanelUI.swift in Sources */,
 				EBB68D4E1DF41EE7003792B3 /* AuthRestAPIClass.swift in Sources */,
 				EB61CF1E1E2681C90047B942 /* EntranceLessonModelHandler.swift in Sources */,
+				EB3821061E2D0E9000655011 /* DownloaderSingleton.swift in Sources */,
 				EBA657CD1E1A909F00F0DC84 /* EntranceRestAPIClass.swift in Sources */,
 				EBA657B01E143EF300F0DC84 /* WhitePanelUI2.swift in Sources */,
 				EBA657DB1E1BC2A100F0DC84 /* EDSaleSectionTableViewCell.swift in Sources */,
 				EBB68D001DE48022003792B3 /* Constants.swift in Sources */,
 				EBB68D641DFE9F7B003792B3 /* ResetPasswordViewController.swift in Sources */,
 				EBB68D211DE6CD01003792B3 /* UrlMakerSingleton.swift in Sources */,
+				EBA4AFA61E2FA4A4009137CB /* EntranceShowQuestionTableViewCell.swift in Sources */,
 				EBB68D2A1DE9C31E003792B3 /* TestViewController.swift in Sources */,
 				EBB68D561DF7EED4003792B3 /* UserDefaultsSingleton.swift in Sources */,
+				EB1400EA1E2E57300029B22A /* FavoritesTableViewController.swift in Sources */,
 				EBB68D3A1DEC1015003792B3 /* SignUpViewController.swift in Sources */,
 				EBB68D3F1DED6018003792B3 /* HttpStatusType.swift in Sources */,
 				EBA657D71E1BB0E900F0DC84 /* EntranceStatStructure.swift in Sources */,
 				EBB68D481DF3203C003792B3 /* CriticalSectionHelpers.swift in Sources */,
+				EBD834581E32314100F81635 /* EntranceOpenedCountModelHandler.swift in Sources */,
 				EBA657921E09506D00F0DC84 /* EDInitialSectionTableViewCell.swift in Sources */,
 				EBB68D261DE6DB47003792B3 /* FormatterSingleton.swift in Sources */,
 				EB61CF091E250AAF0047B942 /* EntranceModel.swift in Sources */,
@@ -722,6 +768,8 @@
 				EBB68D361DEBF3F0003792B3 /* StartupViewController.swift in Sources */,
 				EBA657E11E1CC59700F0DC84 /* BasketRestAPIClass.swift in Sources */,
 				EB114CD61E24B2B500D833D1 /* EDPurchasedSectionTableViewCell.swift in Sources */,
+				EBA4AFA41E2FA372009137CB /* EntranceShowTableViewController.swift in Sources */,
+				EB2F358F1E338890009AF6CA /* StarredQuestionHeaderCell.swift in Sources */,
 				EBFF8AA91DD4BF010002D03C /* EntranceCreateTableViewCell.swift in Sources */,
 				EBA657901E09500E00F0DC84 /* EntranceDetailTableViewController.swift in Sources */,
 				EBB68D501DF6CE02003792B3 /* SubmitSignupCodeViewController.swift in Sources */,
@@ -729,6 +777,8 @@
 				EB61CF101E251C5E0047B942 /* EntranceModelHandler.swift in Sources */,
 				EB1AA8DB1DD332B500F0CED9 /* HomeTableViewController.swift in Sources */,
 				EB61CF121E2551FB0047B942 /* EDDownloadedTableViewCell.swift in Sources */,
+				EBD834541E32156400F81635 /* EntranceQuestionStarredModelHandler.swift in Sources */,
+				EBD8345A1E32815C00F81635 /* EntranceShowInfoViewController.swift in Sources */,
 				EBB68D5E1DFD7CB3003792B3 /* SignupMoreInfoViewController3.swift in Sources */,
 				EBA657881E07E3FE00F0DC84 /* JwtAdapter.swift in Sources */,
 				EBB68D441DF312F6003792B3 /* ObjectiveCHelpers.swift in Sources */,
@@ -764,6 +814,8 @@
 				EBA657A21E0FC73F00F0DC84 /* ArchiveEsetStructure.swift in Sources */,
 				EBA6579A1E0984F700F0DC84 /* EDInformationSectionTableViewCell.swift in Sources */,
 				EBA657A01E0FC1CB00F0DC84 /* ArchiveBasicTableViewCell.swift in Sources */,
+				EBD834521E312F6100F81635 /* EntranceStarredQuestionModel.swift in Sources */,
+				EBA4AFA01E2E7EA1009137CB /* FavoriteEntranceNotDownloadedTableViewCell.swift in Sources */,
 				EB762F541DCF99D10084CA1D /* AppDelegate.swift in Sources */,
 				EB61CF161E2678530047B942 /* EntranceBookletModel.swift in Sources */,
 				EBB68D661DFEE414003792B3 /* AlertClass.swift in Sources */,

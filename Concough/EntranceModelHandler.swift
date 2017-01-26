@@ -38,31 +38,39 @@ class EntranceModelHandler {
     }
     
     class func existById(id id: String, username: String) -> Bool {
-        if RealmSingleton.sharedInstance.DefaultRealm.objects(EntranceModel.self).filter("username = \(username) AND uniqueId = \(id)").first != nil {
+        let items = RealmSingleton.sharedInstance.DefaultRealm.objects(EntranceModel).filter("username = '\(username)' AND uniqueId = '\(id)'")
+        if items.count > 0 {
             return true
         }
+        
         return false
     }
     
     class func getByUsernameAndId(id id: String, username: String) -> EntranceModel? {
-        return RealmSingleton.sharedInstance.DefaultRealm.objects(EntranceModel.self).filter("username = \(username) AND uniqueId = \(id)").first
+        let items = RealmSingleton.sharedInstance.DefaultRealm.objects(EntranceModel.self).filter("username = '\(username)' AND uniqueId = '\(id)'")
+        if items.count > 0 {
+            return items.first
+        }
+        return nil
     }
     
     class func removeById(id id: String, username: String) -> Bool {
-        let entrance = RealmSingleton.sharedInstance.DefaultRealm.objects(EntranceModel.self).filter("username = \(username) AND uniqueId = \(id)").first
+        let items = RealmSingleton.sharedInstance.DefaultRealm.objects(EntranceModel.self).filter("username = '\(username)' AND uniqueId = '\(id)'")
         
-        if entrance != nil {
-            do {
-                try RealmSingleton.sharedInstance.DefaultRealm.write({ 
-                    RealmSingleton.sharedInstance.DefaultRealm.delete(entrance!)
-                })
-
-            } catch(let error as NSError) {
-                print("\(error)")
-                return false
+        if items.count > 0 {
+            let entrance = items.first
+            if entrance != nil {
+                do {
+                    try RealmSingleton.sharedInstance.DefaultRealm.write({
+                        RealmSingleton.sharedInstance.DefaultRealm.delete(entrance!)
+                    })
+                    
+                } catch(let error as NSError) {
+                    print("\(error)")
+                    return false
+                }
             }
         }
-        
         return true
     }
 }

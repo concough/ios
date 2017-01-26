@@ -20,7 +20,10 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         let attributes = NSDictionary(object: UIFont(name: "IRANYekanMobile-Bold", size: 14)! , forKey: NSFontAttributeName) as! [String: AnyObject]
         
         UIBarButtonItem.appearance().setTitleTextAttributes(attributes, forState: .Normal)
-    
+
+        let attributes2 = NSDictionary(object: UIFont(name: "IRANYekanMobile-Bold", size: 10)! , forKey: NSFontAttributeName) as! [String: AnyObject]
+        UITabBarItem.appearance().setTitleTextAttributes(attributes2, forState: .Normal)
+        
         return true
     }
 

@@ -384,7 +384,7 @@ class BasketSingleton {
         }
     }
 
-    internal func checkout(viewController viewController: UIViewController, completion: ((count: Int, purchased: [Int: (Int, NSDate)]?) -> ())?) {
+    internal func checkout(viewController viewController: UIViewController, completion: ((count: Int, purchased: [Int: (Int, Int, NSDate)]?) -> ())?) {
             BasketRestAPIClass.checkoutBasket(basketId: self._basketId!, completion: { (data, error) in
                 if error != HTTPErrorType.Success {
                     AlertClass.showSimpleErrorMessage(viewController: viewController, messageType: "HTTPError", messageSubType: (error?.toString())!, completion: nil)
@@ -396,7 +396,7 @@ class BasketSingleton {
                                 if let purchased = localData["purchased"].array {
                                     
                                     let username: String? = UserDefaultsSingleton.sharedInstance.getUsername()
-                                    var localPurchased: [Int: (Int, NSDate)] = [:]
+                                    var localPurchased: [Int: (Int, Int, NSDate)] = [:]
                                     for item in purchased {
                                         let saleId = item["sale_id"].intValue
                                         let purchaseId = item["purchase_id"].intValue
@@ -410,7 +410,7 @@ class BasketSingleton {
                                             if saleType == "Entrance" {
                                                 let entrance = self.getSaleById(saleId: saleId) as! EntranceStructure
                                                 if EntranceModelHandler.add(entrance: entrance, username: username!) == true {
-                                                    if PurchasedModelHandler.add(id: purchaseId, username: username!, isDownloaded: false, isImageDownlaoded: false, purchaseType: "Entrance", purchaseUniqueId: entrance.entranceUniqueId!, created: purchasedTime) == false {
+                                                    if PurchasedModelHandler.add(id: purchaseId, username: username!, isDownloaded: false, downloadTimes: downloaded, isImageDownlaoded: false, purchaseType: "Entrance", purchaseUniqueId: entrance.entranceUniqueId!, created: purchasedTime) == false {
                                                     
                                                         // rollback entrance insert
                                                         EntranceModelHandler.removeById(id: entrance.entranceUniqueId!, username: username!)
@@ -419,7 +419,7 @@ class BasketSingleton {
                                             }
                                         }
                                         
-                                        localPurchased.updateValue((purchaseId, purchasedTime), forKey: saleId)
+                                        localPurchased.updateValue((purchaseId, downloaded, purchasedTime), forKey: saleId)
                                         self.removeSaleById(saleId: saleId)
                                     }
                                     

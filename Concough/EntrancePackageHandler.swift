@@ -11,7 +11,10 @@ import RealmSwift
 import SwiftyJSON
 
 class EntrancePackageHandler {
-    class func savePackage(username username: String, entranceUniqueId: String, initData: JSON) -> Bool {
+    class func savePackage(username username: String, entranceUniqueId: String, initData: JSON) -> (Bool, [String: String], [String: [(id: String, dl: Bool)]]) {
+        
+        var imagesList: [String: String] = [:]
+        var qList: [String: [(id: String, dl: Bool)]] = [:]
         
         if let entrance = EntranceModelHandler.getByUsernameAndId(id: entranceUniqueId, username: username) {
             
@@ -26,7 +29,13 @@ class EntrancePackageHandler {
                 
                 if let booklet = EntranceBookletModelHandler.add(uniqueId: uniqueId, title: title, lessonCount: count, duration: duration, isOptional: isOptional, order: order) {
                     
-                    entrance.booklets.append(booklet)
+                    do {
+                        try RealmSingleton.sharedInstance.DefaultRealm.write({
+                            entrance.booklets.append(booklet)
+                        })
+                    } catch {
+                        return (false, [:], [:])
+                    }
                     
                     let lessonsArray = item["lessons"].arrayValue
                     for item2 in lessonsArray {
@@ -41,37 +50,63 @@ class EntrancePackageHandler {
                         
                         if let lesson = EntranceLessonModelHandler.add(uniqueId: lUniqueId, title: ltitle, fullTitle: fullTitle, qStart: qStart, qEnd: qEnd, qCount: qCount, order: lorder, duration: lduration) {
                             
-                            booklet.lessons.append(lesson)
+                            do {
+                                try RealmSingleton.sharedInstance.DefaultRealm.write({
+                                    booklet.lessons.append(lesson)
+                                })
+                            } catch {
+                                return (false, [:], [:])
+                            }
                             
                             let questionsArray = item2["questions"].arrayValue
                             for qitem in questionsArray {
                                 let answer = qitem["answer_key"].intValue
                                 let number = qitem["number"].intValue
-                                let images = qitem["images"].stringValue
+                                let images = qitem["images"].rawString()!
                                 let qUniqueId = NSUUID().UUIDString
                                 
                                 if let question = EntranceQuestionModelHandler.add(uniqueId: qUniqueId, number: number, answer: answer, images: images, isDownloaded: false, entrance: entrance) {
                                     
-                                    lesson.questions.append(question)
+                                    do {
+                                        try RealmSingleton.sharedInstance.DefaultRealm.write({
+                                            lesson.questions.append(question)
+                                        })
+                                        
+                                        // add to list for download
+                                        if let imagesArray = JSON(data: images.dataUsingEncoding(NSUTF8StringEncoding)!).array {
+                                            for item in imagesArray {
+                                                let imageUniqueId = item["unique_key"].stringValue
+                                                
+                                                imagesList.updateValue(qUniqueId, forKey: imageUniqueId)
+                                                if qList[qUniqueId] == nil {
+                                                    qList[qUniqueId] = []
+                                                }
+                                                qList[qUniqueId]!.append((id: imageUniqueId, dl: false))
+                                            }
+                                        }
+                                        
+                                    } catch {
+                                        return (false, [:], [:])
+                                    }
                                 } else {
-                                    return false
+                                    return (false, [:], [:])
                                 }
                                 
                             }
                         } else {
-                            return false
+                            return (false, [:], [:])
                         }
                     }
                 } else {
-                    return false
+                    return (false, [:], [:])
                 }
             }
             
         } else {
-            return false
+            return (false, [:], [:])
         }
         
-        return true
+        return (true, imagesList, qList)
     }
     
     class func removePackage(username username: String, entranceUniqueId: String) {
@@ -84,8 +119,8 @@ class EntrancePackageHandler {
                 for lesson in lessons {
                     
                     do {
-                        try RealmSingleton.sharedInstance.DefaultRealm.write({ 
-                            lesson.questions.removeAll()
+                        try RealmSingleton.sharedInstance.DefaultRealm.write({
+                            RealmSingleton.sharedInstance.DefaultRealm.delete(lesson.questions)
                         })
                     } catch(let error as NSError) {
                         print("\(error)")
@@ -94,7 +129,7 @@ class EntrancePackageHandler {
                 
                 do {
                     try RealmSingleton.sharedInstance.DefaultRealm.write({
-                        lessons.removeAll()
+                        RealmSingleton.sharedInstance.DefaultRealm.delete(lessons)
                     })
                 } catch(let error as NSError) {
                     print("\(error)")
@@ -103,7 +138,7 @@ class EntrancePackageHandler {
             
             do {
                 try RealmSingleton.sharedInstance.DefaultRealm.write({
-                    booklets.removeAll()
+                    RealmSingleton.sharedInstance.DefaultRealm.delete(booklets)
                 })
             } catch(let error as NSError) {
                 print("\(error)")

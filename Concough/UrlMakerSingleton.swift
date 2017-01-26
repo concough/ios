@@ -55,7 +55,18 @@ class UrlMakerSingleton {
         }
         return fullPath
     }
-    
+
+    internal func mediaUrlForQuestion(uniqueId uniqueId: String, mediaId: AnyObject) -> String? {
+        var fullPath:String?
+        let functionName = "entrance/\(uniqueId)/q/\(mediaId)"
+        if OAUTH_METHOD == "jwt" {
+            fullPath = "\(self._base_url)\(self._api_version)/\(self._jwt_prefix)/\(self._media_class_name)/\(functionName)/"
+        } else if OAUTH_METHOD == "oauth" {
+            fullPath = "\(self._base_url)\(self._api_version)/\(self._media_class_name)/\(functionName)/"
+        }
+        return fullPath
+    }
+
     internal func activityUrl() -> String? {
         var fullPath:String?
         if OAUTH_METHOD == "jwt" {
@@ -266,11 +277,21 @@ class UrlMakerSingleton {
         return fullPath
     }
     
+    internal func getPurchasedListUrl() -> String? {
+        let functionName = "list"
+        return self.getPurchasedUrl(functionName: functionName)
+    }
+    
     internal func getPurchasedForEntranceUrl(uniqueId uniqueId: String) -> String? {
         let functionName = "entrance/\(uniqueId)"
         return self.getPurchasedUrl(functionName: functionName)
     }
 
+    internal func getPurchasedUpdateDownloadTimesUrl(uniqueId uniqueId: String) -> String? {
+        let functionName = "entrance/\(uniqueId)/update"
+        return self.getPurchasedUrl(functionName: functionName)
+    }
+    
     private func getProductUrl(functionName functionName: String) -> String? {
         var fullPath: String?
         

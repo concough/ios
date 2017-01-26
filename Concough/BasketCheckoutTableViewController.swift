@@ -118,7 +118,7 @@ class BasketCheckoutTableViewController: UIViewController, UITableViewDelegate, 
     }
     
     private func updateTotalCost() {
-        print("total cost: \(BasketSingleton.sharedInstance.TotalCost)")
+        //print("total cost: \(BasketSingleton.sharedInstance.TotalCost)")
         self.totalCostLabel.text = FormatterSingleton.sharedInstance.NumberFormatter.stringFromNumber(BasketSingleton.sharedInstance.TotalCost)! + " تومان"
     }
     
@@ -128,13 +128,12 @@ class BasketCheckoutTableViewController: UIViewController, UITableViewDelegate, 
     }
     
     func tableView(tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        print ("basket count: \(BasketSingleton.sharedInstance.SalesCount)")
+        //print ("basket count: \(BasketSingleton.sharedInstance.SalesCount)")
         return BasketSingleton.sharedInstance.SalesCount
     }
     
     func tableView(tableView: UITableView, cellForRowAtIndexPath indexPath: NSIndexPath) -> UITableViewCell {
         if let sale = BasketSingleton.sharedInstance.getSaleByIndex(index: indexPath.row) as? (id: Int, created: NSDate, cost: Int, target: Any, type: String) {
-            print("data exist")
             
             if sale.type == "Entrance" {
                 if let cell = tableView.dequeueReusableCellWithIdentifier("ENTRANCE_SECTION", forIndexPath: indexPath) as? BasketEntranceTableViewCell {

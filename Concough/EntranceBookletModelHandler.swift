@@ -29,4 +29,10 @@ class EntranceBookletModelHandler {
         }
         return nil
     }
+    
+    class func getBookletsByEntranceId(uniqueId uniqueId: String) -> Results<EntranceBookletModel> {
+        let items = RealmSingleton.sharedInstance.DefaultRealm.objects(EntranceBookletModel.self).filter("entrance.uniqueId = '\(uniqueId)'").sorted("order", ascending: true)
+        
+        return items
+    }
 }

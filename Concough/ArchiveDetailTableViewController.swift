@@ -8,11 +8,13 @@
 
 import UIKit
 import SwiftyJSON
+import BBBadgeBarButtonItem
 
 class ArchiveDetailTableViewController: UITableViewController {
 
     internal var esetDetail: ArchiveEsetDetailStructure!
     
+    private var rightBarButtonItem: BBBadgeBarButtonItem!
     private var entrances: [ArchiveEntranceStructure] = []
     private var queue: NSOperationQueue!
     private var selectedIndex = -1
@@ -48,7 +50,40 @@ class ArchiveDetailTableViewController: UITableViewController {
         // Dispose of any resources that can be recreated.
     }
 
-    // Functions
+    override func viewDidAppear(animated: Bool) {
+        self.setupBarButton()
+    }
+    
+    // MARK: -Actions
+    @IBAction func basketButtonPressed(sender: AnyObject) {
+        NSOperationQueue.mainQueue().addOperationWithBlock {
+            self.performSegueWithIdentifier("BasketCheckoutVCSegue", sender: self)
+        }
+    }
+    
+    // MARK: - Functions
+    private func setupBarButton() {
+        if BasketSingleton.sharedInstance.SalesCount > 0 {
+            let b = UIButton(frame: CGRectMake(0, 0, 25, 25))
+            b.setImage(UIImage(named: "Buy_Blue"), forState: .Normal)
+            
+            b.addTarget(self, action: #selector(self.basketButtonPressed(_:)), forControlEvents: .TouchUpInside)
+            
+            self.rightBarButtonItem = BBBadgeBarButtonItem(customUIButton: b)
+            self.rightBarButtonItem.badgeValue = FormatterSingleton.sharedInstance.NumberFormatter.stringFromNumber(BasketSingleton.sharedInstance.SalesCount)!
+            self.rightBarButtonItem.badgeBGColor = UIColor(netHex: RED_COLOR_HEX_2, alpha: 0.8)
+            self.rightBarButtonItem.badgeTextColor = UIColor.whiteColor()
+            self.rightBarButtonItem.badgeFont = UIFont(name: "IRANYekanMobile-Bold", size: 12)
+            self.rightBarButtonItem.shouldHideBadgeAtZero = true
+            self.rightBarButtonItem.shouldAnimateBadge = true
+            self.rightBarButtonItem.badgeOriginX = 15.0
+            self.rightBarButtonItem.badgeOriginY = -5.0
+            
+            self.navigationItem.rightBarButtonItem = self.rightBarButtonItem
+        }
+        
+    }
+
     func refreshTableView(refreshControl_: UIRefreshControl) {
         // refresh control triggered
         let operation = NSBlockOperation() {
@@ -267,6 +302,9 @@ class ArchiveDetailTableViewController: UITableViewController {
                 self.navigationItem.backBarButtonItem = UIBarButtonItem(title: "آرشیو", style: .Plain, target: self, action: nil)
                 
             }
+        } else if segue.identifier == "BasketCheckoutVCSegue" {
+            self.navigationItem.backBarButtonItem = UIBarButtonItem(title: "آرشیو", style: .Plain, target: self, action: nil)
+            
         }
     }
 }

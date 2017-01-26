@@ -10,6 +10,7 @@ import UIKit
 import Alamofire
 import SwiftyJSON
 import DZNEmptyDataSet
+import BBBadgeBarButtonItem
 
 class HomeTableViewController: UITableViewController, DZNEmptyDataSetDelegate, DZNEmptyDataSetSource {
 
@@ -17,6 +18,7 @@ class HomeTableViewController: UITableViewController, DZNEmptyDataSetDelegate, D
     var activityList = [ConcoughActivity]()
     var localImageStorage = Dictionary<String, Dictionary<Int, NSData>>()
     private var selectedActivityIndex: Int = -1
+    private var rightBarButtonItem: BBBadgeBarButtonItem!
     
     let queue = NSOperationQueue()
     var oldOperation: NSBlockOperation? = nil
@@ -47,6 +49,10 @@ class HomeTableViewController: UITableViewController, DZNEmptyDataSetDelegate, D
 
     override func viewWillAppear(animated: Bool) {
         self.selectedActivityIndex = -1
+    }
+    
+    override func viewDidAppear(animated: Bool) {
+        self.setupBarButton()
     }
     
     func refreshTableView(refreshControl_: UIRefreshControl) {
@@ -155,8 +161,40 @@ class HomeTableViewController: UITableViewController, DZNEmptyDataSetDelegate, D
             }
         }
     }
+    
+    // MARK: - Actions
+    @IBAction func basketButtonPressed(sender: AnyObject) {
+        NSOperationQueue.mainQueue().addOperationWithBlock {
+            self.performSegueWithIdentifier("BasketCheckoutVCSegue", sender: self)
+        }
+    }
 
+    @IBAction func ArchiveButtonPressed(sender: UIBarButtonItem) {
+        self.tabBarController?.selectedIndex = 1
+    }
+    
     // MARK: Private Functions
+    private func setupBarButton() {
+        if BasketSingleton.sharedInstance.SalesCount > 0 {
+            let b = UIButton(frame: CGRectMake(0, 0, 25, 25))
+            b.setImage(UIImage(named: "Buy_Blue"), forState: .Normal)
+            
+            b.addTarget(self, action: #selector(self.basketButtonPressed(_:)), forControlEvents: .TouchUpInside)
+            
+            self.rightBarButtonItem = BBBadgeBarButtonItem(customUIButton: b)
+            self.rightBarButtonItem.badgeValue = FormatterSingleton.sharedInstance.NumberFormatter.stringFromNumber(BasketSingleton.sharedInstance.SalesCount)!
+            self.rightBarButtonItem.badgeBGColor = UIColor(netHex: RED_COLOR_HEX_2, alpha: 0.8)
+            self.rightBarButtonItem.badgeTextColor = UIColor.whiteColor()
+            self.rightBarButtonItem.badgeFont = UIFont(name: "IRANYekanMobile-Bold", size: 12)
+            self.rightBarButtonItem.shouldHideBadgeAtZero = true
+            self.rightBarButtonItem.shouldAnimateBadge = true
+            self.rightBarButtonItem.badgeOriginX = 15.0
+            self.rightBarButtonItem.badgeOriginY = -5.0
+            
+            self.navigationItem.rightBarButtonItem = self.rightBarButtonItem
+        }
+        
+    }
     
     private func loadFeeds(next next: String?) {
         UIApplication.sharedApplication().networkActivityIndicatorVisible = true

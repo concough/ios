@@ -31,6 +31,10 @@ class ArchiveAdvanceTableViewCell: UITableViewCell {
         
     }
 
+    override func prepareForReuse() {
+        self.selectionStyle = .None
+    }
+    
     internal func configureCell(indexPath indexPath: NSIndexPath, setId: Int, title: String, subTitle: String, code: Int) {
         self.entranceSetTitle.text = title
         self.entranceSetSubTitle.text = subTitle
@@ -43,6 +47,10 @@ class ArchiveAdvanceTableViewCell: UITableViewCell {
         var count = FormatterSingleton.sharedInstance.NumberFormatter.stringFromNumber(0)
         if let c = set.entranceCount {
             count = FormatterSingleton.sharedInstance.NumberFormatter.stringFromNumber(c)
+        }
+        
+        if set.entranceCount > 0 {
+            self.selectionStyle = .Default
         }
         
         self.configureCell(indexPath: indexPath, setId: set.id!, title: set.title!, subTitle: "\(count!) کنکور", code: set.code!)
