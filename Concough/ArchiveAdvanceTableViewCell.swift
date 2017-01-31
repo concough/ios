@@ -24,15 +24,16 @@ class ArchiveAdvanceTableViewCell: UITableViewCell {
     }
     
     override func drawRect(rect: CGRect) {
-        //self.entranceSetImageView.layer.cornerRadius = (self.entranceSetImageView?.layer.frame.size.width)! / 2.0
+        self.entranceSetImageView.layer.cornerRadius = (self.entranceSetImageView?.layer.frame.size.width)! / 2.0
         self.entranceSetImageView.layer.masksToBounds = true
-        //self.entranceSetImageView.layer.borderColor = UIColor(netHex: GRAY_COLOR_HEX_1, alpha: 0.5).CGColor
-        //self.entranceSetImageView.layer.borderWidth = 0.5
+        self.entranceSetImageView.layer.borderColor = UIColor(netHex: GRAY_COLOR_HEX_1, alpha: 0.5).CGColor
+        self.entranceSetImageView.layer.borderWidth = 0.5
         
     }
 
     override func prepareForReuse() {
         self.selectionStyle = .None
+        self.entranceSetImageView.image = UIImage(named: "NoImage")
     }
     
     internal func configureCell(indexPath indexPath: NSIndexPath, setId: Int, title: String, subTitle: String, code: Int) {
@@ -76,8 +77,8 @@ class ArchiveAdvanceTableViewCell: UITableViewCell {
                     
                     if error != .Success {
                         // print the error for now
-                        self.entranceSetImageView?.image = UIImage()
-                        self.setNeedsLayout()
+//                        self.entranceSetImageView?.image = UIImage()
+//                        self.setNeedsLayout()
                         print("error in downloaing image from \(fullPath!)")
                         
                     } else {

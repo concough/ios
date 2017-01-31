@@ -21,7 +21,7 @@ class StartupViewController: UIViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        
+    
         self.startup()
     }
     

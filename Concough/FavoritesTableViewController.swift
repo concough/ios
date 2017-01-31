@@ -52,6 +52,7 @@ class FavoritesTableViewController: UITableViewController {
     }
 
     override func viewDidAppear(animated: Bool) {
+        self.tabBarController?.tabBar.items?[2].badgeValue = nil
         self.loadData()        
     }
     
@@ -670,7 +671,9 @@ class FavoritesTableViewController: UITableViewController {
                         vc.entrance = item.object as! EntranceStructure
                         vc.showType = self.selectedShowType
                         
+                        vc.hidesBottomBarWhenPushed = true
                         self.navigationItem.backBarButtonItem = UIBarButtonItem(title: "", style: .Plain, target: self, action: nil)
+                        
                     }
                 }
             }

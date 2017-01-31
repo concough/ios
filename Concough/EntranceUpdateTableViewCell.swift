@@ -20,6 +20,7 @@ class EntranceUpdateTableViewCell: UITableViewCell {
     @IBOutlet weak var entranceImage: UIImageView!
     @IBOutlet weak var entranceYearUILabel: UILabel!
     @IBOutlet weak var entranceDlCount: UILabel!
+    @IBOutlet weak var entranceExtraDataLabel: UILabel!
     
     override func awakeFromNib() {
         super.awakeFromNib()
@@ -52,7 +53,7 @@ class EntranceUpdateTableViewCell: UITableViewCell {
         self.entranceTitleUILabel.text = "کنکور" + " \(target["entrance_type"]["title"].stringValue) \(target["organization"]["title"].stringValue)"
         self.entranceSetUILabel.text = "\(target["entrance_set"]["title"].stringValue) (\(target["entrance_set"]["group"]["title"].stringValue))"
         self.entranceYearUILabel.text = " \(FormatterSingleton.sharedInstance.NumberFormatter.stringFromNumber(target["year"].numberValue)!) "
-        self.entranceDlCount.text = "\(FormatterSingleton.sharedInstance.NumberFormatter.stringFromNumber(10)!)"
+        self.entranceDlCount.text = "\(FormatterSingleton.sharedInstance.NumberFormatter.stringFromNumber(0)!)"
         
         if let publishedStr = target["last_published"].string {
             let date:NSDate = FormatterSingleton.sharedInstance.UTCDateFormatter.dateFromString(publishedStr)!
@@ -62,6 +63,19 @@ class EntranceUpdateTableViewCell: UITableViewCell {
             self.entranceUpdateTimeUILabel.text = "\(FormatterSingleton.sharedInstance.IRDateFormatter.stringFromDate(date))"            
         }
         
+        if let extra_data = target["extra_data"].stringValue.dataUsingEncoding(NSUTF8StringEncoding) {
+            let extraData = JSON(data: extra_data)
+            
+            var s = ""
+            for (key, item) in extraData {
+                s += "\(key): \(item.stringValue)" + " - "
+            }
+            
+            if s.characters.count > 3 {
+                s = s.substringToIndex(s.endIndex.advancedBy(-3))
+            }
+            self.entranceExtraDataLabel.text = s
+        }        
         
         let imageID = target["entrance_set"]["id"].intValue
         

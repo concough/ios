@@ -633,11 +633,24 @@ class EntranceDetailTableViewController: UITableViewController {
             
             self.updateUserPurchaseData()
             
+            let eData = JSON(["uniqueId": self.entranceUniqueId])
+            self.createLog(logType: LogTypeEnum.EnranceDownload.rawValue, extraData: eData)
+            
             self.state! = EntranceVCStateEnum.Downloaded
             self.stateMachine()
             return
         }
         
+    }
+    
+    private func createLog(logType logType: String, extraData: JSON) {
+        let username = UserDefaultsSingleton.sharedInstance.getUsername()!
+        let uniqueId = NSUUID().UUIDString
+        let created = NSDate()
+        
+        NSOperationQueue.mainQueue().addOperationWithBlock { 
+            UserLogModelHandler.add(username: username, uniqueId: uniqueId, created: created, logType: logType, extraData: extraData)
+        }
     }
     
     // MARK: - Actions
@@ -947,7 +960,9 @@ class EntranceDetailTableViewController: UITableViewController {
             if let vc = segue.destinationViewController as? EntranceShowTableViewController {
                 vc.entrance = self.entrance
                 vc.entranceUniqueId = self.entranceUniqueId
+                vc.hidesBottomBarWhenPushed = true
                 vc.showType = "Show"
+                self.navigationItem.backBarButtonItem = UIBarButtonItem(title: "", style: .Plain, target: self, action: nil)
             }
         }
     }

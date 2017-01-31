@@ -21,6 +21,7 @@ class EntranceCreateTableViewCell: UITableViewCell {
     @IBOutlet weak var entranceYearUILabel: UILabel!
     @IBOutlet weak var entranceUpdateTimeUILabel: UILabel!
     @IBOutlet weak var entranceDlCount: UILabel!
+    @IBOutlet weak var entranceExtraDataLabel: UILabel!
     
     override func awakeFromNib() {
         super.awakeFromNib()
@@ -49,7 +50,7 @@ class EntranceCreateTableViewCell: UITableViewCell {
         self.entranceTitleUILabel.text = "\(target["entrance_type"]["title"].stringValue) \(target["organization"]["title"].stringValue) "
         self.entranceSetUILabel.text = "\(target["entrance_set"]["title"].stringValue) (\(target["entrance_set"]["group"]["title"].stringValue))"
         self.entranceYearUILabel.text = " \(FormatterSingleton.sharedInstance.NumberFormatter.stringFromNumber(target["year"].numberValue)!) "
-        self.entranceDlCount.text = "\(FormatterSingleton.sharedInstance.NumberFormatter.stringFromNumber(14)!)"
+        self.entranceDlCount.text = "\(FormatterSingleton.sharedInstance.NumberFormatter.stringFromNumber(target["stats"][0]["purchased"].numberValue)!) خرید"
         
         if let publishedStr = target["last_published"].string {
             let date:NSDate = FormatterSingleton.sharedInstance.UTCDateFormatter.dateFromString(publishedStr)!
@@ -58,6 +59,20 @@ class EntranceCreateTableViewCell: UITableViewCell {
             let date:NSDate = FormatterSingleton.sharedInstance.UTCDateFormatter.dateFromString(publishedStr)!
             self.entranceUpdateTimeUILabel.text = "\(FormatterSingleton.sharedInstance.IRDateFormatter.stringFromDate(date))"
         }        
+        
+        if let extra_data = target["extra_data"].stringValue.dataUsingEncoding(NSUTF8StringEncoding) {
+            let extraData = JSON(data: extra_data)
+
+            var s = ""
+            for (key, item) in extraData {
+                s += "\(key): \(item.stringValue)" + " - "
+            }
+            
+            if s.characters.count > 3 {
+                s = s.substringToIndex(s.endIndex.advancedBy(-3))
+            }
+            self.entranceExtraDataLabel.text = s
+        }
         
         let imageID = target["entrance_set"]["id"].intValue
         

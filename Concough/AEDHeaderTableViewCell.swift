@@ -35,6 +35,10 @@ class AEDHeaderTableViewCell: UITableViewCell {
         
     }
     
+    override func prepareForReuse() {
+        self.entranceImage.image = UIImage(named: "NoImage")
+    }
+    
     internal func configureCell(indexPath indexPath: NSIndexPath, esetId: Int, esetTitle: String, entranceCount: Int, entranceSetCode: Int) {
         let count = FormatterSingleton.sharedInstance.NumberFormatter.stringFromNumber(entranceCount)!
         

@@ -11,6 +11,7 @@ import UIKit
 
 // Application Version
 let API_VERSION = "v1"
+let SECRET_KEY = "67mnnv^vs7&^v87YrV&6*njs*99__==ncdjncdujb"
 
 // Host Urls
 let BASE_URL = "http://192.168.1.15:8000/api/"

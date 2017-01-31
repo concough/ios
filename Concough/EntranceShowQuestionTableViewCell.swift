@@ -30,6 +30,7 @@ class EntranceShowQuestionTableViewCell: UITableViewCell {
 
     private var questionId: String!
     private var starState: Bool!
+    private var questionNumber: Int!
     
     override func awakeFromNib() {
         super.awakeFromNib()
@@ -84,6 +85,7 @@ class EntranceShowQuestionTableViewCell: UITableViewCell {
         self.viewControllerType = vcType
         
         self.questionId = questionId
+        self.questionNumber = question
         self.starState = starred
         
         self.showAnswer.addTarget(self, action: #selector(self.answerShowClicked(_:)), forControlEvents: .TouchUpInside)
@@ -106,7 +108,7 @@ class EntranceShowQuestionTableViewCell: UITableViewCell {
 
         if self.viewControllerType == "E" {
             if let vc = self.viewController as? EntranceShowTableViewController {
-                vc.addStarQuestionId(questionId: self.questionId, state: self.starState)
+                vc.addStarQuestionId(questionId: self.questionId, questionNo: self.questionNumber, state: self.starState)
             }
         }
     }
@@ -162,12 +164,15 @@ class EntranceShowQuestionTableViewCell: UITableViewCell {
     
     private func insertImages(images images: [NSData]) {
         let username = UserDefaultsSingleton.sharedInstance.getUsername()!
+        let hash_str = username + ":" + SECRET_KEY
+        let hash_key = MD5Digester.digest(hash_str)
         
         if images.count >= 1 {
             let decodedData = NSData(base64EncodedData: images[0], options: NSDataBase64DecodingOptions.init(rawValue: 0))
             
             do {
-                let originalImage = try RNCryptor.decryptData(decodedData!, password: username)
+                
+                let originalImage = try RNCryptor.decryptData(decodedData!, password: hash_key)
                 let image = UIImage(data: originalImage)
                 
                 let ratio = (image?.size.width)! / (image?.size.height)!
@@ -181,7 +186,7 @@ class EntranceShowQuestionTableViewCell: UITableViewCell {
             let decodedData = NSData(base64EncodedData: images[1], options: NSDataBase64DecodingOptions.init(rawValue: 0))
             
             do {
-                let originalImage = try RNCryptor.decryptData(decodedData!, password: username)
+                let originalImage = try RNCryptor.decryptData(decodedData!, password: hash_key)
                 let image = UIImage(data: originalImage)
             
                 let ratio = (image?.size.width)! / (image?.size.height)!
@@ -195,7 +200,7 @@ class EntranceShowQuestionTableViewCell: UITableViewCell {
             let decodedData = NSData(base64EncodedData: images[2], options: NSDataBase64DecodingOptions.init(rawValue: 0))
             
             do {
-                let originalImage = try RNCryptor.decryptData(decodedData!, password: username)
+                let originalImage = try RNCryptor.decryptData(decodedData!, password: hash_key)
                 let image = UIImage(data: originalImage)
             
                 let ratio = (image?.size.width)! / (image?.size.height)!

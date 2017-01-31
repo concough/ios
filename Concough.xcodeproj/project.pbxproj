@@ -122,6 +122,10 @@
 		EBD834561E3230AA00F81635 /* EntranceOpenedCountModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = EBD834551E3230AA00F81635 /* EntranceOpenedCountModel.swift */; };
 		EBD834581E32314100F81635 /* EntranceOpenedCountModelHandler.swift in Sources */ = {isa = PBXBuildFile; fileRef = EBD834571E32314100F81635 /* EntranceOpenedCountModelHandler.swift */; };
 		EBD8345A1E32815C00F81635 /* EntranceShowInfoViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = EBD834591E32815C00F81635 /* EntranceShowInfoViewController.swift */; };
+		EBE3F7A11E3F28ED00B30BEC /* UserLogModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = EBE3F7A01E3F28ED00B30BEC /* UserLogModel.swift */; };
+		EBE3F7A31E3F3A3000B30BEC /* UserLogModelHandler.swift in Sources */ = {isa = PBXBuildFile; fileRef = EBE3F7A21E3F3A3000B30BEC /* UserLogModelHandler.swift */; };
+		EBE3F7A51E3F3E1900B30BEC /* LogTypeEnum.swift in Sources */ = {isa = PBXBuildFile; fileRef = EBE3F7A41E3F3E1900B30BEC /* LogTypeEnum.swift */; };
+		EBE3F7A71E40A66C00B30BEC /* MD5Digester.swift in Sources */ = {isa = PBXBuildFile; fileRef = EBE3F7A61E40A66B00B30BEC /* MD5Digester.swift */; };
 		EBFF8AA91DD4BF010002D03C /* EntranceCreateTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = EBFF8AA81DD4BF010002D03C /* EntranceCreateTableViewCell.swift */; };
 		EBFF8AAB1DD4C98C0002D03C /* EntranceUpdateTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = EBFF8AAA1DD4C98C0002D03C /* EntranceUpdateTableViewCell.swift */; };
 /* End PBXBuildFile section */
@@ -261,6 +265,11 @@
 		EBD834551E3230AA00F81635 /* EntranceOpenedCountModel.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = EntranceOpenedCountModel.swift; sourceTree = "<group>"; };
 		EBD834571E32314100F81635 /* EntranceOpenedCountModelHandler.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = EntranceOpenedCountModelHandler.swift; sourceTree = "<group>"; };
 		EBD834591E32815C00F81635 /* EntranceShowInfoViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = EntranceShowInfoViewController.swift; sourceTree = "<group>"; };
+		EBE3F7A01E3F28ED00B30BEC /* UserLogModel.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = UserLogModel.swift; sourceTree = "<group>"; };
+		EBE3F7A21E3F3A3000B30BEC /* UserLogModelHandler.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = UserLogModelHandler.swift; sourceTree = "<group>"; };
+		EBE3F7A41E3F3E1900B30BEC /* LogTypeEnum.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = LogTypeEnum.swift; sourceTree = "<group>"; };
+		EBE3F7A61E40A66B00B30BEC /* MD5Digester.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MD5Digester.swift; sourceTree = "<group>"; };
+		EBE3F7AF1E40AA4C00B30BEC /* Concough-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "Concough-Bridging-Header.h"; sourceTree = "<group>"; };
 		EBFF8AA81DD4BF010002D03C /* EntranceCreateTableViewCell.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = EntranceCreateTableViewCell.swift; sourceTree = "<group>"; };
 		EBFF8AAA1DD4C98C0002D03C /* EntranceUpdateTableViewCell.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = EntranceUpdateTableViewCell.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -304,6 +313,7 @@
 				EBA657D61E1BB0E900F0DC84 /* EntranceStatStructure.swift */,
 				EBA657D81E1BB4A600F0DC84 /* EntranceSaleStructure.swift */,
 				EB3127D11E23F87F00F7F0AD /* EntrancePurchasedStructure.swift */,
+				EBE3F7A41E3F3E1900B30BEC /* LogTypeEnum.swift */,
 			);
 			name = Structures;
 			sourceTree = "<group>";
@@ -319,6 +329,7 @@
 				EB61CF211E2686980047B942 /* EntrancePackageHandler.swift */,
 				EBD834531E32156400F81635 /* EntranceQuestionStarredModelHandler.swift */,
 				EBD834571E32314100F81635 /* EntranceOpenedCountModelHandler.swift */,
+				EBE3F7A21E3F3A3000B30BEC /* UserLogModelHandler.swift */,
 			);
 			name = Models;
 			sourceTree = "<group>";
@@ -375,6 +386,7 @@
 				EB762F5F1DCF99D10084CA1D /* Info.plist */,
 				EB762F661DCF9A430084CA1D /* AppSettings.plist */,
 				EBB68CFF1DE48022003792B3 /* Constants.swift */,
+				EBE3F7AF1E40AA4C00B30BEC /* Concough-Bridging-Header.h */,
 			);
 			name = Settings;
 			sourceTree = "<group>";
@@ -457,6 +469,7 @@
 				EB61CF191E267D5E0047B942 /* EntranceQuestionModel.swift */,
 				EBD834511E312F6100F81635 /* EntranceStarredQuestionModel.swift */,
 				EBD834551E3230AA00F81635 /* EntranceOpenedCountModel.swift */,
+				EBE3F7A01E3F28ED00B30BEC /* UserLogModel.swift */,
 			);
 			name = Models;
 			sourceTree = "<group>";
@@ -534,6 +547,7 @@
 				EBB68D431DF312F6003792B3 /* ObjectiveCHelpers.swift */,
 				EBB68D471DF3203C003792B3 /* CriticalSectionHelpers.swift */,
 				EBA6578B1E09189200F0DC84 /* JwtHandler.swift */,
+				EBE3F7A61E40A66B00B30BEC /* MD5Digester.swift */,
 			);
 			name = Utils;
 			sourceTree = "<group>";
@@ -734,6 +748,7 @@
 				EBFF8AAB1DD4C98C0002D03C /* EntranceUpdateTableViewCell.swift in Sources */,
 				EB3127D21E23F87F00F7F0AD /* EntrancePurchasedStructure.swift in Sources */,
 				EB61CF181E267B160047B942 /* EntranceLessonModel.swift in Sources */,
+				EBE3F7A51E3F3E1900B30BEC /* LogTypeEnum.swift in Sources */,
 				EBB68D1F1DE5D7AA003792B3 /* MediaCacheSingleton.swift in Sources */,
 				EB61CF1A1E267D5E0047B942 /* EntranceQuestionModel.swift in Sources */,
 				EBD834561E3230AA00F81635 /* EntranceOpenedCountModel.swift in Sources */,
@@ -756,6 +771,7 @@
 				EBB68D3A1DEC1015003792B3 /* SignUpViewController.swift in Sources */,
 				EBB68D3F1DED6018003792B3 /* HttpStatusType.swift in Sources */,
 				EBA657D71E1BB0E900F0DC84 /* EntranceStatStructure.swift in Sources */,
+				EBE3F7A11E3F28ED00B30BEC /* UserLogModel.swift in Sources */,
 				EBB68D481DF3203C003792B3 /* CriticalSectionHelpers.swift in Sources */,
 				EBD834581E32314100F81635 /* EntranceOpenedCountModelHandler.swift in Sources */,
 				EBA657921E09506D00F0DC84 /* EDInitialSectionTableViewCell.swift in Sources */,
@@ -792,6 +808,7 @@
 				EBA657AE1E114DF600F0DC84 /* AEDBasicTableViewCell.swift in Sources */,
 				EBB932921E22627D00D14800 /* BasketCheckoutTableViewController.swift in Sources */,
 				EBA657B21E14DA0900F0DC84 /* AEDAdvanceTableViewCell.swift in Sources */,
+				EBE3F7A71E40A66C00B30BEC /* MD5Digester.swift in Sources */,
 				EBA657AC1E11389200F0DC84 /* ArchiveEntranceStructure.swift in Sources */,
 				EBB68D2D1DE9DC8C003792B3 /* OAuthAdapter.swift in Sources */,
 				EB3127D01E229B3D00F7F0AD /* BasketEntranceTableViewCell.swift in Sources */,
@@ -799,6 +816,7 @@
 				EB61CF0E1E2514EA0047B942 /* PurchasedModelHandler.swift in Sources */,
 				EBB68D421DF31221003792B3 /* UIExtensions.swift in Sources */,
 				EBB68D241DE6D025003792B3 /* MediaRestAPIClass.swift in Sources */,
+				EBE3F7A31E3F3A3000B30BEC /* UserLogModelHandler.swift in Sources */,
 				EBA657AA1E1133B700F0DC84 /* AEDHeaderTableViewCell.swift in Sources */,
 				EBB68D281DE6FFCC003792B3 /* DataRestAPIClass.swift in Sources */,
 				EBB68D341DEAD926003792B3 /* KeyChainAccessProxy.swift in Sources */,
@@ -941,6 +959,7 @@
 			buildSettings = {
 				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_ENTITLEMENTS = Concough/Concough.entitlements;
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(inherited)",
@@ -952,6 +971,8 @@
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
 				PRODUCT_BUNDLE_IDENTIFIER = com.famba.Concough;
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_OBJC_BRIDGING_HEADER = "Concough/Concough-Bridging-Header.h";
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 				SWIFT_VERSION = 2.3;
 			};
 			name = Debug;
@@ -962,6 +983,7 @@
 			buildSettings = {
 				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_ENTITLEMENTS = Concough/Concough.entitlements;
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(inherited)",
@@ -973,6 +995,7 @@
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
 				PRODUCT_BUNDLE_IDENTIFIER = com.famba.Concough;
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_OBJC_BRIDGING_HEADER = "Concough/Concough-Bridging-Header.h";
 				SWIFT_VERSION = 2.3;
 			};
 			name = Release;

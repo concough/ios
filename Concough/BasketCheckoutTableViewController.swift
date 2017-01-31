@@ -84,7 +84,7 @@ class BasketCheckoutTableViewController: UIViewController, UITableViewDelegate, 
         BasketSingleton.sharedInstance.checkout(viewController: self) { (count, purchased) in
             if let localPurchased = purchased {
                 AlertClass.showSimpleErrorMessage(viewController: self, messageType: "ActionResult", messageSubType: "PurchasedSuccess", completion: {
-                    
+                    self.tabBarController?.tabBar.items?[2].badgeValue = "\(localPurchased.count)"
                 })
             }
             

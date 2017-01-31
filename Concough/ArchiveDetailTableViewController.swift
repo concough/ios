@@ -120,10 +120,9 @@ class ArchiveDetailTableViewController: UITableViewController {
                                     let entrance_year = item["year"].intValue
                                     let last_published_str = item["last_published"].stringValue
                                     let unique_id = item["unique_key"].stringValue
-                                    let buy_count = 0
                                     let extra_data = JSON(data: item["extra_data"].stringValue.dataUsingEncoding(NSUTF8StringEncoding)!)
                                     
-                                    print("\(extra_data)")
+                                    let buy_count = item["stats"][0]["purchased"].intValue
                                     
                                     var entrance = ArchiveEntranceStructure()
                                     entrance.year = entrance_year
@@ -219,7 +218,7 @@ class ArchiveDetailTableViewController: UITableViewController {
     override func tableView(tableView: UITableView, heightForRowAtIndexPath indexPath: NSIndexPath) -> CGFloat {
         switch indexPath.section {
         case 0:
-            return 110.0
+            return 100.0
         case 1:
             return 80.0
         default:

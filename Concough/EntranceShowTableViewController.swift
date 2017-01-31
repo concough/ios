@@ -49,7 +49,7 @@ class EntranceShowTableViewController: UITableViewController, EHHorizontalSelect
 
         // Uncomment the following line to display an Edit button in the navigation bar for this view controller.
         // self.navigationItem.rightBarButtonItem = self.editButtonItem()
-        self.tabBarController?.tabBar.hidden = true
+        //self.tabBarController?.tabBar.hidden = true
         self.navigationItem.rightBarButtonItem = UIBarButtonItem(image: UIImage(named: "Info"), style: .Plain, target: self, action: #selector(self.infoButtonPressed(_:)))
         
         self.initializeHorizontalView()
@@ -69,6 +69,14 @@ class EntranceShowTableViewController: UITableViewController, EHHorizontalSelect
         // Add Entrance Opened record
         EntranceOpenedCountModelHandler.update(entranceUniqueId: self.entranceUniqueId, type: self.showType)
 
+        // Create Log
+        let eData = JSON(["uniqueId": self.entranceUniqueId])
+        if self.showType == "Show" {
+            self.createLog(logType: LogTypeEnum.EntranceShowNormal.rawValue, extraData: eData)
+        } else if self.showType == "Starred" {
+            self.createLog(logType: LogTypeEnum.EntranceShowStarred.rawValue, extraData: eData)
+        }
+        
         if self.showType == "Starred" {
             // load starredQuestions
             self.title = "سوالات نشان شده (" + FormatterSingleton.sharedInstance.NumberFormatter.stringFromNumber(self.starred.count)! + ")"
@@ -125,14 +133,16 @@ class EntranceShowTableViewController: UITableViewController, EHHorizontalSelect
         bottonView.backgroundColor = UIColor(netHex: 0xDDDDDD, alpha: 1.0)
         self.hSelView?.addSubview(bottonView)
 
-        //self.hSelView.backgroundColor = UIColor(netHex: BLUE_COLOR_HEX, alpha: 1.0)
-        self.hSelView?.backgroundColor = UIColor(white: 1.0, alpha: 0.95)
         
         self.hSelView?.registerCellWithClass(EHHorizontalLineViewCell)
         EHHorizontalLineViewCell.updateColorHeight(0.8)
         
+        self.hSelView?.backgroundColor = UIColor(white: 1.0, alpha: 1.0)
+        //self.hSelView?.backgroundColor = UIColor(netHex: GRAY_COLOR_HEX_1, alpha: 0.95)
         self.hSelView?.textColor = UIColor(netHex: BLUE_COLOR_HEX, alpha: 1.0)
         self.hSelView?.tintColor = UIColor(netHex: BLUE_COLOR_HEX, alpha: 1.0)
+//        self.hSelView?.textColor = UIColor.whiteColor()
+//        self.hSelView?.tintColor = UIColor.whiteColor()
         //self.hSelView?.textColor = UIColor(white: 0.0, alpha: 0.7)
         //self.hSelView?.tintColor = self.hSelView?.textColor
         
@@ -195,12 +205,30 @@ class EntranceShowTableViewController: UITableViewController, EHHorizontalSelect
         // Add Entrance Opened record
         EntranceOpenedCountModelHandler.update(entranceUniqueId: self.entranceUniqueId, type: self.showType)
 
+        // Create Log
+        let eData = JSON(["uniqueId": self.entranceUniqueId])
+        if self.showType == "Show" {
+            self.createLog(logType: LogTypeEnum.EntranceShowNormal.rawValue, extraData: eData)
+        } else if self.showType == "Starred" {
+            self.createLog(logType: LogTypeEnum.EntranceShowStarred.rawValue, extraData: eData)
+        }
+        
         NSOperationQueue.mainQueue().addOperationWithBlock {
             self.tableView.reloadData()
         }
     }
     
     // MARK: - Functions
+    private func createLog(logType logType: String, extraData: JSON) {
+        let username = UserDefaultsSingleton.sharedInstance.getUsername()!
+        let uniqueId = NSUUID().UUIDString
+        let created = NSDate()
+        
+        NSOperationQueue.mainQueue().addOperationWithBlock {
+            UserLogModelHandler.add(username: username, uniqueId: uniqueId, created: created, logType: logType, extraData: extraData)
+        }
+    }
+    
     private func loadEntranceDB() {
         let username = UserDefaultsSingleton.sharedInstance.getUsername()!
         if let item = EntranceModelHandler.getByUsernameAndId(id: self.entranceUniqueId, username: username) {
@@ -295,13 +323,16 @@ class EntranceShowTableViewController: UITableViewController, EHHorizontalSelect
         }
     }
 
-    internal func addStarQuestionId(questionId questionId: String, state: Bool) -> Bool {
+    internal func addStarQuestionId(questionId questionId: String, questionNo: Int, state: Bool) -> Bool {
         var flag = false
         if state == true {
             if self.starred.contains(questionId) == false {
                 if EntranceQuestionStarredModelHandler.add(entranceUniqueId: self.entranceUniqueId, questionId: questionId) == true {
                     self.starred.append(questionId)
                     flag = true
+                    
+                    let eData = JSON(["uniqueId": self.entranceUniqueId, "questionNo": questionNo])
+                    self.createLog(logType: LogTypeEnum.EntranceQuestionStar.rawValue, extraData: eData)
                 }
             }
         } else {
@@ -310,6 +341,9 @@ class EntranceShowTableViewController: UITableViewController, EHHorizontalSelect
                     let index = self.starred.indexOf(questionId)!
                     self.starred.removeAtIndex(index)
                     flag = true
+
+                    let eData = JSON(["uniqueId": self.entranceUniqueId, "questionNo": questionNo])
+                    self.createLog(logType: LogTypeEnum.EntranceQuestionUnStar.rawValue, extraData: eData)
                 }
             }
         }
@@ -455,7 +489,7 @@ class EntranceShowTableViewController: UITableViewController, EHHorizontalSelect
     // MARK: - Delegates
     func navigationController(navigationController: UINavigationController, willShowViewController viewController: UIViewController, animated: Bool) {
         if viewController is FavoritesTableViewController {
-            viewController.tabBarController?.tabBar.hidden = false
+            //viewController.tabBarController?.tabBar.hidden = false
         }
     }
     

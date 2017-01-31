@@ -37,6 +37,14 @@ class HomeTableViewController: UITableViewController, DZNEmptyDataSetDelegate, D
         self.tableView.emptyDataSetSource = self
         self.tableView.tableFooterView = UIView()
         
+        let image = UIImageView(image: UIImage(named: "r2"))
+        let blurEffect = UIBlurEffect(style: UIBlurEffectStyle.Dark)
+        let blurView = UIVisualEffectView(effect: blurEffect)
+        blurView.frame = image.bounds
+        //image.addSubview(blurView)
+        
+        //self.tableView.backgroundView = image
+        
         // uitableview refresh control setup
         if self.refreshControl == nil {
             self.refreshControl = UIRefreshControl()
@@ -122,8 +130,8 @@ class HomeTableViewController: UITableViewController, DZNEmptyDataSetDelegate, D
         //}
 
         switch activity.activityType {
-            case "ENTRANCE_CREATE": return 220.0
-            case "ENTRANCE_UPDATE": return 115.0
+            case "ENTRANCE_CREATE": return 250.0
+            case "ENTRANCE_UPDATE": return 130.0
         default: return 0.0
         }
     }
@@ -228,7 +236,6 @@ class HomeTableViewController: UITableViewController, DZNEmptyDataSetDelegate, D
                             let cStr = item["created"].stringValue
                             let aType = item["activity_type"].stringValue
                             let t = item["target"]
-                            
                             let c:NSDate = FormatterSingleton.sharedInstance.UTCDateFormatter.dateFromString(cStr)!
                             
                             let con = ConcoughActivity(created: c, createdStr: cStr, activityType: aType, target: t)

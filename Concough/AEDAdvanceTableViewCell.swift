@@ -24,17 +24,12 @@ class AEDAdvanceTableViewCell: UITableViewCell {
         self.selectionStyle = .None
     }
 
-    override func drawRect(rect: CGRect) {
-        /*
-        self.orgYearLabel.layer.cornerRadius = 3.0
-        self.orgYearLabel.layer.masksToBounds = true
-        self.orgYearLabel.layer.borderWidth = 0.5
-        self.orgYearLabel.layer.borderColor = self.orgYearLabel.textColor.CGColor
-        */
-    }
-    
     override func setSelected(selected: Bool, animated: Bool) {
         
+    }
+    
+    override func prepareForReuse() {
+        self.esetImageView.image = UIImage(named: "NoImage")
     }
     
     internal func configureCell(indexPath indexPath: NSIndexPath, esetId: Int,  entrance: ArchiveEntranceStructure) {

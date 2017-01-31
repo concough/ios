@@ -144,7 +144,7 @@ class EntrancePackageDownloader {
                     
                     if self.vcType == "ED" {
                         let vc = self.viewController as! EntranceDetailTableViewController
-                        vc.downloadProgress(value: self.DownloadCount)
+                        vc.downloadProgress(value: self.imagesList.count)
                     } else if self.vcType == "F" {
                         let vc = self.viewController as! FavoritesTableViewController
                         vc.downloadProgress(value: self.imagesList.count, totalCount: self.DownloadCount, indexPath: self.indexPath!)
@@ -206,7 +206,10 @@ class EntrancePackageDownloader {
                             //let package = packageStr.dataUsingEncoding(NSUTF8StringEncoding)
                             let username = UserDefaultsSingleton.sharedInstance.getUsername()!
                             do {
-                                let originalText = try RNCryptor.decryptData(decodedData!, password: username)
+                                let hash_str = username + ":" + SECRET_KEY
+                                let hash_key = MD5Digester.digest(hash_str)
+                                
+                                let originalText = try RNCryptor.decryptData(decodedData!, password: hash_key)
                                 print(originalText)
                                 
                                 // update EntrancePurchase Realm Record --> set isDownloaded = true
