@@ -7,6 +7,7 @@
 //
 
 import UIKit
+import MBProgressHUD
 
 class ResetPasswordViewController: UIViewController, UITextFieldDelegate {
 
@@ -14,6 +15,7 @@ class ResetPasswordViewController: UIViewController, UITextFieldDelegate {
     internal var signupStruct: SignupStructure!
     
     private var activeTextField: UITextField!
+    private var loading: MBProgressHUD?
     
     @IBOutlet weak var passwordTextField: UITextField!
     @IBOutlet weak var retryPasswordTextField: UITextField!
@@ -66,20 +68,33 @@ class ResetPasswordViewController: UIViewController, UITextFieldDelegate {
                 // make request
                 self.resetPassword(password1: pass1, password2: pass2)
             } else {
-                AlertClass.showSimpleErrorMessage(viewController: self, messageType: "Form", messageSubType: "NotSameFields", completion: nil)
+                NSOperationQueue.mainQueue().addOperationWithBlock({
+                    AlertClass.showTopMessage(viewController: self, messageType: "Form", messageSubType: "NotSameFields", type: "error", completion: nil)
+                })                
             }
             
         } else {
-            AlertClass.showSimpleErrorMessage(viewController: self, messageType: "Form", messageSubType: "EmptyFields", completion: nil)
+            NSOperationQueue.mainQueue().addOperationWithBlock({
+                AlertClass.showTopMessage(viewController: self, messageType: "Form", messageSubType: "EmptyFields", type: "error", completion: nil)
+            })
         }
     }
     
     // MARK: - Functions
     private func resetPassword(password1 pass1: String, password2 pass2: String) {
+        NSOperationQueue.mainQueue().addOperationWithBlock { 
+            self.loading = AlertClass.showLoadingMessage(viewController: self)
+        }
+        
         AuthRestAPIClass.resetPassword(username: self.signupStruct.username!, id: self.signupStruct.preSignupId!, password: pass1, rpassword: pass2, code: self.resetCode, completion: { (data, error) in
             
+            NSOperationQueue.mainQueue().addOperationWithBlock({ 
+                AlertClass.hideLoaingMessage(progressHUD: self.loading)
+            })
             if error != HTTPErrorType.Success {
-                AlertClass.showSimpleErrorMessage(viewController: self, messageType: "HTTPError", messageSubType: (error?.toString())!, completion: nil)
+                NSOperationQueue.mainQueue().addOperationWithBlock({
+                    AlertClass.showTopMessage(viewController: self, messageType: "HTTPError", messageSubType: (error?.toString())!, type: "error", completion: nil)
+                })
             } else {
                 if let localData = data {
                     if let status = localData["status"].string {
@@ -94,27 +109,26 @@ class ResetPasswordViewController: UIViewController, UITextFieldDelegate {
                             if let errorType = localData["error_type"].string {
                                 switch errorType {
                                 case "ExpiredCode":
-                                    AlertClass.showSimpleErrorMessage(viewController: self, messageType: "ErrorResult", messageSubType: errorType) {
-                                        NSOperationQueue.mainQueue().addOperationWithBlock({
-                                            self.performSegueWithIdentifier("ForgotPasswordResendVCUnSegue", sender: self)
+                                    NSOperationQueue.mainQueue().addOperationWithBlock({
+                                        AlertClass.showAlertMessage(viewController: self, messageType: "ErrorResult", messageSubType: errorType, type: "error", completion: { 
+                                            NSOperationQueue.mainQueue().addOperationWithBlock({
+                                                self.performSegueWithIdentifier("ForgotPasswordResendVCUnSegue", sender: self)
+                                            })
                                         })
-                                    }
-                                    break
+                                    })
+                                case "UserNotExist":
+                                    fallthrough
+                                case "PreAuthNotExist":
+                                    NSOperationQueue.mainQueue().addOperationWithBlock({
+                                        AlertClass.showTopMessage(viewController: self, messageType: "AuthProfile", messageSubType: errorType, type: "error", completion: nil)
+                                        self.performSegueWithIdentifier("ForgotPasswordVCUnSegue", sender: self)
+                                    })
                                 case "MultiRecord":
                                     fallthrough
                                 case "BadData":
                                     fallthrough
                                 case "RemoteDBError":
-                                    AlertClass.showSimpleErrorMessage(viewController: self, messageType: "ErrorResult", messageSubType: errorType, completion: nil)
-                                case "UserNotExist":
                                     fallthrough
-                                case "PreAuthNotExist":
-                                    AlertClass.showSimpleErrorMessage(viewController: self, messageType: "AuthProfile", messageSubType: errorType, completion: {
-                                        NSOperationQueue.mainQueue().addOperationWithBlock({
-                                            self.performSegueWithIdentifier("ForgotPasswordVCUnSegue", sender: self)
-                                        })
-                                        
-                                    })
                                 default:
                                     break
                                 }
@@ -127,16 +141,27 @@ class ResetPasswordViewController: UIViewController, UITextFieldDelegate {
                 }
             }
         }, failure: { (error) in
+            NSOperationQueue.mainQueue().addOperationWithBlock({
+                AlertClass.hideLoaingMessage(progressHUD: self.loading)
+            })
+            
             if let err = error {
                 switch err {
                 case .NoInternetAccess:
-                    AlertClass.showSimpleErrorMessage(viewController: self, messageType: "NetworkError", messageSubType: err.rawValue, completion: { 
-                        NSOperationQueue.mainQueue().addOperationWithBlock({ 
-                            self.resetPassword(password1: pass1, password2: pass2)
-                        })
+                    fallthrough
+                case .HostUnreachable:
+                    NSOperationQueue.mainQueue().addOperationWithBlock({
+                        AlertClass.showTopMessage(viewController: self, messageType: "NetworkError", messageSubType: err.rawValue, type: "error", completion: nil)
                     })
+//                    AlertClass.showSimpleErrorMessage(viewController: self, messageType: "NetworkError", messageSubType: err.rawValue, completion: {
+//                        NSOperationQueue.mainQueue().addOperationWithBlock({ 
+//                            self.resetPassword(password1: pass1, password2: pass2)
+//                        })
+//                    })
                 default:
-                    break
+                    NSOperationQueue.mainQueue().addOperationWithBlock({
+                        AlertClass.showTopMessage(viewController: self, messageType: "NetworkError", messageSubType: err.rawValue, type: "", completion: nil)
+                    })
                 }
             }
         })

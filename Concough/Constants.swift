@@ -10,6 +10,7 @@ import Foundation
 import UIKit
 
 // Application Version
+let APP_VERSION = "v1"
 let API_VERSION = "v1"
 let SECRET_KEY = "67mnnv^vs7&^v87YrV&6*njs*99__==ncdjncdujb"
 

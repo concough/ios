@@ -11,6 +11,7 @@ import UIKit
 import RNCryptor
 import SwiftyJSON
 import RealmSwift
+import Alamofire
 
 class EntrancePackageDownloader {
     private var entranceUniqueId: String!
@@ -24,7 +25,22 @@ class EntrancePackageDownloader {
     private var fileManager: NSFileManager!
     
     internal private (set) var DownloadCount: Int = 0
-        
+    internal var backgroundCompletionHandler: (() -> Void)? {
+        get {
+            return self.backgroundManager.backgroundCompletionHandler
+        }
+        set {
+            backgroundManager.backgroundCompletionHandler = newValue
+        }
+    }
+    
+    private lazy var backgroundManager: Alamofire.Manager = {
+        let bundle = "Entrance:\(self.entranceUniqueId)"
+
+        let config = NSURLSessionConfiguration.backgroundSessionConfigurationWithIdentifier(bundle)
+        let manager = Alamofire.Manager(configuration: config)
+        return manager
+    }()
     
     internal func initialize(entranceUniqueId uniqueId: String, viewController: UIViewController, vcType: String, username: String, indexPath: NSIndexPath? = nil) {
         self.entranceUniqueId = uniqueId
@@ -82,6 +98,13 @@ class EntrancePackageDownloader {
                     PurchasedModelHandler.setIsDownloadedTrue(productType: "Entrance", productId: self.entranceUniqueId, username: self.username)
                     DownloaderSingleton.sharedInstance.setDownloaderFinished(uniqueId: self.entranceUniqueId)
                     
+                    if let entrance = EntranceModelHandler.getByUsernameAndId(id: self.entranceUniqueId, username: self.username) {
+                        let message = "کنکور" + " \(entrance.type) \(entrance.year) " + "دانلود شد"
+                        
+                        LocalNotificationsSingleton.sharedInstance.createNotification(alertBody: message, fireDate: NSDate(timeIntervalSinceNow: 3))
+                        
+                    }
+                    
                     if self.vcType == "ED" {
                         let vc = self.viewController as! EntranceDetailTableViewController
                         vc.downloadImagesFinished(result: true)
@@ -98,7 +121,7 @@ class EntrancePackageDownloader {
     }
     
     internal func downloadOneImage(saveDirectory saveDirectory: String, imageId: String, questionId: String) {
-        MediaRestAPIClass.downloadEntranceQuestionImage(uniqueId: self.entranceUniqueId, imageId: imageId, completion: { (fullUrl, data, error) in
+        MediaRestAPIClass.downloadEntranceQuestionImage(manager: self.backgroundManager, uniqueId: self.entranceUniqueId, imageId: imageId, completion: { (fullUrl, data, error) in
             if error != .Success {
                 // print the error for now
                 print("error in downloaing image from \(fullUrl!)")
@@ -158,21 +181,34 @@ class EntrancePackageDownloader {
             if let err = error {
                 switch err {
                 case .NoInternetAccess:
-                    AlertClass.showSimpleErrorMessage(viewController: self.viewController, messageType: "NetworkError", messageSubType: err.rawValue, completion: {
-                        self.downloadOneImage(saveDirectory: saveDirectory, imageId: imageId, questionId: questionId)
-                    })
-                default:
-                    AlertClass.showSimpleErrorMessage(viewController: self.viewController, messageType: "NetworkError", messageSubType: err.rawValue, completion: {
-                        if self.vcType == "ED" {
-                            let vc = self.viewController as! EntranceDetailTableViewController
-                            vc.downloadProgress(value: -1)
-                        } else if self.vcType == "F" {
-                            let vc = self.viewController as! FavoritesTableViewController
-                            vc.downloadProgress(value: -1, totalCount: self.DownloadCount, indexPath: self.indexPath!)
-                        }
+                    fallthrough
+                case .HostUnreachable:
+                    AlertClass.showTopMessage(viewController: self.viewController, messageType: "NetworkError", messageSubType: err.rawValue, type: "error", completion: nil)
                     
-                    })
+//                    AlertClass.showSimpleErrorMessage(viewController: self.viewController, messageType: "NetworkError", messageSubType: err.rawValue, completion: {
+//                        self.downloadOneImage(saveDirectory: saveDirectory, imageId: imageId, questionId: questionId)
+//                    })
+                default:
+                    AlertClass.showTopMessage(viewController: self.viewController, messageType: "NetworkError", messageSubType: err.rawValue, type: "error", completion: nil)
+//                    AlertClass.showSimpleErrorMessage(viewController: self.viewController, messageType: "NetworkError", messageSubType: err.rawValue, completion: {
+//                        if self.vcType == "ED" {
+//                            let vc = self.viewController as! EntranceDetailTableViewController
+//                            vc.downloadProgress(value: -1)
+//                        } else if self.vcType == "F" {
+//                            let vc = self.viewController as! FavoritesTableViewController
+//                            vc.downloadProgress(value: -1, totalCount: self.DownloadCount, indexPath: self.indexPath!)
+//                        }
+//                    
+//                    })
                 }
+                if self.vcType == "ED" {
+                    let vc = self.viewController as! EntranceDetailTableViewController
+                    vc.downloadPaused()
+                } else if self.vcType == "F" {
+                    let vc = self.viewController as! FavoritesTableViewController
+                    vc.downloadPaused(indexPath: self.indexPath!)
+                }
+                
             }
         }
     }
@@ -188,7 +224,7 @@ class EntrancePackageDownloader {
     internal func downloadInitialData(queue: NSOperationQueue, completion: (result: Bool, indexPath: NSIndexPath?) -> ()) {
         EntranceRestAPIClass.getEntrancePackageDataInit(uniqueId: self.entranceUniqueId, completion: { (data, error) in
             if error != HTTPErrorType.Success {
-                AlertClass.showSimpleErrorMessage(viewController: self.viewController, messageType: "HTTPError", messageSubType: (error?.toString())!, completion: nil)
+                AlertClass.showTopMessage(viewController: self.viewController, messageType: "HTTPError", messageSubType: (error?.toString())!, type: "error", completion: nil)
             } else {
                 if let localData = data {
                     if let status = localData["status"].string {
@@ -243,14 +279,22 @@ class EntrancePackageDownloader {
                                     break
                                 case "EntranceNotExist":
                                     // No Entrance data exist --> pop this
-                                    AlertClass.showSimpleErrorMessage(viewController: self.viewController, messageType: "EntranceResult", messageSubType: "EntranceNotExist", completion: {
-                                        
+                                    AlertClass.showTopMessage(viewController: self.viewController, messageType: "EntranceResult", messageSubType: "EntranceNotExist", type: "error", completion: nil)
+
+                                    if self.vcType == "ED" {
                                         NSOperationQueue.mainQueue().addOperationWithBlock({
                                             self.viewController.dismissViewControllerAnimated(true, completion: nil)
                                         })
-                                    })
+                                    }
+//                                    AlertClass.showSimpleErrorMessage(viewController: self.viewController, messageType: "EntranceResult", messageSubType: "EntranceNotExist", completion: {
+//                                        
+//                                        NSOperationQueue.mainQueue().addOperationWithBlock({
+//                                            self.viewController.dismissViewControllerAnimated(true, completion: nil)
+//                                        })
+//                                    })
                                 default:
-                                    AlertClass.showSimpleErrorMessage(viewController: self.viewController, messageType: "ErrorResult", messageSubType: errorType, completion: nil)
+                                    break
+//                                    AlertClass.showSimpleErrorMessage(viewController: self.viewController, messageType: "ErrorResult", messageSubType: errorType, completion: nil)
                                 }
                             }
                             
@@ -263,15 +307,32 @@ class EntrancePackageDownloader {
         }) { (error) in
             if let err = error {
                 switch err {
+                case .HostUnreachable:
+                    fallthrough
                 case .NoInternetAccess:
-                    AlertClass.showSimpleErrorMessage(viewController: self.viewController, messageType: "NetworkError", messageSubType: err.rawValue, completion: {
-                        let operation = NSBlockOperation(block: {
-                            self.downloadInitialData(queue, completion: completion)
-                        })
-                        queue.addOperation(operation)
+                    NSOperationQueue.mainQueue().addOperationWithBlock({
+                        AlertClass.showTopMessage(viewController: self.viewController, messageType: "NetworkError", messageSubType: err.rawValue, type: "error", completion: nil)
                     })
+                    
+//                    AlertClass.showSimpleErrorMessage(viewController: self.viewController, messageType: "NetworkError", messageSubType: err.rawValue, completion: {
+//                        let operation = NSBlockOperation(block: {
+//                            self.downloadInitialData(queue, completion: completion)
+//                        })
+//                        queue.addOperation(operation)
+//                    })
                 default:
-                    AlertClass.showSimpleErrorMessage(viewController: self.viewController, messageType: "NetworkError", messageSubType: err.rawValue, completion: nil)
+                    NSOperationQueue.mainQueue().addOperationWithBlock({
+                        AlertClass.showTopMessage(viewController: self.viewController, messageType: "NetworkError", messageSubType: err.rawValue, type: "", completion: nil)
+                    })
+//                    AlertClass.showSimpleErrorMessage(viewController: self.viewController, messageType: "NetworkError", messageSubType: err.rawValue, completion: nil)
+                }
+
+                if self.vcType == "ED" {
+                    let vc = self.viewController as! EntranceDetailTableViewController
+                    vc.downloadPaused()
+                } else if self.vcType == "F" {
+                    let vc = self.viewController as! FavoritesTableViewController
+                    vc.downloadPaused(indexPath: self.indexPath!)
                 }
             }
         }

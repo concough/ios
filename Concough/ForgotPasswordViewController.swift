@@ -7,11 +7,13 @@
 //
 
 import UIKit
+import MBProgressHUD
 
 class ForgotPasswordViewController: UIViewController, UITextFieldDelegate {
 
     private var activeTextField: UITextField?
     private var signupStruct: SignupStructure!
+    private var loading: MBProgressHUD?
     
     @IBOutlet weak var usernameTextField: UITextField!
     @IBOutlet weak var sendCodeButton: UIButton!
@@ -110,15 +112,27 @@ class ForgotPasswordViewController: UIViewController, UITextFieldDelegate {
         if let username = self.usernameTextField.text?.trim() where username != "" {
             self.forgotPassword(username: username)
         } else {
-            AlertClass.showSimpleErrorMessage(viewController: self, messageType: "Form", messageSubType: "EmptyFields", completion: nil)
+            NSOperationQueue.mainQueue().addOperationWithBlock({ 
+                AlertClass.showTopMessage(viewController: self, messageType: "Form", messageSubType: "EmptyFields", type: "error", completion: nil)
+            })
         }
     }
     
     // MARK: - Functions
     private func forgotPassword(username username: String) {
+        NSOperationQueue.mainQueue().addOperationWithBlock { 
+            self.loading = AlertClass.showLoadingMessage(viewController: self)
+        }
+        
         AuthRestAPIClass.forgotPassword(username: username, completion: { (data, error) in
+            NSOperationQueue.mainQueue().addOperationWithBlock({ 
+                AlertClass.hideLoaingMessage(progressHUD: self.loading)
+            })
+            
             if error != HTTPErrorType.Success {
-                AlertClass.showSimpleErrorMessage(viewController: self, messageType: "HTTPError", messageSubType: (error?.toString())!, completion: nil)
+                NSOperationQueue.mainQueue().addOperationWithBlock({
+                    AlertClass.showTopMessage(viewController: self, messageType: "HTTPError", messageSubType: (error?.toString())!, type: "error", completion: nil)
+                })
             } else {
                 if let localData = data {
                     if let status = localData["status"].string {
@@ -135,14 +149,15 @@ class ForgotPasswordViewController: UIViewController, UITextFieldDelegate {
                         case "Error":
                             if let errorType = localData["error_type"].string {
                                 switch errorType {
+                                case "UserNotExist":
+                                    NSOperationQueue.mainQueue().addOperationWithBlock({ 
+                                        AlertClass.showTopMessage(viewController: self, messageType: "AuthProfile", messageSubType: errorType, type: "error", completion: nil)
+                                    })
+                                    
                                 case "BadData":
                                     fallthrough
                                 case "RemoteDBError":
-                                    AlertClass.showSimpleErrorMessage(viewController: self, messageType: "HTTPError", messageSubType: errorType, completion: nil)
-                                    break
-                                case "UserNotExist":
-                                    AlertClass.showSimpleErrorMessage(viewController: self, messageType: "AuthProfile", messageSubType: errorType, completion: nil)
-                                    break
+                                    fallthrough
                                 default:
                                     break
                                 }
@@ -155,16 +170,27 @@ class ForgotPasswordViewController: UIViewController, UITextFieldDelegate {
                 }
             }
         }, failure: { (error) in
+            NSOperationQueue.mainQueue().addOperationWithBlock({
+                AlertClass.hideLoaingMessage(progressHUD: self.loading)
+            })
+            
             if let err = error {
                 switch err {
                 case .NoInternetAccess:
-                    AlertClass.showSimpleErrorMessage(viewController: self, messageType: "NetworkError", messageSubType: err.rawValue, completion: {
-                        NSOperationQueue.mainQueue().addOperationWithBlock({ 
-                            self.forgotPassword(username: username)
-                        })
+                    fallthrough
+                case .HostUnreachable:
+                    NSOperationQueue.mainQueue().addOperationWithBlock({
+                        AlertClass.showTopMessage(viewController: self, messageType: "NetworkError", messageSubType: err.rawValue, type: "error", completion: nil)
                     })
+//                    AlertClass.showSimpleErrorMessage(viewController: self, messageType: "NetworkError", messageSubType: err.rawValue, completion: {
+//                        NSOperationQueue.mainQueue().addOperationWithBlock({ 
+//                            self.forgotPassword(username: username)
+//                        })
+//                    })
                 default:
-                    break
+                    NSOperationQueue.mainQueue().addOperationWithBlock({
+                        AlertClass.showTopMessage(viewController: self, messageType: "NetworkError", messageSubType: err.rawValue, type: "", completion: nil)
+                    })
                 }
             }
         })

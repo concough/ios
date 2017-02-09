@@ -8,6 +8,7 @@
 
 import UIKit
 import SwiftyJSON
+import MBProgressHUD
 
 class FavoritesTableViewController: UITableViewController {
 
@@ -18,6 +19,8 @@ class FavoritesTableViewController: UITableViewController {
     private var selectedShowType: String = "Show"
     private var showType: String = "Normal"
     private var DownloadedCount: [Int] = []
+    private var loading: MBProgressHUD?
+    
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -69,6 +72,10 @@ class FavoritesTableViewController: UITableViewController {
         let indexPath = NSIndexPath(forRow: row!, inSection: section!)
         if row! < self.purchased.count {
             let item = self.purchased[row!]
+            
+            NSOperationQueue.mainQueue().addOperationWithBlock({ 
+                AlertClass.showTopMessage(viewController: self, messageType: "ActionResult", messageSubType: "DownloadStarted", type: "warning", completion: nil)
+            })
             self.downloadPackage(productId: item.uniqueId, productType: item.type, indexPath: indexPath)
         }
     }
@@ -112,8 +119,9 @@ class FavoritesTableViewController: UITableViewController {
     
     @IBAction func deleteButtonPressed(sender: UIButton) {
         // create alert controller
-        let alertController = UIAlertController(title: "آیا مطمینید؟", message: "تنها اطلاعات کنکور حذف خواهد شد", preferredStyle: .Alert)
-        let action = UIAlertAction(title: "بله", style: .Default, handler: { (action) in
+        
+        AlertClass.showAlertMessageCustom(viewController: self, title: "آیا مطمینید؟", message: "تنها اطلاعات کنکور حذف خواهد شد و مجددا قابل بارگذاری است", yesButtonTitle: "بله", noButtonTitle: "خیر") {
+        
             let indexPathStr = sender.assicatedObject.componentsSeparatedByString(":")
             let section = Int(indexPathStr[0])
             let row = Int(indexPathStr[1])
@@ -136,12 +144,7 @@ class FavoritesTableViewController: UITableViewController {
                     self.tableView.reloadData()
                 })
             }
-        })
-        let action2 = UIAlertAction(title: "خیر", style: .Destructive, handler: nil)
-        alertController.addAction(action)
-        alertController.addAction(action2)
-        
-        self.presentViewController(alertController, animated: true, completion: nil)
+        }
     }
     
     @IBAction func editButtonPressed(sender: UIBarButtonItem) {
@@ -173,13 +176,18 @@ class FavoritesTableViewController: UITableViewController {
     
     // MARK: - Functions
     private func syncWithServer() {
+        NSOperationQueue.mainQueue().addOperationWithBlock { 
+            self.loading = AlertClass.showLoadingMessage(viewController: self)
+        }
+        
         PurchasedRestAPIClass.getPurchasedList({ (data, error) in
             NSOperationQueue.mainQueue().addOperationWithBlock {
                 UIApplication.sharedApplication().networkActivityIndicatorVisible = false
+                AlertClass.hideLoaingMessage(progressHUD: self.loading)
             }
             
             if error != HTTPErrorType.Success {
-                AlertClass.showSimpleErrorMessage(viewController: self, messageType: "HTTPError", messageSubType: (error?.toString())!, completion: nil)
+                AlertClass.showTopMessage(viewController: self, messageType: "HTTPError", messageSubType: (error?.toString())!, type: "error", completion: nil)
             } else {
                 if let localData = data {
                     if let status = localData["status"].string {
@@ -288,7 +296,8 @@ class FavoritesTableViewController: UITableViewController {
                                     })
                                     break
                                 default:
-                                    AlertClass.showSimpleErrorMessage(viewController: self, messageType: "ErrorResult", messageSubType: errorType, completion: nil)
+                                    break
+//                                    AlertClass.showSimpleErrorMessage(viewController: self, messageType: "ErrorResult", messageSubType: errorType, completion: nil)
                                 }
                             }
                         default:
@@ -300,18 +309,28 @@ class FavoritesTableViewController: UITableViewController {
         }) { (error) in
             NSOperationQueue.mainQueue().addOperationWithBlock {
                 UIApplication.sharedApplication().networkActivityIndicatorVisible = false
+                AlertClass.hideLoaingMessage(progressHUD: self.loading)
             }
             
             if let err = error {
                 switch err {
                 case .NoInternetAccess:
-                    AlertClass.showSimpleErrorMessage(viewController: self, messageType: "NetworkError", messageSubType: err.rawValue, completion: {
-                        NSOperationQueue.mainQueue().addOperationWithBlock({
-                            self.syncWithServer()
-                        })
+                    fallthrough
+                case .HostUnreachable:
+                    NSOperationQueue.mainQueue().addOperationWithBlock({
+                        AlertClass.showTopMessage(viewController: self, messageType: "NetworkError", messageSubType: err.rawValue, type: "error", completion: nil)
                     })
+                    
+//                    AlertClass.showSimpleErrorMessage(viewController: self, messageType: "NetworkError", messageSubType: err.rawValue, completion: {
+//                        NSOperationQueue.mainQueue().addOperationWithBlock({
+//                            self.syncWithServer()
+//                        })
+//                    })
                 default:
-                    AlertClass.showSimpleErrorMessage(viewController: self, messageType: "NetworkError", messageSubType: err.rawValue, completion: nil)
+                    NSOperationQueue.mainQueue().addOperationWithBlock({
+                        AlertClass.showTopMessage(viewController: self, messageType: "NetworkError", messageSubType: err.rawValue, type: "", completion: nil)
+                    })
+//                    AlertClass.showSimpleErrorMessage(viewController: self, messageType: "NetworkError", messageSubType: err.rawValue, completion: nil)
                 }
             }
         }
@@ -379,15 +398,23 @@ class FavoritesTableViewController: UITableViewController {
     }
     
     private func updateUserPurchaseData(productId productId: String, productType: String) {
+        NSOperationQueue.mainQueue().addOperationWithBlock {
+            self.loading = AlertClass.showUpdatingMessage(viewController: self)
+        }
+        
         PurchasedRestAPIClass.putEntrancePurchasedDownload(uniqueId: productId, completion: { (data, error) in
+            NSOperationQueue.mainQueue().addOperationWithBlock ({
+                AlertClass.hideLoaingMessage(progressHUD: self.loading)
+            })
+            
             if error != HTTPErrorType.Success {
-                AlertClass.showSimpleErrorMessage(viewController: self, messageType: "HTTPError", messageSubType: (error?.toString())!, completion: nil)
+                AlertClass.showTopMessage(viewController: self, messageType: "HTTPError", messageSubType: (error?.toString())!, type: "error", completion: nil)
             } else {
                 if let localData = data {
                     if let status = localData["status"].string {
                         switch status {
                         case "OK":
-                            print("\(localData)")
+                            // print("\(localData)")
                             let purchase = localData["purchase"]
                             // get purchase record
                             if purchase["purchase_record"] != nil {
@@ -396,9 +423,7 @@ class FavoritesTableViewController: UITableViewController {
                                 let downloaded = purchase_record["downloaded"].intValue
                                 
                                 let username = UserDefaultsSingleton.sharedInstance.getUsername()
-                                
                                 PurchasedModelHandler.updateDownloadTimes(username: username!, id: id, newDownloadTimes: downloaded)
-                                
                             }
                         case "Error":
                             if let errorType = localData["error_type"].string {
@@ -409,7 +434,8 @@ class FavoritesTableViewController: UITableViewController {
                                     // No Entrance data exist --> pop this
                                     break
                                 default:
-                                    AlertClass.showSimpleErrorMessage(viewController: self, messageType: "ErrorResult", messageSubType: errorType, completion: nil)
+                                    break
+//                                    AlertClass.showSimpleErrorMessage(viewController: self, messageType: "ErrorResult", messageSubType: errorType, completion: nil)
                                 }
                             }
                             
@@ -420,17 +446,31 @@ class FavoritesTableViewController: UITableViewController {
                 }
             }
             }, failure: { (error) in
+                NSOperationQueue.mainQueue().addOperationWithBlock({
+                    AlertClass.hideLoaingMessage(progressHUD: self.loading)
+                })
+                
                 if let err = error {
                     switch err {
                     case .NoInternetAccess:
-                        AlertClass.showSimpleErrorMessage(viewController: self, messageType: "NetworkError", messageSubType: err.rawValue, completion: {
-                            let operation = NSBlockOperation(block: {
-                                self.updateUserPurchaseData(productId: productId, productType: productType)
-                            })
-                            self.queue.addOperation(operation)
+                        fallthrough
+                    case .HostUnreachable:
+                        NSOperationQueue.mainQueue().addOperationWithBlock({
+                            AlertClass.showTopMessage(viewController: self, messageType: "NetworkError", messageSubType: err.rawValue, type: "error", completion: nil)
                         })
+                        
+//                        AlertClass.showSimpleErrorMessage(viewController: self, messageType: "NetworkError", messageSubType: err.rawValue, completion: {
+//                            let operation = NSBlockOperation(block: {
+//                                self.updateUserPurchaseData(productId: productId, productType: productType)
+//                            })
+//                            self.queue.addOperation(operation)
+//                        })
                     default:
-                        AlertClass.showSimpleErrorMessage(viewController: self, messageType: "NetworkError", messageSubType: err.rawValue, completion: nil)
+                        NSOperationQueue.mainQueue().addOperationWithBlock({
+                            AlertClass.showTopMessage(viewController: self, messageType: "NetworkError", messageSubType: err.rawValue, type: "", completion: nil)
+                        })
+                        
+//                        AlertClass.showSimpleErrorMessage(viewController: self, messageType: "NetworkError", messageSubType: err.rawValue, completion: nil)
                     }
                 }
         })
@@ -454,6 +494,12 @@ class FavoritesTableViewController: UITableViewController {
             })
         }
     }
+    
+    internal func downloadPaused(indexPath indexPath: NSIndexPath) {
+        DownloaderSingleton.sharedInstance.removeDownloader(uniqueId: self.purchased[indexPath.row].uniqueId)
+        return
+    }
+    
 
     internal func downloadImagesFinished(result result: Bool, indexPath: NSIndexPath) {
         if result == true {
@@ -463,6 +509,10 @@ class FavoritesTableViewController: UITableViewController {
                 if indexPath.row < self.purchased.count {
                     let id = self.purchased[indexPath.row].uniqueId
                     if DownloaderSingleton.sharedInstance.getDownloaderState(uniqueId: id) == DownloaderSingleton.DownloaderState.Finished {
+                        
+                        NSOperationQueue.mainQueue().addOperationWithBlock({
+                            AlertClass.showTopMessage(viewController: self, messageType: "ActionResult", messageSubType: "DownloadSuccess", type: "success", completion: nil)
+                        })
                         
                         // reload purchase data
                         let username = UserDefaultsSingleton.sharedInstance.getUsername()!
@@ -475,7 +525,6 @@ class FavoritesTableViewController: UITableViewController {
                             
                             self.DownloadedCount.append(indexPath.row)
                             self.tableView.reloadRowsAtIndexPaths([indexPath], withRowAnimation: UITableViewRowAnimation.Automatic)
-                            
                         }
                     }
                 }

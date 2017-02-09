@@ -9,11 +9,14 @@
 import UIKit
 import SwiftyJSON
 import BBBadgeBarButtonItem
+import MBProgressHUD
+import DZNEmptyDataSet
 
-class ArchiveDetailTableViewController: UITableViewController {
+class ArchiveDetailTableViewController: UITableViewController, DZNEmptyDataSetSource, DZNEmptyDataSetDelegate {
 
     internal var esetDetail: ArchiveEsetDetailStructure!
     
+    private var loading: MBProgressHUD?
     private var rightBarButtonItem: BBBadgeBarButtonItem!
     private var entrances: [ArchiveEntranceStructure] = []
     private var queue: NSOperationQueue!
@@ -29,6 +32,9 @@ class ArchiveDetailTableViewController: UITableViewController {
         // self.navigationItem.rightBarButtonItem = self.editButtonItem()
         
         self.title = self.esetDetail.entranceTypeTitle
+        
+        self.tableView.emptyDataSetDelegate = self
+        self.tableView.emptyDataSetSource = self
         
         // uitableview refresh control setup
         if self.refreshControl == nil {
@@ -94,17 +100,21 @@ class ArchiveDetailTableViewController: UITableViewController {
     }
     
     private func getEntrances() {
-        UIApplication.sharedApplication().networkActivityIndicatorVisible = true
+        NSOperationQueue.mainQueue().addOperationWithBlock { 
+            UIApplication.sharedApplication().networkActivityIndicatorVisible = true
+            self.loading = AlertClass.showLoadingMessage(viewController: self)
+            self.refreshControl?.endRefreshing()
+        }
         
         if let setId = self.esetDetail.entranceEset?.id {
             ArchiveRestAPIClass.getEntrances(entranceSetId: setId, completion: { (data, error) in
                 NSOperationQueue.mainQueue().addOperationWithBlock {
-                    self.refreshControl?.endRefreshing()
                     UIApplication.sharedApplication().networkActivityIndicatorVisible = false
+                    AlertClass.hideLoaingMessage(progressHUD: self.loading)
                 }
 
                 if error != HTTPErrorType.Success {
-                    AlertClass.showSimpleErrorMessage(viewController: self, messageType: "HTTPError", messageSubType: (error?.toString())!, completion: nil)
+                    AlertClass.showTopMessage(viewController: self, messageType: "HTTPError", messageSubType: (error?.toString())!, type: "error", completion: nil)
                 } else {
                     if let localData = data {
                         if let status = localData["status"].string {
@@ -145,9 +155,14 @@ class ArchiveDetailTableViewController: UITableViewController {
                                     switch errorType {
                                     case "EmptyArray":
                                         // must choise appropriate action
+                                        self.entrances.removeAll()
+                                        NSOperationQueue.mainQueue().addOperationWithBlock({ 
+                                            self.tableView.reloadData()
+                                        })
                                         break
                                     default:
-                                        AlertClass.showSimpleErrorMessage(viewController: self, messageType: "ErrorResult", messageSubType: errorType, completion: nil)
+                                        break
+//                                        AlertClass.showSimpleErrorMessage(viewController: self, messageType: "ErrorResult", messageSubType: errorType, completion: nil)
                                     }
                                 }
                             default:
@@ -158,37 +173,34 @@ class ArchiveDetailTableViewController: UITableViewController {
                 }
             }, failure:  { (error) in
                 NSOperationQueue.mainQueue().addOperationWithBlock {
-                    self.refreshControl?.endRefreshing()
                     UIApplication.sharedApplication().networkActivityIndicatorVisible = false
+                    AlertClass.hideLoaingMessage(progressHUD: self.loading)
                 }
                 
                 if let err = error {
                     switch err {
                     case .NoInternetAccess:
-                        AlertClass.showSimpleErrorMessage(viewController: self, messageType: "NetworkError", messageSubType: err.rawValue, completion: {
-                            NSOperationQueue.mainQueue().addOperationWithBlock({
-                                self.getEntrances()
-                            })
+                        fallthrough
+                    case .HostUnreachable:
+                        NSOperationQueue.mainQueue().addOperationWithBlock({
+                            AlertClass.showTopMessage(viewController: self, messageType: "NetworkError", messageSubType: err.rawValue, type: "error", completion: nil)
                         })
+                        
+//                        AlertClass.showSimpleErrorMessage(viewController: self, messageType: "NetworkError", messageSubType: err.rawValue, completion: {
+//                            NSOperationQueue.mainQueue().addOperationWithBlock({
+//                                self.getEntrances()
+//                            })
+//                        })
                     default:
-                        AlertClass.showSimpleErrorMessage(viewController: self, messageType: "NetworkError", messageSubType: err.rawValue, completion: nil)
+                        NSOperationQueue.mainQueue().addOperationWithBlock({
+                            AlertClass.showTopMessage(viewController: self, messageType: "NetworkError", messageSubType: err.rawValue, type: "", completion: nil)
+                        })
+                        
+//                        AlertClass.showSimpleErrorMessage(viewController: self, messageType: "NetworkError", messageSubType: err.rawValue, completion: nil)
                     }
                 }
             })
         }
-
-        /*
-        let dict = "{\"زبان\": \"انگلیسی\", \"دین\": \"اسلام\"}"
-        var e = ArchiveEntranceStructure()
-        e.buyCount = 32
-        e.extraData = JSON(data: dict.dataUsingEncoding(NSUTF8StringEncoding)!)
-        e.lastPablished = NSDate()
-        e.organization = "دولتی"
-        e.year = 1394
-        
-        self.entrances.append(e)
-        self.tableView.reloadData()
- */
     }
     
     // MARK: - Table view data source
@@ -279,6 +291,32 @@ class ArchiveDetailTableViewController: UITableViewController {
             break
         }
     }
+    
+    // MARK: - DZN
+    func titleForEmptyDataSet(scrollView: UIScrollView!) -> NSAttributedString! {
+        let title = "داده ای موجود نیست"
+        let attributes = [NSFontAttributeName: UIFont(name: "IRANYekanMobile-Bold", size: 16)!,
+                          NSForegroundColorAttributeName: UIColor.darkGrayColor()]
+        
+        return NSAttributedString(string: title, attributes: attributes)
+    }
+    
+    func imageForEmptyDataSet(scrollView: UIScrollView!) -> UIImage! {
+        let image = UIImage(named: "Refresh")
+        return image
+    }
+    
+    func emptyDataSetShouldAllowTouch(scrollView: UIScrollView!) -> Bool {
+        return true
+    }
+    
+    func emptyDataSetDidTapView(scrollView: UIScrollView!) {
+        let operation = NSBlockOperation {
+            self.getEntrances()
+        }
+        self.queue.addOperation(operation)
+    }
+    
     
     // MARK: - Navigation
     override func shouldPerformSegueWithIdentifier(identifier: String, sender: AnyObject?) -> Bool {

@@ -44,12 +44,6 @@ class EntranceShowTableViewController: UITableViewController, EHHorizontalSelect
     override func viewDidLoad() {
         super.viewDidLoad()
 
-        // Uncomment the following line to preserve selection between presentations
-        // self.clearsSelectionOnViewWillAppear = false
-
-        // Uncomment the following line to display an Edit button in the navigation bar for this view controller.
-        // self.navigationItem.rightBarButtonItem = self.editButtonItem()
-        //self.tabBarController?.tabBar.hidden = true
         self.navigationItem.rightBarButtonItem = UIBarButtonItem(image: UIImage(named: "Info"), style: .Plain, target: self, action: #selector(self.infoButtonPressed(_:)))
         
         self.initializeHorizontalView()
@@ -117,7 +111,6 @@ class EntranceShowTableViewController: UITableViewController, EHHorizontalSelect
     }
     
     private func menuItemSelected(indexPath indexPath: Int) {
-        
         self.booklet = self.bookletsString[indexPath]
         //let bookletUniqueId = self.booklets[self.booklet!]
         self.selectedBooklet = indexPath
@@ -328,6 +321,7 @@ class EntranceShowTableViewController: UITableViewController, EHHorizontalSelect
         if state == true {
             if self.starred.contains(questionId) == false {
                 if EntranceQuestionStarredModelHandler.add(entranceUniqueId: self.entranceUniqueId, questionId: questionId) == true {
+                    
                     self.starred.append(questionId)
                     flag = true
                     
@@ -338,6 +332,7 @@ class EntranceShowTableViewController: UITableViewController, EHHorizontalSelect
         } else {
             if self.starred.contains(questionId) == true {
                 if EntranceQuestionStarredModelHandler.remove(entranceUniqueId: self.entranceUniqueId, questionId: questionId) == true {
+                    
                     let index = self.starred.indexOf(questionId)!
                     self.starred.removeAtIndex(index)
                     flag = true
@@ -380,6 +375,13 @@ class EntranceShowTableViewController: UITableViewController, EHHorizontalSelect
             return self.starredQuestions[section].questions.count
         }
         return 0
+    }
+    
+    override func tableView(tableView: UITableView, didEndDisplayingCell cell: UITableViewCell, forRowAtIndexPath indexPath: NSIndexPath) {
+        if let cell = self.tableView.cellForRowAtIndexPath(indexPath) as? EntranceShowQuestionTableViewCell {
+            cell.setNeedsUpdateConstraints()
+            cell.setNeedsLayout()
+        }
     }
     
     override func tableView(tableView: UITableView, cellForRowAtIndexPath indexPath: NSIndexPath) -> UITableViewCell {
@@ -488,9 +490,9 @@ class EntranceShowTableViewController: UITableViewController, EHHorizontalSelect
     
     // MARK: - Delegates
     func navigationController(navigationController: UINavigationController, willShowViewController viewController: UIViewController, animated: Bool) {
-        if viewController is FavoritesTableViewController {
-            //viewController.tabBarController?.tabBar.hidden = false
-        }
+//        if viewController is FavoritesTableViewController {
+//            //viewController.tabBarController?.tabBar.hidden = false
+//        }
     }
     
     func adaptivePresentationStyleForPresentationController(controller: UIPresentationController) -> UIModalPresentationStyle {
@@ -534,8 +536,7 @@ class EntranceShowTableViewController: UITableViewController, EHHorizontalSelect
 
                     let view2 = UIView(frame: CGRectMake(0.0, v.contentView.layer.bounds.height - 1, v.contentView.layer.bounds.width, 1.0))
                     view2.backgroundColor = UIColor(netHex: 0xEEEEEE, alpha: 1.0)
-                    
-                    
+                 
                     v.addSubview(view2)
                     v.setNeedsLayout()
                 }

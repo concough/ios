@@ -17,7 +17,7 @@ class WhitePanelUI2: UIView {
         
         layer.shadowColor = UIColor(white: 0.9, alpha: 1).CGColor
         layer.shadowOpacity = 0.9
-        layer.shadowRadius = 1.0
-        layer.shadowOffset = CGSizeMake(0.0, 0.0)
+        layer.shadowRadius = 2.0
+        layer.shadowOffset = CGSizeMake(0.0, 1.0)
     }
 }

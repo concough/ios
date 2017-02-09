@@ -78,14 +78,14 @@ class MediaRestAPIClass {
         }
     }
     
-    class func downloadEntranceQuestionImage(uniqueId uniqueId: String, imageId: String, completion: (fullUrl: String?, data: NSData?, error: HTTPErrorType?) -> (), failure: (error: NetworkErrorType?) -> ()) {
+    class func downloadEntranceQuestionImage(manager manager: Alamofire.Manager, uniqueId: String, imageId: String, completion: (fullUrl: String?, data: NSData?, error: HTTPErrorType?) -> (), failure: (error: NetworkErrorType?) -> ()) {
         if let fullPath = UrlMakerSingleton.sharedInstance.mediaUrlForQuestion(uniqueId: uniqueId, mediaId: imageId) {
             // get additional headers from oauth
             TokenHandlerSingleton.sharedInstance.assureAuthorized(completion: { (authenticated, error) in
                 if authenticated && error == .Success {
                     let headers = TokenHandlerSingleton.sharedInstance.getHeader()
                     
-                    Alamofire.request(.GET ,fullPath, parameters: nil, encoding: .URL, headers: headers).responseData() { response in
+                    manager.request(.GET ,fullPath, parameters: nil, encoding: .URL, headers: headers).responseData() { response in
                         //print("download index:\(imageId)")
                         
                         switch response.result {

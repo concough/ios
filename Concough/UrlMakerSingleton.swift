@@ -45,6 +45,43 @@ class UrlMakerSingleton {
         self._basket_class_name = BASKET_CLASS_NAME
     }
     
+    internal func getAboutUrl() -> String? {
+        var fullPath:String?
+        
+        fullPath = "\(self._base_url)" + "about/"
+        return fullPath
+    }
+
+    internal func getHelpUrl() -> String? {
+        var fullPath:String?
+        
+        fullPath = "\(self._base_url)" + "help/"
+        return fullPath
+    }
+
+    internal func getReportBugUrl() -> String? {
+        var fullPath:String?
+        let functionName = "report_bug"
+        if OAUTH_METHOD == "jwt" {
+            fullPath = "\(self._base_url)\(self._api_version)/\(self._jwt_prefix)/\(functionName)/"
+        } else if OAUTH_METHOD == "oauth" {
+            fullPath = "\(self._base_url)\(self._api_version)/\(functionName)/"
+        }
+        return fullPath
+    }
+    
+    internal func getInviteFriendsUrl() -> String? {
+        var fullPath:String?
+        let functionName = "invite"
+        if OAUTH_METHOD == "jwt" {
+            fullPath = "\(self._base_url)\(self._api_version)/\(self._jwt_prefix)/\(functionName)/"
+        } else if OAUTH_METHOD == "oauth" {
+            fullPath = "\(self._base_url)\(self._api_version)/\(functionName)/"
+        }
+        return fullPath
+        
+    }
+    
     internal func mediaUrlFor(type: String, mediaId: AnyObject) -> String? {
         var fullPath:String?
         let functionName = "\(type)/\(mediaId)"
@@ -170,6 +207,18 @@ class UrlMakerSingleton {
         }
         return fullPath
     }
+
+    internal func changePassword() -> String? {
+        var fullPath:String?
+        let functionName = "change_password"
+        
+        if OAUTH_METHOD == "jwt" {
+            fullPath = "\(self._base_url)\(self._api_version)/\(self._jwt_prefix)/\(self._auth_class_name)/\(functionName)/"
+        } else if OAUTH_METHOD == "oauth" {
+            fullPath = "\(self._base_url)\(self._api_version)/\(self._auth_class_name)/\(functionName)/"
+        }
+        return fullPath
+    }
     
     internal func profileUrl() -> String? {
         var fullPath:String?
@@ -181,7 +230,19 @@ class UrlMakerSingleton {
         }
         return fullPath
     }
-    
+
+    internal func editGradeProfileUrl() -> String? {
+        var fullPath:String?
+        let functionName = "edit/grade"
+        
+        if OAUTH_METHOD == "jwt" {
+            fullPath = "\(self._base_url)\(self._api_version)/\(self._jwt_prefix)/\(self._profile_class_name)/\(functionName)/"
+        } else if OAUTH_METHOD == "oauth" {
+            fullPath = "\(self._base_url)\(self._api_version)/\(self._profile_class_name)/\(functionName)"
+        }
+        return fullPath
+    }
+ 
     internal func archiveEntranceTypesUrl() -> String? {
         var fullPath: String?
         let functionName = "entrance/types"

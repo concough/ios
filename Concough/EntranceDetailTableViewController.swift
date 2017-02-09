@@ -10,6 +10,7 @@ import UIKit
 import SwiftyJSON
 import BBBadgeBarButtonItem
 import RNCryptor
+import MBProgressHUD
 
 class EntranceDetailTableViewController: UITableViewController {
 
@@ -17,37 +18,32 @@ class EntranceDetailTableViewController: UITableViewController {
     
     private var rightBarButtonItem: BBBadgeBarButtonItem!
     
+    private var loading: MBProgressHUD?
     private var state: EntranceVCStateEnum!
     private var queue: NSOperationQueue!
+    private var selfBasketAdd: Bool = false
     
     private var entrance: EntranceStructure?
     private var entranceStat: EntranceStatStructure?
     private var entranceSale: EntranceSaleStructure?
     private var entrancePurchase: EntrancePrurchasedStructure?
-    private var entrancePackageContent: NSData?
     
-    private var selfBasketAdd: Bool = false
     
     override func viewDidLoad() {
         super.viewDidLoad()
 
-        // Uncomment the following line to preserve selection between presentations
-        // self.clearsSelectionOnViewWillAppear = false
-
-        // Uncomment the following line to display an Edit button in the navigation bar for this view controller.
-        // self.navigationItem.rightBarButtonItem = self.editButtonItem()
+        if self.refreshControl == nil {
+            self.refreshControl = UIRefreshControl()
+            self.refreshControl?.attributedTitle = NSAttributedString(string: "برای به روز رسانی به پایین بکشید", attributes: [NSFontAttributeName: UIFont(name: "IRANYekanMobile-Light", size: 12)!])
+        }
+        self.refreshControl?.addTarget(self, action: #selector(self.refreshTableView(_:)), forControlEvents: .ValueChanged)
         
-        // Initialization
         self.title = "کنکور"
         self.queue = NSOperationQueue()
     }
 
     override func viewWillAppear(animated: Bool) {
-        self.setupBarButton()
-        
-        self.state = EntranceVCStateEnum.Initialize
-        self.selfBasketAdd = false
-        self.stateMachine()
+        self.resetView()
     }
 
     override func viewDidAppear(animated: Bool) {
@@ -59,7 +55,26 @@ class EntranceDetailTableViewController: UITableViewController {
         // Dispose of any resources that can be recreated.
     }
 
+    func refreshTableView(refreshControl_: UIRefreshControl) {
+        self.resetView()
+    }
+    
+    
     // MARK: - Functions
+    private func resetView() {
+        self.setupBarButton()
+        
+        self.state = EntranceVCStateEnum.Initialize
+        self.selfBasketAdd = false
+        
+        self.entrance = nil
+        self.entranceSale = nil
+        self.entranceStat = nil
+        self.entrancePurchase = nil
+        
+        self.stateMachine()
+    }
+    
     private func setupBarButton() {
         if BasketSingleton.sharedInstance.SalesCount > 0 {
             let b = UIButton(frame: CGRectMake(0, 0, 25, 25))
@@ -98,12 +113,15 @@ class EntranceDetailTableViewController: UITableViewController {
             // first check local db
             let username = UserDefaultsSingleton.sharedInstance.getUsername()!
             if EntranceModelHandler.existById(id: self.entranceUniqueId, username: username) == true {
+                self.refreshControl?.endRefreshing()
                 self.localEntrance()
             }
             else {
                 // check if exist in basket
                 if let index = BasketSingleton.sharedInstance.findSaleByTargetId(targetId: self.entranceUniqueId, type: "Entrance") {
                     
+                    self.refreshControl?.endRefreshing()
+
                     self.entrance = BasketSingleton.sharedInstance.getSaleById(saleId: index) as? EntranceStructure
                     
                     self.state! = .EntranceComplete
@@ -197,9 +215,19 @@ class EntranceDetailTableViewController: UITableViewController {
     }
     
     private func downloadEntrance() {
+        NSOperationQueue.mainQueue().addOperationWithBlock { 
+            self.loading = AlertClass.showLoadingMessage(viewController: self)
+        }
+        
         EntranceRestAPIClass.getEntranceWithBuyInfo(uniqueId: self.entranceUniqueId, completion: { (data, error) in
+            
+            NSOperationQueue.mainQueue().addOperationWithBlock({
+                self.refreshControl?.endRefreshing()
+                AlertClass.hideLoaingMessage(progressHUD: self.loading)
+            })
+            
             if error != HTTPErrorType.Success {
-                AlertClass.showSimpleErrorMessage(viewController: self, messageType: "HTTPError", messageSubType: (error?.toString())!, completion: nil)
+                AlertClass.showTopMessage(viewController: self, messageType: "HTTPError", messageSubType: (error?.toString())!, type: "error", completion: nil)                
             } else {
                 if let localData = data {
                     if let status = localData["status"].string {
@@ -238,14 +266,26 @@ class EntranceDetailTableViewController: UITableViewController {
                                         fallthrough
                                 case "EmptyArray":
                                     // No Entrance data exist --> pop this
-                                    AlertClass.showSimpleErrorMessage(viewController: self, messageType: "EntranceResult", messageSubType: "EntranceNotExist", completion: {
-                                        
-                                        NSOperationQueue.mainQueue().addOperationWithBlock({ 
-                                            self.dismissViewControllerAnimated(true, completion: nil)
-                                        })                                        
+                                    
+                                    NSOperationQueue.mainQueue().addOperationWithBlock({ 
+                                        AlertClass.showAlertMessage(viewController: self, messageType: "EntranceResult", messageSubType: "EntranceNotExist", type: "error", completion: {
+                                            NSOperationQueue.mainQueue().addOperationWithBlock({
+                                                self.dismissViewControllerAnimated(true, completion: nil)
+                                            })
+                                        })
                                     })
+//                                    AlertClass.showSimpleErrorMessage(viewController: self, messageType: "EntranceResult", messageSubType: "EntranceNotExist", completion: {
+//                                        
+//                                        NSOperationQueue.mainQueue().addOperationWithBlock({
+//                                            self.dismissViewControllerAnimated(true, completion: nil)
+//                                        })                                        
+//                                    })
                                 default:
-                                    AlertClass.showSimpleErrorMessage(viewController: self, messageType: "ErrorResult", messageSubType: errorType, completion: nil)
+                                    break
+                                    NSOperationQueue.mainQueue().addOperationWithBlock({ 
+                                        AlertClass.showTopMessage(viewController: self, messageType: "ErrorResult", messageSubType: errorType, type: "", completion: nil)
+                                    })
+//                                    AlertClass.showSimpleErrorMessage(viewController: self, messageType: "ErrorResult", messageSubType: errorType, completion: nil)
                                 }
                             }
                             
@@ -257,17 +297,32 @@ class EntranceDetailTableViewController: UITableViewController {
             }
             
         }, failure: { (error) in
+            NSOperationQueue.mainQueue().addOperationWithBlock({
+                self.refreshControl?.endRefreshing()
+                AlertClass.hideLoaingMessage(progressHUD: self.loading)
+            })
+            
             if let err = error {
                 switch err {
+                case .HostUnreachable:
+                    fallthrough
                 case .NoInternetAccess:
-                    AlertClass.showSimpleErrorMessage(viewController: self, messageType: "NetworkError", messageSubType: err.rawValue, completion: {
-                        let operation = NSBlockOperation(block: {
-                            self.downloadEntrance()
-                        })
-                        self.queue.addOperation(operation)
+                    NSOperationQueue.mainQueue().addOperationWithBlock({ 
+                        AlertClass.showTopMessage(viewController: self, messageType: "NetworkError", messageSubType: err.rawValue, type: "error", completion: nil)
                     })
+                    
+//                    AlertClass.showSimpleErrorMessage(viewController: self, messageType: "NetworkError", messageSubType: err.rawValue, completion: {
+//                        let operation = NSBlockOperation(block: {
+//                            self.downloadEntrance()
+//                        })
+//                        self.queue.addOperation(operation)
+//                    })
                 default:
-                    AlertClass.showSimpleErrorMessage(viewController: self, messageType: "NetworkError", messageSubType: err.rawValue, completion: nil)
+                    NSOperationQueue.mainQueue().addOperationWithBlock({
+                        AlertClass.showTopMessage(viewController: self, messageType: "NetworkError", messageSubType: err.rawValue, type: "", completion: nil)
+                    })
+                    
+//                    AlertClass.showSimpleErrorMessage(viewController: self, messageType: "NetworkError", messageSubType: err.rawValue, completion: nil)
                 }
             }
             
@@ -275,9 +330,17 @@ class EntranceDetailTableViewController: UITableViewController {
     }
     
     private func downloadUserPurchaseData() {
+        NSOperationQueue.mainQueue().addOperationWithBlock { 
+            self.loading = AlertClass.showLoadingMessage(viewController: self)
+        }
+        
         PurchasedRestAPIClass.getEntrancePurchasedData(uniqueId: self.entranceUniqueId, completion: { (data, error) in
+            NSOperationQueue.mainQueue().addOperationWithBlock({ 
+                AlertClass.hideLoaingMessage(progressHUD: self.loading)
+            })
+            
             if error != HTTPErrorType.Success {
-                AlertClass.showSimpleErrorMessage(viewController: self, messageType: "HTTPError", messageSubType: (error?.toString())!, completion: nil)
+                AlertClass.showTopMessage(viewController: self, messageType: "HTTPError", messageSubType: (error?.toString())!, type: "error", completion: nil)
             } else {
                 if let localData = data {
                     if let status = localData["status"].string {
@@ -326,14 +389,27 @@ class EntranceDetailTableViewController: UITableViewController {
                                     fallthrough
                                 case "EntranceNotExist":
                                     // No Entrance data exist --> pop this
-                                    AlertClass.showSimpleErrorMessage(viewController: self, messageType: "EntranceResult", messageSubType: "EntranceNotExist", completion: {
-                                        
-                                        NSOperationQueue.mainQueue().addOperationWithBlock({
-                                            self.dismissViewControllerAnimated(true, completion: nil)
+                                    NSOperationQueue.mainQueue().addOperationWithBlock({
+                                        AlertClass.showAlertMessage(viewController: self, messageType: "EntranceResult", messageSubType: "EntranceNotExist", type: "error", completion: {
+                                            NSOperationQueue.mainQueue().addOperationWithBlock({
+                                                self.dismissViewControllerAnimated(true, completion: nil)
+                                            })
                                         })
                                     })
+                                    
+//                                    AlertClass.showSimpleErrorMessage(viewController: self, messageType: "EntranceResult", messageSubType: "EntranceNotExist", completion: {
+//                                        
+//                                        NSOperationQueue.mainQueue().addOperationWithBlock({
+//                                            self.dismissViewControllerAnimated(true, completion: nil)
+//                                        })
+//                                    })
                                 default:
-                                    AlertClass.showSimpleErrorMessage(viewController: self, messageType: "ErrorResult", messageSubType: errorType, completion: nil)
+                                    break
+                                    NSOperationQueue.mainQueue().addOperationWithBlock({
+                                        AlertClass.showTopMessage(viewController: self, messageType: "ErrorResult", messageSubType: errorType, type: "", completion: nil)
+                                    })
+                                    
+//                                    AlertClass.showSimpleErrorMessage(viewController: self, messageType: "ErrorResult", messageSubType: errorType, completion: nil)
                                 }
                             }
                             
@@ -344,27 +420,48 @@ class EntranceDetailTableViewController: UITableViewController {
                 }
             }
         }, failure: { (error) in
+            NSOperationQueue.mainQueue().addOperationWithBlock({
+                AlertClass.hideLoaingMessage(progressHUD: self.loading)
+            })
+            
             if let err = error {
                 switch err {
+                case .HostUnreachable:
+                    fallthrough
                 case .NoInternetAccess:
-                    AlertClass.showSimpleErrorMessage(viewController: self, messageType: "NetworkError", messageSubType: err.rawValue, completion: {
-                        let operation = NSBlockOperation(block: {
-                            self.downloadUserPurchaseData()
-                        })
-                        self.queue.addOperation(operation)
+                    NSOperationQueue.mainQueue().addOperationWithBlock({ 
+                        AlertClass.showTopMessage(viewController: self, messageType: "NetworkError", messageSubType: err.rawValue, type: "error", completion: nil)
                     })
+                    
+//                    AlertClass.showSimpleErrorMessage(viewController: self, messageType: "NetworkError", messageSubType: err.rawValue, completion: {
+//                        let operation = NSBlockOperation(block: {
+//                            self.downloadUserPurchaseData()
+//                        })
+//                        self.queue.addOperation(operation)
+//                    })
                 default:
-                    AlertClass.showSimpleErrorMessage(viewController: self, messageType: "NetworkError", messageSubType: err.rawValue, completion: nil)
+                    NSOperationQueue.mainQueue().addOperationWithBlock({
+                        AlertClass.showTopMessage(viewController: self, messageType: "NetworkError", messageSubType: err.rawValue, type: "", completion: nil)
+                    })
+                    
+//                    AlertClass.showSimpleErrorMessage(viewController: self, messageType: "NetworkError", messageSubType: err.rawValue, completion: nil)
                 }
             }
         })
     }
 
     private func refreshUserPurchaseData() {
-        print("---> purchase data refreshed")
+        NSOperationQueue.mainQueue().addOperationWithBlock { 
+            self.loading = AlertClass.showLoadingMessage(viewController: self)
+        }
+        
         PurchasedRestAPIClass.getEntrancePurchasedData(uniqueId: self.entranceUniqueId, completion: { (data, error) in
+            NSOperationQueue.mainQueue().addOperationWithBlock({ 
+                AlertClass.hideLoaingMessage(progressHUD: self.loading)
+            })
+            
             if error != HTTPErrorType.Success {
-                AlertClass.showSimpleErrorMessage(viewController: self, messageType: "HTTPError", messageSubType: (error?.toString())!, completion: nil)
+                AlertClass.showTopMessage(viewController: self, messageType: "HTTPError", messageSubType: (error?.toString())!, type: "error", completion: nil)
             } else {
                 if let localData = data {
                     if let status = localData["status"].string {
@@ -399,7 +496,11 @@ class EntranceDetailTableViewController: UITableViewController {
                                     // No Entrance data exist --> pop this
                                     break
                                 default:
-                                    AlertClass.showSimpleErrorMessage(viewController: self, messageType: "ErrorResult", messageSubType: errorType, completion: nil)
+                                    break
+                                    NSOperationQueue.mainQueue().addOperationWithBlock({
+                                        AlertClass.showTopMessage(viewController: self, messageType: "ErrorResult", messageSubType: errorType, type: "", completion: nil)
+                                    })
+//                                    AlertClass.showSimpleErrorMessage(viewController: self, messageType: "ErrorResult", messageSubType: errorType, completion: nil)
                                 }
                             }
                             
@@ -410,26 +511,48 @@ class EntranceDetailTableViewController: UITableViewController {
                 }
             }
             }, failure: { (error) in
+                NSOperationQueue.mainQueue().addOperationWithBlock({
+                    AlertClass.hideLoaingMessage(progressHUD: self.loading)
+                })
+                
                 if let err = error {
                     switch err {
+                    case .HostUnreachable:
+                        fallthrough
                     case .NoInternetAccess:
-                        AlertClass.showSimpleErrorMessage(viewController: self, messageType: "NetworkError", messageSubType: err.rawValue, completion: {
-                            let operation = NSBlockOperation(block: {
-                                self.refreshUserPurchaseData()
-                            })
-                            self.queue.addOperation(operation)
+                        NSOperationQueue.mainQueue().addOperationWithBlock({
+                            AlertClass.showTopMessage(viewController: self, messageType: "NetworkError", messageSubType: err.rawValue, type: "error", completion: nil)
                         })
+                        
+                        //                    AlertClass.showSimpleErrorMessage(viewController: self, messageType: "NetworkError", messageSubType: err.rawValue, completion: {
+                        //                        let operation = NSBlockOperation(block: {
+                        //                            self.downloadUserPurchaseData()
+                        //                        })
+                        //                        self.queue.addOperation(operation)
+                    //                    })
                     default:
-                        AlertClass.showSimpleErrorMessage(viewController: self, messageType: "NetworkError", messageSubType: err.rawValue, completion: nil)
+                        NSOperationQueue.mainQueue().addOperationWithBlock({
+                            AlertClass.showTopMessage(viewController: self, messageType: "NetworkError", messageSubType: err.rawValue, type: "", completion: nil)
+                        })
+                        
+                        //                    AlertClass.showSimpleErrorMessage(viewController: self, messageType: "NetworkError", messageSubType: err.rawValue, completion: nil)
                     }
                 }
         })
     }
     
     private func updateUserPurchaseData() {
+        NSOperationQueue.mainQueue().addOperationWithBlock { 
+            self.loading = AlertClass.showUpdatingMessage(viewController: self)
+        }
+        
         PurchasedRestAPIClass.putEntrancePurchasedDownload(uniqueId: self.entranceUniqueId, completion: { (data, error) in
+            NSOperationQueue.mainQueue().addOperationWithBlock({ 
+                AlertClass.hideLoaingMessage(progressHUD: self.loading)
+            })
+            
             if error != HTTPErrorType.Success {
-                AlertClass.showSimpleErrorMessage(viewController: self, messageType: "HTTPError", messageSubType: (error?.toString())!, completion: nil)
+                AlertClass.showTopMessage(viewController: self, messageType: "HTTPError", messageSubType: (error?.toString())!, type: "error", completion: nil)
             } else {
                 if let localData = data {
                     if let status = localData["status"].string {
@@ -464,7 +587,12 @@ class EntranceDetailTableViewController: UITableViewController {
                                     // No Entrance data exist --> pop this
                                     break
                                 default:
-                                    AlertClass.showSimpleErrorMessage(viewController: self, messageType: "ErrorResult", messageSubType: errorType, completion: nil)
+                                    break
+                                    NSOperationQueue.mainQueue().addOperationWithBlock({
+                                        AlertClass.showTopMessage(viewController: self, messageType: "ErrorResult", messageSubType: errorType, type: "", completion: nil)
+                                    })
+                                    
+//                                    AlertClass.showSimpleErrorMessage(viewController: self, messageType: "ErrorResult", messageSubType: errorType, completion: nil)
                                 }
                             }
                             
@@ -475,26 +603,48 @@ class EntranceDetailTableViewController: UITableViewController {
                 }
             }
             }, failure: { (error) in
+                NSOperationQueue.mainQueue().addOperationWithBlock({
+                    AlertClass.hideLoaingMessage(progressHUD: self.loading)
+                })
+                
                 if let err = error {
                     switch err {
+                    case .HostUnreachable:
+                        fallthrough
                     case .NoInternetAccess:
-                        AlertClass.showSimpleErrorMessage(viewController: self, messageType: "NetworkError", messageSubType: err.rawValue, completion: {
-                            let operation = NSBlockOperation(block: {
-                                self.updateUserPurchaseData()
-                            })
-                            self.queue.addOperation(operation)
+                        NSOperationQueue.mainQueue().addOperationWithBlock({
+                            AlertClass.showTopMessage(viewController: self, messageType: "NetworkError", messageSubType: err.rawValue, type: "error", completion: nil)
                         })
+                        
+                        //                    AlertClass.showSimpleErrorMessage(viewController: self, messageType: "NetworkError", messageSubType: err.rawValue, completion: {
+                        //                        let operation = NSBlockOperation(block: {
+                        //                            self.downloadUserPurchaseData()
+                        //                        })
+                        //                        self.queue.addOperation(operation)
+                    //                    })
                     default:
-                        AlertClass.showSimpleErrorMessage(viewController: self, messageType: "NetworkError", messageSubType: err.rawValue, completion: nil)
+                        NSOperationQueue.mainQueue().addOperationWithBlock({
+                            AlertClass.showTopMessage(viewController: self, messageType: "NetworkError", messageSubType: err.rawValue, type: "", completion: nil)
+                        })
+                        
+                        //                    AlertClass.showSimpleErrorMessage(viewController: self, messageType: "NetworkError", messageSubType: err.rawValue, completion: nil)
                     }
                 }
         })
     }
     
     private func downloadEntranceStat() {
+        NSOperationQueue.mainQueue().addOperationWithBlock { 
+            self.loading = AlertClass.showLoadingMessage(viewController: self)
+        }
+        
         ProductRestAPIClass.getEntranceStatData(uniqueId: self.entranceUniqueId, completion: { (data, error) in
+            NSOperationQueue.mainQueue().addOperationWithBlock({ 
+                AlertClass.hideLoaingMessage(progressHUD: self.loading)
+            })
+            
             if error != HTTPErrorType.Success {
-                AlertClass.showSimpleErrorMessage(viewController: self, messageType: "HTTPError", messageSubType: (error?.toString())!, completion: nil)
+                AlertClass.showTopMessage(viewController: self, messageType: "HTTPError", messageSubType: (error?.toString())!, type: "error", completion: nil)
             } else {
                 if let localData = data {
                     if let status = localData["status"].string {
@@ -514,14 +664,26 @@ class EntranceDetailTableViewController: UITableViewController {
                                     break
                                 case "EntranceNotExist":
                                     // No Entrance data exist --> pop this
-                                    AlertClass.showSimpleErrorMessage(viewController: self, messageType: "EntranceResult", messageSubType: "EntranceNotExist", completion: {
-                                        
-                                        NSOperationQueue.mainQueue().addOperationWithBlock({
-                                            self.dismissViewControllerAnimated(true, completion: nil)
+                                    NSOperationQueue.mainQueue().addOperationWithBlock({
+                                        AlertClass.showAlertMessage(viewController: self, messageType: "EntranceResult", messageSubType: "EntranceNotExist", type: "error", completion: {
+                                            NSOperationQueue.mainQueue().addOperationWithBlock({
+                                                self.dismissViewControllerAnimated(true, completion: nil)
+                                            })
                                         })
                                     })
+                                    
+//                                    AlertClass.showSimpleErrorMessage(viewController: self, messageType: "EntranceResult", messageSubType: "EntranceNotExist", completion: {
+//                                        
+//                                        NSOperationQueue.mainQueue().addOperationWithBlock({
+//                                            self.dismissViewControllerAnimated(true, completion: nil)
+//                                        })
+//                                    })
                                 default:
-                                    AlertClass.showSimpleErrorMessage(viewController: self, messageType: "ErrorResult", messageSubType: errorType, completion: nil)
+                                    break
+                                    NSOperationQueue.mainQueue().addOperationWithBlock({
+                                        AlertClass.showTopMessage(viewController: self, messageType: "ErrorResult", messageSubType: errorType, type: "", completion: nil)
+                                    })
+//                                    AlertClass.showSimpleErrorMessage(viewController: self, messageType: "ErrorResult", messageSubType: errorType, completion: nil)
                                 }
                             }
                             
@@ -540,26 +702,48 @@ class EntranceDetailTableViewController: UITableViewController {
             }
             
         }) { (error) in
+            NSOperationQueue.mainQueue().addOperationWithBlock({
+                AlertClass.hideLoaingMessage(progressHUD: self.loading)
+            })
+            
             if let err = error {
                 switch err {
+                case .HostUnreachable:
+                    fallthrough
                 case .NoInternetAccess:
-                    AlertClass.showSimpleErrorMessage(viewController: self, messageType: "NetworkError", messageSubType: err.rawValue, completion: {
-                        let operation = NSBlockOperation(block: {
-                            self.downloadEntranceStat()
-                        })
-                        self.queue.addOperation(operation)
+                    NSOperationQueue.mainQueue().addOperationWithBlock({
+                        AlertClass.showTopMessage(viewController: self, messageType: "NetworkError", messageSubType: err.rawValue, type: "error", completion: nil)
                     })
+                    
+                    //                    AlertClass.showSimpleErrorMessage(viewController: self, messageType: "NetworkError", messageSubType: err.rawValue, completion: {
+                    //                        let operation = NSBlockOperation(block: {
+                    //                            self.downloadUserPurchaseData()
+                    //                        })
+                    //                        self.queue.addOperation(operation)
+                //                    })
                 default:
-                    AlertClass.showSimpleErrorMessage(viewController: self, messageType: "NetworkError", messageSubType: err.rawValue, completion: nil)
+                    NSOperationQueue.mainQueue().addOperationWithBlock({
+                        AlertClass.showTopMessage(viewController: self, messageType: "NetworkError", messageSubType: err.rawValue, type: "", completion: nil)
+                    })
+                    
+                    //                    AlertClass.showSimpleErrorMessage(viewController: self, messageType: "NetworkError", messageSubType: err.rawValue, completion: nil)
                 }
             }
         }
     }
     
     private func downloadEntranceSale() {
+        NSOperationQueue.mainQueue().addOperationWithBlock { 
+            self.loading = AlertClass.showLoadingMessage(viewController: self)
+        }
+        
         ProductRestAPIClass.getEntranceSaleData(uniqueId: self.entranceUniqueId, completion: { (data, error) in
+            NSOperationQueue.mainQueue().addOperationWithBlock({ 
+                AlertClass.hideLoaingMessage(progressHUD: self.loading)
+            })
+            
             if error != HTTPErrorType.Success {
-                AlertClass.showSimpleErrorMessage(viewController: self, messageType: "HTTPError", messageSubType: (error?.toString())!, completion: nil)
+                AlertClass.showTopMessage(viewController: self, messageType: "HTTPError", messageSubType: (error?.toString())!, type: "error", completion: nil)
             } else {
                 if let localData = data {
                     if let status = localData["status"].string {
@@ -581,14 +765,26 @@ class EntranceDetailTableViewController: UITableViewController {
                                     break
                                 case "EntranceNotExist":
                                     // No Entrance data exist --> pop this
-                                    AlertClass.showSimpleErrorMessage(viewController: self, messageType: "EntranceResult", messageSubType: "EntranceNotExist", completion: {
-                                        
-                                        NSOperationQueue.mainQueue().addOperationWithBlock({
-                                            self.dismissViewControllerAnimated(true, completion: nil)
+                                    NSOperationQueue.mainQueue().addOperationWithBlock({
+                                        AlertClass.showAlertMessage(viewController: self, messageType: "EntranceResult", messageSubType: "EntranceNotExist", type: "error", completion: {
+                                            NSOperationQueue.mainQueue().addOperationWithBlock({
+                                                self.dismissViewControllerAnimated(true, completion: nil)
+                                            })
                                         })
                                     })
+                                    
+//                                    AlertClass.showSimpleErrorMessage(viewController: self, messageType: "EntranceResult", messageSubType: "EntranceNotExist", completion: {
+//                                        
+//                                        NSOperationQueue.mainQueue().addOperationWithBlock({
+//                                            self.dismissViewControllerAnimated(true, completion: nil)
+//                                        })
+//                                    })
                                 default:
-                                    AlertClass.showSimpleErrorMessage(viewController: self, messageType: "ErrorResult", messageSubType: errorType, completion: nil)
+                                    break
+                                    NSOperationQueue.mainQueue().addOperationWithBlock({
+                                        AlertClass.showTopMessage(viewController: self, messageType: "ErrorResult", messageSubType: errorType, type: "", completion: nil)
+                                    })
+//                                    AlertClass.showSimpleErrorMessage(viewController: self, messageType: "ErrorResult", messageSubType: errorType, completion: nil)
                                 }
                             }
                             
@@ -600,17 +796,31 @@ class EntranceDetailTableViewController: UITableViewController {
             }
             
         }) { (error) in
+            NSOperationQueue.mainQueue().addOperationWithBlock({
+                AlertClass.hideLoaingMessage(progressHUD: self.loading)
+            })
+            
             if let err = error {
                 switch err {
+                case .HostUnreachable:
+                    fallthrough
                 case .NoInternetAccess:
-                    AlertClass.showSimpleErrorMessage(viewController: self, messageType: "NetworkError", messageSubType: err.rawValue, completion: {
-                        let operation = NSBlockOperation(block: {
-                            self.downloadEntranceSale()
-                        })
-                        self.queue.addOperation(operation)
+                    NSOperationQueue.mainQueue().addOperationWithBlock({
+                        AlertClass.showTopMessage(viewController: self, messageType: "NetworkError", messageSubType: err.rawValue, type: "error", completion: nil)
                     })
+                    
+                    //                    AlertClass.showSimpleErrorMessage(viewController: self, messageType: "NetworkError", messageSubType: err.rawValue, completion: {
+                    //                        let operation = NSBlockOperation(block: {
+                    //                            self.downloadUserPurchaseData()
+                    //                        })
+                    //                        self.queue.addOperation(operation)
+                //                    })
                 default:
-                    AlertClass.showSimpleErrorMessage(viewController: self, messageType: "NetworkError", messageSubType: err.rawValue, completion: nil)
+                    NSOperationQueue.mainQueue().addOperationWithBlock({
+                        AlertClass.showTopMessage(viewController: self, messageType: "NetworkError", messageSubType: err.rawValue, type: "", completion: nil)
+                    })
+                    
+                    //                    AlertClass.showSimpleErrorMessage(viewController: self, messageType: "NetworkError", messageSubType: err.rawValue, completion: nil)
                 }
             }
                 
@@ -626,6 +836,15 @@ class EntranceDetailTableViewController: UITableViewController {
         }
     }
     
+    internal func downloadPaused() {
+        DownloaderSingleton.sharedInstance.removeDownloader(uniqueId: self.entranceUniqueId)
+        self.navigationItem.hidesBackButton = false
+        
+        self.state! = EntranceVCStateEnum.Purchased
+        self.stateMachine()
+        return        
+    }
+    
     internal func downloadImagesFinished(result result: Bool) {
         if result == true {
             DownloaderSingleton.sharedInstance.removeDownloader(uniqueId: self.entranceUniqueId)
@@ -635,6 +854,10 @@ class EntranceDetailTableViewController: UITableViewController {
             
             let eData = JSON(["uniqueId": self.entranceUniqueId])
             self.createLog(logType: LogTypeEnum.EnranceDownload.rawValue, extraData: eData)
+            
+            NSOperationQueue.mainQueue().addOperationWithBlock({ 
+                AlertClass.showTopMessage(viewController: self, messageType: "ActionResult", messageSubType: "DownloadSuccess", type: "success", completion: nil)
+            })
             
             self.state! = EntranceVCStateEnum.Downloaded
             self.stateMachine()
@@ -655,13 +878,11 @@ class EntranceDetailTableViewController: UITableViewController {
     
     // MARK: - Actions
     @IBAction func buyButtonPressed(sender: UIButton) {
-        print("buy button pressed")
         if BasketSingleton.sharedInstance.BasketId == nil {
             BasketSingleton.sharedInstance.createBasket(viewController: self, completion: { 
                 if let id = BasketSingleton.sharedInstance.findSaleByTargetId(targetId: self.entranceUniqueId, type: "Entrance") {
                     // sale object exist --> remove it
                     BasketSingleton.sharedInstance.removeSaleById(viewController: self, saleId: id, completion: { (count) in
-                        print ("sale count: \(count)")
                         self.selfBasketAdd = !self.selfBasketAdd
                         self.updateBasketBadge(count: count)
                         
@@ -671,7 +892,6 @@ class EntranceDetailTableViewController: UITableViewController {
                     })
                 } else {
                     BasketSingleton.sharedInstance.addSale(viewController: self, target: self.entrance! as Any, type: "Entrance", completion: { (count) in
-                        print("sales count: \(count)")
                         self.selfBasketAdd = !self.selfBasketAdd
                         self.updateBasketBadge(count: count)
 
@@ -716,6 +936,9 @@ class EntranceDetailTableViewController: UITableViewController {
     
     @IBAction func downloadButtonPressed(sender: UIButton) {
         //self.navigationItem.setHidesBackButton(true, animated: true)
+        NSOperationQueue.mainQueue().addOperationWithBlock({
+            AlertClass.showTopMessage(viewController: self, messageType: "ActionResult", messageSubType: "DownloadStarted", type: "warning", completion: nil)
+        })
         
         // Get from db if download initial data
         let username = UserDefaultsSingleton.sharedInstance.getUsername()!

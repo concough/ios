@@ -9,6 +9,7 @@
 import Foundation
 import UIKit
 import SwiftyJSON
+import MBProgressHUD
 
 class BasketSingleton {
     static let sharedInstance = BasketSingleton()
@@ -48,7 +49,18 @@ class BasketSingleton {
     
     // MARK: - Functions
     internal func loadBasketItems(viewController viewController: UIViewController, completion: ((count: Int) -> ())?) {
+        
+        NSOperationQueue.mainQueue().addOperationWithBlock {
+            if let vc = viewController as? BasketCheckoutTableViewController {
+                vc.loading = AlertClass.showLoadingMessage(viewController: viewController)
+            }
+        }
         BasketRestAPIClass.loadBasketItems({ (data, error) in
+            NSOperationQueue.mainQueue().addOperationWithBlock {
+                if let vc = viewController as? BasketCheckoutTableViewController {
+                    AlertClass.hideLoaingMessage(progressHUD: vc.loading)
+                }
+            }
             if error != HTTPErrorType.Success {
                 AlertClass.showSimpleErrorMessage(viewController: viewController, messageType: "HTTPError", messageSubType: (error?.toString())!, completion: nil)
             } else {
@@ -110,12 +122,13 @@ class BasketSingleton {
                                         compl(count: 0)
                                     }
                                 default:
-                                    AlertClass.showSimpleErrorMessage(viewController: viewController, messageType: "ErrorResult", messageSubType: errorType, completion: {
-
-                                        if let compl = completion {
-                                            compl(count: 0)
-                                        }
-                                    })
+                                    break
+//                                    AlertClass.showSimpleErrorMessage(viewController: viewController, messageType: "ErrorResult", messageSubType: errorType, completion: {
+//
+//                                        if let compl = completion {
+//                                            compl(count: 0)
+//                                        }
+//                                    })
                                 }
                             }
                             
@@ -129,17 +142,32 @@ class BasketSingleton {
             // In Any Way completes
             
         }) { (error) in
+            NSOperationQueue.mainQueue().addOperationWithBlock {
+                if let vc = viewController as? BasketCheckoutTableViewController {
+                    AlertClass.hideLoaingMessage(progressHUD: vc.loading)
+                }
+            }
+            
             if let err = error {
                 switch err {
                 case .NoInternetAccess:
-                    AlertClass.showSimpleErrorMessage(viewController: viewController, messageType: "NetworkError", messageSubType: err.rawValue, completion: {
-                        let operation = NSBlockOperation(block: {
-                            self.loadBasketItems(viewController: viewController, completion: completion)
-                        })
-                        self._queue.addOperation(operation)
+                    fallthrough
+                case .HostUnreachable:
+                    NSOperationQueue.mainQueue().addOperationWithBlock({
+                        AlertClass.showTopMessage(viewController: viewController, messageType: "NetworkError", messageSubType: err.rawValue, type: "error", completion: nil)
                     })
+                    
+//                    AlertClass.showSimpleErrorMessage(viewController: viewController, messageType: "NetworkError", messageSubType: err.rawValue, completion: {
+//                        let operation = NSBlockOperation(block: {
+//                            self.loadBasketItems(viewController: viewController, completion: completion)
+//                        })
+//                        self._queue.addOperation(operation)
+//                    })
                 default:
-                    AlertClass.showSimpleErrorMessage(viewController: viewController, messageType: "NetworkError", messageSubType: err.rawValue, completion: nil)
+                    NSOperationQueue.mainQueue().addOperationWithBlock({
+                        AlertClass.showTopMessage(viewController: viewController, messageType: "NetworkError", messageSubType: err.rawValue, type: "", completion: nil)
+                    })
+//                    AlertClass.showSimpleErrorMessage(viewController: viewController, messageType: "NetworkError", messageSubType: err.rawValue, completion: nil)
                 }
             }
             
@@ -149,7 +177,11 @@ class BasketSingleton {
     internal func createBasket(viewController viewController: UIViewController, completion: (() -> ())?) {
         BasketRestAPIClass.createBasket({ (data, error) in
             if error != HTTPErrorType.Success {
-                AlertClass.showSimpleErrorMessage(viewController: viewController, messageType: "HTTPError", messageSubType: (error?.toString())!, completion: nil)
+                NSOperationQueue.mainQueue().addOperationWithBlock({ 
+                    AlertClass.showTopMessage(viewController: viewController, messageType: "HTTPError", messageSubType: (error?.toString())!, type: "error", completion: nil)
+                })
+                
+//                AlertClass.showSimpleErrorMessage(viewController: viewController, messageType: "HTTPError", messageSubType: (error?.toString())!, completion: nil)
             } else {
                 if let localData = data {
                     if let status = localData["status"].string {
@@ -161,15 +193,14 @@ class BasketSingleton {
                                     compl()
                                 }
                             }
-                            
-                            
                         case "Error":
                             if let errorType = localData["error_type"].string {
                                 switch errorType {
                                 case "RemoteDBError":
                                     fallthrough
                                 default:
-                                    AlertClass.showSimpleErrorMessage(viewController: viewController, messageType: "ErrorResult", messageSubType: errorType, completion: nil)
+                                    break
+//                                    AlertClass.showSimpleErrorMessage(viewController: viewController, messageType: "ErrorResult", messageSubType: errorType, completion: nil)
                                 }
                             }
                             
@@ -182,15 +213,25 @@ class BasketSingleton {
         }) { (error) in
             if let err = error {
                 switch err {
+                case .HostUnreachable:
+                    fallthrough
                 case .NoInternetAccess:
-                    AlertClass.showSimpleErrorMessage(viewController: viewController, messageType: "NetworkError", messageSubType: err.rawValue, completion: {
-                        let operation = NSBlockOperation(block: {
-                            self.createBasket(viewController: viewController, completion: completion)
-                        })
-                        self._queue.addOperation(operation)
+                    NSOperationQueue.mainQueue().addOperationWithBlock({
+                        AlertClass.showTopMessage(viewController: viewController, messageType: "NetworkError", messageSubType: err.rawValue, type: "error", completion: nil)
                     })
+                    
+//                    AlertClass.showSimpleErrorMessage(viewController: viewController, messageType: "NetworkError", messageSubType: err.rawValue, completion: {
+//                        let operation = NSBlockOperation(block: {
+//                            self.createBasket(viewController: viewController, completion: completion)
+//                        })
+//                        self._queue.addOperation(operation)
+//                    })
                 default:
-                    AlertClass.showSimpleErrorMessage(viewController: viewController, messageType: "NetworkError", messageSubType: err.rawValue, completion: nil)
+                    NSOperationQueue.mainQueue().addOperationWithBlock({
+                        AlertClass.showTopMessage(viewController: viewController, messageType: "NetworkError", messageSubType: err.rawValue, type: "", completion: nil)
+                    })
+                    
+//                    AlertClass.showSimpleErrorMessage(viewController: viewController, messageType: "NetworkError", messageSubType: err.rawValue, completion: nil)
                 }
             }
             
@@ -218,7 +259,11 @@ class BasketSingleton {
         if product_id != nil {
                 BasketRestAPIClass.addProductToBasket(basketId: self._basketId!, productId: product_id!, productType: type, completion: { (data, error) in
                     if error != HTTPErrorType.Success {
-                        AlertClass.showSimpleErrorMessage(viewController: viewController, messageType: "HTTPError", messageSubType: (error?.toString())!, completion: nil)
+                        NSOperationQueue.mainQueue().addOperationWithBlock({
+                            AlertClass.showTopMessage(viewController: viewController, messageType: "HTTPError", messageSubType: (error?.toString())!, type: "error", completion: nil)
+                        })
+                        
+//                        AlertClass.showSimpleErrorMessage(viewController: viewController, messageType: "HTTPError", messageSubType: (error?.toString())!, completion: nil)
                     } else {
                         if let localData = data {
                             if let status = localData["status"].string {
@@ -282,15 +327,24 @@ class BasketSingleton {
                 }, failure: { (error) in
                     if let err = error {
                         switch err {
+                        case .HostUnreachable:
+                            fallthrough
                         case .NoInternetAccess:
-                            AlertClass.showSimpleErrorMessage(viewController: viewController, messageType: "NetworkError", messageSubType: err.rawValue, completion: {
-                                let operation = NSBlockOperation(block: {
-                                    self.addSale(viewController: viewController, target: target, type: type, completion: completion)
-                                })
-                                self._queue.addOperation(operation)
+                            NSOperationQueue.mainQueue().addOperationWithBlock({
+                                AlertClass.showTopMessage(viewController: viewController, messageType: "NetworkError", messageSubType: err.rawValue, type: "error", completion: nil)
                             })
+                            
+//                            AlertClass.showSimpleErrorMessage(viewController: viewController, messageType: "NetworkError", messageSubType: err.rawValue, completion: {
+//                                let operation = NSBlockOperation(block: {
+//                                    self.addSale(viewController: viewController, target: target, type: type, completion: completion)
+//                                })
+//                                self._queue.addOperation(operation)
+//                            })
                         default:
-                            AlertClass.showSimpleErrorMessage(viewController: viewController, messageType: "NetworkError", messageSubType: err.rawValue, completion: nil)
+                            NSOperationQueue.mainQueue().addOperationWithBlock({
+                                AlertClass.showTopMessage(viewController: viewController, messageType: "NetworkError", messageSubType: err.rawValue, type: "", completion: nil)
+                            })
+//                            AlertClass.showSimpleErrorMessage(viewController: viewController, messageType: "NetworkError", messageSubType: err.rawValue, completion: nil)
                         }
                     }
                         
@@ -336,7 +390,11 @@ class BasketSingleton {
         if self.findSaleById(saleId: saleId) != nil {
             BasketRestAPIClass.removeSaleFormBasket(basketId: self._basketId!, saleId: saleId, completion: { (data, error) in
                 if error != HTTPErrorType.Success {
-                    AlertClass.showSimpleErrorMessage(viewController: viewController, messageType: "HTTPError", messageSubType: (error?.toString())!, completion: nil)
+                    NSOperationQueue.mainQueue().addOperationWithBlock({
+                        AlertClass.showTopMessage(viewController: viewController, messageType: "HTTPError", messageSubType: (error?.toString())!, type: "error", completion: nil)
+                    })
+                    
+//                    AlertClass.showSimpleErrorMessage(viewController: viewController, messageType: "HTTPError", messageSubType: (error?.toString())!, completion: nil)
                 } else {
                     if let localData = data {
                         if let status = localData["status"].string {
@@ -351,11 +409,13 @@ class BasketSingleton {
                                 if let errorType = localData["error_type"].string {
                                     switch errorType {
                                     case "SaleNotExist":
-                                        AlertClass.showSimpleErrorMessage(viewController: viewController, messageType: "BasketResult", messageSubType: errorType, completion: nil)
+                                        AlertClass.showTopMessage(viewController: viewController, messageType: "BasketResult", messageSubType: errorType, type: "error", completion: nil)
+//                                        AlertClass.showSimpleErrorMessage(viewController: viewController, messageType: "BasketResult", messageSubType: errorType, completion: nil)
                                     case "RemoteDBError":
                                         fallthrough
                                     default:
-                                        AlertClass.showSimpleErrorMessage(viewController: viewController, messageType: "ErrorResult", messageSubType: errorType, completion: nil)
+                                        break
+//                                        AlertClass.showSimpleErrorMessage(viewController: viewController, messageType: "ErrorResult", messageSubType: errorType, completion: nil)
                                     }
                                 }
                                 
@@ -368,15 +428,24 @@ class BasketSingleton {
             }, failure: { (error) in
                 if let err = error {
                     switch err {
+                    case .HostUnreachable:
+                        fallthrough
                     case .NoInternetAccess:
-                        AlertClass.showSimpleErrorMessage(viewController: viewController, messageType: "NetworkError", messageSubType: err.rawValue, completion: {
-                            let operation = NSBlockOperation(block: {
-                                self.removeSaleById(viewController: viewController, saleId: saleId, completion: completion)
-                            })
-                            self._queue.addOperation(operation)
+                        NSOperationQueue.mainQueue().addOperationWithBlock({
+                            AlertClass.showTopMessage(viewController: viewController, messageType: "NetworkError", messageSubType: err.rawValue, type: "error", completion: nil)
                         })
+                        
+//                        AlertClass.showSimpleErrorMessage(viewController: viewController, messageType: "NetworkError", messageSubType: err.rawValue, completion: {
+//                            let operation = NSBlockOperation(block: {
+//                                self.removeSaleById(viewController: viewController, saleId: saleId, completion: completion)
+//                            })
+//                            self._queue.addOperation(operation)
+//                        })
                     default:
-                        AlertClass.showSimpleErrorMessage(viewController: viewController, messageType: "NetworkError", messageSubType: err.rawValue, completion: nil)
+                        NSOperationQueue.mainQueue().addOperationWithBlock({
+                            AlertClass.showTopMessage(viewController: viewController, messageType: "NetworkError", messageSubType: err.rawValue, type: "", completion: nil)
+                        })
+//                        AlertClass.showSimpleErrorMessage(viewController: viewController, messageType: "NetworkError", messageSubType: err.rawValue, completion: nil)
                     }
                 }
                 
@@ -387,7 +456,11 @@ class BasketSingleton {
     internal func checkout(viewController viewController: UIViewController, completion: ((count: Int, purchased: [Int: (Int, Int, NSDate)]?) -> ())?) {
             BasketRestAPIClass.checkoutBasket(basketId: self._basketId!, completion: { (data, error) in
                 if error != HTTPErrorType.Success {
-                    AlertClass.showSimpleErrorMessage(viewController: viewController, messageType: "HTTPError", messageSubType: (error?.toString())!, completion: nil)
+                    NSOperationQueue.mainQueue().addOperationWithBlock({
+                        AlertClass.showTopMessage(viewController: viewController, messageType: "HTTPError", messageSubType: (error?.toString())!, type: "error", completion: nil)
+                    })
+                    
+//                    AlertClass.showSimpleErrorMessage(viewController: viewController, messageType: "HTTPError", messageSubType: (error?.toString())!, completion: nil)
                 } else {
                     if let localData = data {
                         if let status = localData["status"].string {
@@ -433,19 +506,30 @@ class BasketSingleton {
                                 if let errorType = localData["error_type"].string {
                                     switch errorType {
                                     case "EmptyBasket":
-                                        AlertClass.showSimpleErrorMessage(viewController: viewController, messageType: "ErrorResult", messageSubType: errorType, completion: {
+                                        NSOperationQueue.mainQueue().addOperationWithBlock({
+                                            AlertClass.showTopMessage(viewController: viewController, messageType: "BasketResult", messageSubType: errorType, type: "error", completion: nil)
+                                            
                                             self._basketId = nil
                                             self.removeAllSales()
-                                            NSOperationQueue.mainQueue().addOperationWithBlock({ 
-                                                if let compl = completion {
-                                                    compl(count: 0, purchased: nil)
-                                                }
-                                            })
+                                            if let compl = completion {
+                                                compl(count: 0, purchased: nil)
+                                            }
                                         })
+                                        
+//                                        AlertClass.showSimpleErrorMessage(viewController: viewController, messageType: "BasketResult", messageSubType: errorType, completion: {
+//                                            self._basketId = nil
+//                                            self.removeAllSales()
+//                                            NSOperationQueue.mainQueue().addOperationWithBlock({ 
+//                                                if let compl = completion {
+//                                                    compl(count: 0, purchased: nil)
+//                                                }
+//                                            })
+//                                        })
                                     case "RemoteDBError":
                                         fallthrough
                                     default:
-                                        AlertClass.showSimpleErrorMessage(viewController: viewController, messageType: "ErrorResult", messageSubType: errorType, completion: nil)
+                                        break
+//                                        AlertClass.showSimpleErrorMessage(viewController: viewController, messageType: "ErrorResult", messageSubType: errorType, completion: nil)
                                     }
                                 }
                                 
@@ -458,15 +542,25 @@ class BasketSingleton {
                 }, failure: { (error) in
                     if let err = error {
                         switch err {
+                        case .HostUnreachable:
+                            fallthrough
                         case .NoInternetAccess:
-                            AlertClass.showSimpleErrorMessage(viewController: viewController, messageType: "NetworkError", messageSubType: err.rawValue, completion: {
-                                let operation = NSBlockOperation(block: {
-                                    self.checkout(viewController: viewController, completion: completion)
-                                })
-                                self._queue.addOperation(operation)
+                            NSOperationQueue.mainQueue().addOperationWithBlock({
+                                AlertClass.showTopMessage(viewController: viewController, messageType: "NetworkError", messageSubType: err.rawValue, type: "error", completion: nil)
                             })
+                            
+//                            AlertClass.showSimpleErrorMessage(viewController: viewController, messageType: "NetworkError", messageSubType: err.rawValue, completion: {
+//                                let operation = NSBlockOperation(block: {
+//                                    self.checkout(viewController: viewController, completion: completion)
+//                                })
+//                                self._queue.addOperation(operation)
+//                            })
                         default:
-                            AlertClass.showSimpleErrorMessage(viewController: viewController, messageType: "NetworkError", messageSubType: err.rawValue, completion: nil)
+                            NSOperationQueue.mainQueue().addOperationWithBlock({
+                                AlertClass.showTopMessage(viewController: viewController, messageType: "NetworkError", messageSubType: err.rawValue, type: "", completion: nil)
+                            })
+                            
+//                            AlertClass.showSimpleErrorMessage(viewController: viewController, messageType: "NetworkError", messageSubType: err.rawValue, completion: nil)
                         }
                     }
                     

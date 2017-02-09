@@ -29,6 +29,20 @@ class TokenHandlerSingleton {
         return self._username
     }
     
+    func getPassword() -> String? {
+        return self._password
+    }
+    
+    func invalidateTokens() {
+        self._token = nil
+        self._refreshToken = nil
+        self._username = nil
+        self._password = nil
+        
+        KeyChainAccessProxy.removeValue(USERNAME_KEY)
+        KeyChainAccessProxy.removeValue(PASSWORD_KEY)
+    }
+    
     private init() {
         // initialize oauth tokens
         if self._oauth_method == "oauth" {
@@ -250,18 +264,22 @@ class TokenHandlerSingleton {
                     if error == .Success {
                         completion(authenticated: true, error: error)
                     } else {
-                        if error == .BadRequest {
+//                        if error == .BadRequest || error == .UnAuthorized {
                             self.authorize({ (error) in
                                 if error == .Success {
                                     completion(authenticated: true, error: error)
                                 } else {
+                                    if error == .BadRequest {
+                                        KeyChainAccessProxy.clearAllValue()
+                                        UserDefaultsSingleton.sharedInstance.clearAll()
+                                    }
                                     completion(authenticated: false, error: error)
                                 }
                             }, failure: { (error) in
                                 failure(error: error)
                             })
-                        }
-                        completion(authenticated: false, error: error)
+//                        }
+//                        completion(authenticated: false, error: error)
                     }
                 }, failure: { (error) in
                     failure(error: error)
@@ -275,18 +293,22 @@ class TokenHandlerSingleton {
                             if error == .Success {
                                 completion(authenticated: true, error: error)
                             } else {
-                                if error == .BadRequest {
+//                                if error == .BadRequest {
                                     self.authorize({ (error) in
                                         if error == .Success {
                                             completion(authenticated: true, error: error)
                                         } else {
+                                            if error == .BadRequest {
+                                                KeyChainAccessProxy.clearAllValue()
+                                                UserDefaultsSingleton.sharedInstance.clearAll()
+                                            }
                                             completion(authenticated: false, error: error)
                                         }
-                                        }, failure: { (error) in
+                                    }, failure: { (error) in
                                             failure(error: error)
                                     })
-                                }
-                                completion(authenticated: false, error: error)
+//                                }
+//                                completion(authenticated: false, error: error)
                             }
                         }, failure: { error in
                             failure(error: error)

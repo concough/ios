@@ -48,7 +48,7 @@ class UserDefaultsSingleton {
         self.setValue(true, key: "Profile.Created")
     }
     
-    func getProfile() -> (String, String, String, String, NSDate, NSDate)? {
+    func getProfile() -> (firstname: String, lastname: String, grade: String, gender: String, birthday: NSDate, modified: NSDate)? {
         if let firstname = self.getValue(key: "Profile.Firstname") as? String,
             let lastname = self.getValue(key: "Profile.Lastname") as? String,
             let grade = self.getValue(key: "Profile.Grade") as? String,
@@ -56,13 +56,30 @@ class UserDefaultsSingleton {
             let birthday = self.getValue(key: "Profile.Birthday") as? NSDate,
             let modified = self.getValue(key: "Profile.Modified") as? NSDate {
             
-            return (firstname, lastname, grade, gender, birthday, modified)
+            return (firstname: firstname, lastname: lastname, grade: grade, gender: gender, birthday: birthday, modified: modified)
         }
         
         return nil
     }
     
+    func updateModified(modified modified: NSDate) {
+        self.setValue(modified, key: "Profile.Modified")
+        self._settings.synchronize()
+    }
+    
+    func updateGrade(grade grade: String, modified: NSDate) {
+        self.setValue(grade, key: "Profile.Grade")
+        self.setValue(modified, key: "Profile.Modified")
+    }
+    
     func getUsername() -> String? {
         return TokenHandlerSingleton.sharedInstance.getUsername()
+    }
+    
+    func chackPassword(password pass: String) -> Bool {
+        if TokenHandlerSingleton.sharedInstance.getPassword() == pass {
+            return true
+        }
+        return false
     }
 }

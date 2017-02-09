@@ -23,6 +23,7 @@ class EDSaleSectionTableViewCell: UITableViewCell {
         super.awakeFromNib()
         // Initialization code
         
+        self.selectionStyle = .None
         self.basketStackView.hidden = true
     }
 

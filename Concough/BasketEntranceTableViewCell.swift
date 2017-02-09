@@ -22,6 +22,7 @@ class BasketEntranceTableViewCell: UITableViewCell {
     override func awakeFromNib() {
         super.awakeFromNib()
         // Initialization code
+        self.selectionStyle = .None
     }
 
     override func drawRect(rect: CGRect) {

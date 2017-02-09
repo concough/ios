@@ -13,6 +13,7 @@ import BTNavigationDropdownMenu
 import EHHorizontalSelectionView
 import DZNEmptyDataSet
 import BBBadgeBarButtonItem
+import MBProgressHUD
 
 class ArchiveTableViewController: UITableViewController, EHHorizontalSelectionViewProtocol, DZNEmptyDataSetSource, DZNEmptyDataSetDelegate  {
 
@@ -21,6 +22,7 @@ class ArchiveTableViewController: UITableViewController, EHHorizontalSelectionVi
     private var menuView: BTNavigationDropdownMenu?
     private var queue: NSOperationQueue!
     private var rightBarButtonItem: BBBadgeBarButtonItem!
+    private var loading: MBProgressHUD?
     
     private var typeTitle: String?
     private var selectedTableIndex: Int = -1
@@ -55,6 +57,12 @@ class ArchiveTableViewController: UITableViewController, EHHorizontalSelectionVi
         self.tableView.emptyDataSetSource = self
         self.tableView.emptyDataSetDelegate = self
         
+        if self.refreshControl == nil {
+            self.refreshControl = UIRefreshControl()
+            self.refreshControl?.attributedTitle = NSAttributedString(string: "برای به روز رسانی به پایین بکشید", attributes: [NSFontAttributeName: UIFont(name: "IRANYekanMobile-Light", size: 12)!])
+        }
+        self.refreshControl?.addTarget(self, action: #selector(self.refreshTableView(_:)), forControlEvents: .ValueChanged)
+        
         // create operation and call it
         let operation = NSBlockOperation(block: { 
             self.getEntranceTypes()
@@ -70,6 +78,19 @@ class ArchiveTableViewController: UITableViewController, EHHorizontalSelectionVi
         super.didReceiveMemoryWarning()
         // Dispose of any resources that can be recreated.
     }
+    
+    func refreshTableView(refreshControl_: UIRefreshControl) {
+        if self.types.count > 0 {
+            if self.groups.count > 0 {
+                self.getEntranceSets(entranceGroupId: self.selectedEntranceGroupIndex)
+            } else {
+                self.getEntranceGroups(entranceTypeId: self.selectedEntranceTypeIndex)
+            }
+        } else {
+            self.getEntranceTypes()
+        }
+    }
+    
     
     // MARK: - Functions
     
@@ -144,6 +165,24 @@ class ArchiveTableViewController: UITableViewController, EHHorizontalSelectionVi
     }
     
     // MARK: -Actions
+    @IBAction func refreshButtonPressed(sender: UIBarButtonItem) {
+        self.selectedEntranceTypeIndex = -1
+        self.selectedEntranceGroupIndex = -1
+        self.selectedTableIndex = -1
+        
+        self.types.removeAll()
+        self.typesString.removeAll()
+        self.groups.removeAll()
+        self.groupsString.removeAll()
+        self.sets.removeAll()
+        self.setsRepo.removeAll()
+        
+        let operation = NSBlockOperation(block: {
+            self.getEntranceTypes()
+        })
+        self.queue.addOperation(operation)
+    }
+    
     @IBAction func basketButtonPressed(sender: AnyObject) {
         NSOperationQueue.mainQueue().addOperationWithBlock {
             self.performSegueWithIdentifier("BasketCheckoutVCSegue", sender: self)
@@ -174,9 +213,18 @@ class ArchiveTableViewController: UITableViewController, EHHorizontalSelectionVi
     }
     
     private func getEntranceTypes() {
+        NSOperationQueue.mainQueue().addOperationWithBlock { 
+            self.refreshControl?.endRefreshing()
+            self.loading = AlertClass.showLoadingMessage(viewController: self)
+        }
+        
         ArchiveRestAPIClass.getEntranceTypes({ (data, error) in
+            NSOperationQueue.mainQueue().addOperationWithBlock({ 
+                AlertClass.hideLoaingMessage(progressHUD: self.loading)
+            })
+            
             if error != HTTPErrorType.Success {
-                AlertClass.showSimpleErrorMessage(viewController: self, messageType: "HTTPError", messageSubType: (error?.toString())!, completion: nil)
+                AlertClass.showTopMessage(viewController: self, messageType: "HTTPError", messageSubType: (error?.toString())!, type: "error", completion: nil)
             } else {
                 if let localData = data {
                     if let status = localData["status"].string {
@@ -208,9 +256,11 @@ class ArchiveTableViewController: UITableViewController, EHHorizontalSelectionVi
                                 switch errorType {
                                     case "EmptyArray":
                                         // must choise appropriate action
+                                        AlertClass.showTopMessage(viewController: self, messageType: "ErrorResult", messageSubType: errorType, type: "", completion: nil)
                                         break
                                     default:
-                                        AlertClass.showSimpleErrorMessage(viewController: self, messageType: "ErrorResult", messageSubType: errorType, completion: nil)
+                                        break
+//                                        AlertClass.showSimpleErrorMessage(viewController: self, messageType: "ErrorResult", messageSubType: errorType, completion: nil)
                                 }
                             }
                         default:
@@ -221,29 +271,39 @@ class ArchiveTableViewController: UITableViewController, EHHorizontalSelectionVi
             }
             
         }) { (error) in
+            NSOperationQueue.mainQueue().addOperationWithBlock({
+                AlertClass.hideLoaingMessage(progressHUD: self.loading)
+            })
+            
             if let err = error {
                 switch err {
                 case .NoInternetAccess:
-                    AlertClass.showSimpleErrorMessage(viewController: self, messageType: "NetworkError", messageSubType: err.rawValue, completion: { 
-                        let operation = NSBlockOperation(block: {
-                            self.getEntranceTypes()
-                        })
-                        self.queue.addOperation(operation)
-                    })
+                    fallthrough
                 case .HostUnreachable:
-                    AlertClass.showSimpleErrorMessage(viewController: self, messageType: "NetworkError", messageSubType: err.rawValue, completion: { 
-                        NSOperationQueue.mainQueue().addOperationWithBlock({ 
-                            self.performSegueWithIdentifier("HomeVCUnSegue", sender: self)
-                        })
+                    NSOperationQueue.mainQueue().addOperationWithBlock({
+                        AlertClass.showTopMessage(viewController: self, messageType: "NetworkError", messageSubType: err.rawValue, type: "error", completion: nil)
                     })
+                    
+//                    AlertClass.showSimpleErrorMessage(viewController: self, messageType: "NetworkError", messageSubType: err.rawValue, completion: { 
+//                        NSOperationQueue.mainQueue().addOperationWithBlock({ 
+//                            self.performSegueWithIdentifier("HomeVCUnSegue", sender: self)
+//                        })
+//                    })
                 default:
-                    AlertClass.showSimpleErrorMessage(viewController: self, messageType: "NetworkError", messageSubType: err.rawValue, completion: nil)
+                    NSOperationQueue.mainQueue().addOperationWithBlock({
+                        AlertClass.showTopMessage(viewController: self, messageType: "NetworkError", messageSubType: err.rawValue, type: "", completion: nil)
+                    })
+//                    AlertClass.showSimpleErrorMessage(viewController: self, messageType: "NetworkError", messageSubType: err.rawValue, completion: nil)
                 }
             }
         }
     }
     
     private func getEntranceGroups(entranceTypeId etypeId: Int) {
+        NSOperationQueue.mainQueue().addOperationWithBlock {
+            self.refreshControl?.endRefreshing()
+        }
+        
         if self.groupsRepo.keys.contains(etypeId) == true {
             self.groups = self.groupsRepo[etypeId]
             self.groupsString = self.groups.keys.reverse()
@@ -263,9 +323,17 @@ class ArchiveTableViewController: UITableViewController, EHHorizontalSelectionVi
             return
         }
         
+        NSOperationQueue.mainQueue().addOperationWithBlock { 
+            self.loading = AlertClass.showLoadingMessage(viewController: self)
+        }
+        
         ArchiveRestAPIClass.getEntranceGroups(entranceTypeId: etypeId, completion: { (data, error) in
+            NSOperationQueue.mainQueue().addOperationWithBlock({ 
+                AlertClass.hideLoaingMessage(progressHUD: self.loading)
+            })
+            
             if error != HTTPErrorType.Success {
-                AlertClass.showSimpleErrorMessage(viewController: self, messageType: "HTTPError", messageSubType: (error?.toString())!, completion: nil)
+                AlertClass.showTopMessage(viewController: self, messageType: "HTTPError", messageSubType: (error?.toString())!, type: "error", completion: nil)
             } else {
                 if let localData = data {
                     if let status = localData["status"].string {
@@ -311,9 +379,11 @@ class ArchiveTableViewController: UITableViewController, EHHorizontalSelectionVi
                                         self.hSelView?.reloadData()
                                         self.tableView.reloadData()
                                     })
+                                    
                                     break
                                 default:
-                                    AlertClass.showSimpleErrorMessage(viewController: self, messageType: "ErrorResult", messageSubType: errorType, completion: nil)
+                                    break
+//                                    AlertClass.showSimpleErrorMessage(viewController: self, messageType: "ErrorResult", messageSubType: errorType, completion: nil)
                                 }
                             }
                         default:
@@ -323,23 +393,41 @@ class ArchiveTableViewController: UITableViewController, EHHorizontalSelectionVi
                 }
             }
         }) { (error) in
+            NSOperationQueue.mainQueue().addOperationWithBlock({
+                AlertClass.hideLoaingMessage(progressHUD: self.loading)
+            })
+            
             if let err = error {
                 switch err {
                 case .NoInternetAccess:
-                    AlertClass.showSimpleErrorMessage(viewController: self, messageType: "NetworkError", messageSubType: err.rawValue, completion: {
-                        let operation = NSBlockOperation(block: {
-                            self.getEntranceGroups(entranceTypeId: etypeId)
-                        })
-                        self.queue.addOperation(operation)
+                    fallthrough
+                case .HostUnreachable:
+                    NSOperationQueue.mainQueue().addOperationWithBlock({
+                        AlertClass.showTopMessage(viewController: self, messageType: "NetworkError", messageSubType: err.rawValue, type: "error", completion: nil)
                     })
+                    
+//                    AlertClass.showSimpleErrorMessage(viewController: self, messageType: "NetworkError", messageSubType: err.rawValue, completion: {
+//                        let operation = NSBlockOperation(block: {
+//                            self.getEntranceGroups(entranceTypeId: etypeId)
+//                        })
+//                        self.queue.addOperation(operation)
+//                    })
                 default:
-                    AlertClass.showSimpleErrorMessage(viewController: self, messageType: "NetworkError", messageSubType: err.rawValue, completion: nil)
+                    NSOperationQueue.mainQueue().addOperationWithBlock({
+                        AlertClass.showTopMessage(viewController: self, messageType: "NetworkError", messageSubType: err.rawValue, type: "", completion: nil)
+                    })
+                    
+//                    AlertClass.showSimpleErrorMessage(viewController: self, messageType: "NetworkError", messageSubType: err.rawValue, completion: nil)
                 }
             }
         }
     }
     
     private func getEntranceSets(entranceGroupId groupId: Int) {
+        NSOperationQueue.mainQueue().addOperationWithBlock {
+            self.refreshControl?.endRefreshing()
+        }
+
         if self.setsRepo.keys.contains("\(self.selectedEntranceTypeIndex):\(groupId)") {
             self.sets = self.setsRepo["\(self.selectedEntranceTypeIndex):\(groupId)"]
             
@@ -348,13 +436,20 @@ class ArchiveTableViewController: UITableViewController, EHHorizontalSelectionVi
             })
             
             print("sets repo fetched: group=\(self.selectedEntranceTypeIndex):\(groupId)")
-            
             return
+        }
+
+        NSOperationQueue.mainQueue().addOperationWithBlock { 
+            self.loading = AlertClass.showLoadingMessage(viewController: self)
         }
         
         ArchiveRestAPIClass.getEntranceSets(entranceGroupId: groupId, completion: { (data, error) in
+            NSOperationQueue.mainQueue().addOperationWithBlock({ 
+                AlertClass.hideLoaingMessage(progressHUD: self.loading)
+            })
+            
             if error != HTTPErrorType.Success {
-                AlertClass.showSimpleErrorMessage(viewController: self, messageType: "HTTPError", messageSubType: (error?.toString())!, completion: nil)
+                AlertClass.showTopMessage(viewController: self, messageType: "HTTPError", messageSubType: (error?.toString())!, type: "error", completion: nil)
             } else {
                 if let localData = data {
                     if let status = localData["status"].string {
@@ -399,7 +494,8 @@ class ArchiveTableViewController: UITableViewController, EHHorizontalSelectionVi
                                         self.tableView.reloadData()
                                     })
                                 default:
-                                    AlertClass.showSimpleErrorMessage(viewController: self, messageType: "ErrorResult", messageSubType: errorType, completion: nil)
+                                    break
+//                                    AlertClass.showSimpleErrorMessage(viewController: self, messageType: "ErrorResult", messageSubType: errorType, completion: nil)
                                 }
                             }
                         default:
@@ -409,17 +505,29 @@ class ArchiveTableViewController: UITableViewController, EHHorizontalSelectionVi
                 }
             }
         }) { (error) in
+            NSOperationQueue.mainQueue().addOperationWithBlock({
+                AlertClass.hideLoaingMessage(progressHUD: self.loading)
+            })
+            
             if let err = error {
                 switch err {
                 case .NoInternetAccess:
-                    AlertClass.showSimpleErrorMessage(viewController: self, messageType: "NetworkError", messageSubType: err.rawValue, completion: {
-                        let operation = NSBlockOperation(block: {
-                            self.getEntranceSets(entranceGroupId: groupId)
-                        })
-                        self.queue.addOperation(operation)
+                    fallthrough
+                case .HostUnreachable:
+                    NSOperationQueue.mainQueue().addOperationWithBlock({
+                        AlertClass.showTopMessage(viewController: self, messageType: "NetworkError", messageSubType: err.rawValue, type: "error", completion: nil)
                     })
+//                    AlertClass.showSimpleErrorMessage(viewController: self, messageType: "NetworkError", messageSubType: err.rawValue, completion: {
+//                        let operation = NSBlockOperation(block: {
+//                            self.getEntranceSets(entranceGroupId: groupId)
+//                        })
+//                        self.queue.addOperation(operation)
+//                    })
                 default:
-                    AlertClass.showSimpleErrorMessage(viewController: self, messageType: "NetworkError", messageSubType: err.rawValue, completion: nil)
+                    NSOperationQueue.mainQueue().addOperationWithBlock({
+                        AlertClass.showTopMessage(viewController: self, messageType: "NetworkError", messageSubType: err.rawValue, type: "", completion: nil)
+                    })
+//                    AlertClass.showSimpleErrorMessage(viewController: self, messageType: "NetworkError", messageSubType: err.rawValue, completion: nil)
                 }
             }
         }
@@ -482,15 +590,35 @@ class ArchiveTableViewController: UITableViewController, EHHorizontalSelectionVi
     
     // MARK: - DZN
     func titleForEmptyDataSet(scrollView: UIScrollView!) -> NSAttributedString! {
-        let title = "مجموعه ای ثبت نشده است."
-        let attributes = [NSFontAttributeName: UIFont(name: "IRANYekanMobile-Bold", size: 14)!,
+        let title = "داده ای موجود نیست"
+        let attributes = [NSFontAttributeName: UIFont(name: "IRANYekanMobile-Bold", size: 16)!,
                           NSForegroundColorAttributeName: UIColor.darkGrayColor()]
         
         return NSAttributedString(string: title, attributes: attributes)
     }
     
-    func backgroundColorForEmptyDataSet(scrollView: UIScrollView!) -> UIColor! {
-        return UIColor.whiteColor()
+    func imageForEmptyDataSet(scrollView: UIScrollView!) -> UIImage! {
+        let image = UIImage(named: "Refresh")
+        return image
+    }
+    
+    func emptyDataSetShouldAllowTouch(scrollView: UIScrollView!) -> Bool {
+        return true
+    }
+    
+    func emptyDataSetDidTapView(scrollView: UIScrollView!) {
+        let operation = NSBlockOperation {
+            if self.types.count > 0 {
+                if self.groups.count > 0 {
+                    self.getEntranceSets(entranceGroupId: self.selectedEntranceGroupIndex)
+                } else {
+                    self.getEntranceGroups(entranceTypeId: self.selectedEntranceTypeIndex)
+                }
+            } else {
+                self.getEntranceTypes()
+            }            
+        }
+        self.queue.addOperation(operation)
     }
     
     // MARK: - Navigation

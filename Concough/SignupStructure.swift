@@ -44,8 +44,13 @@ enum GradeTypeEnum: String {
         }
     }
     
-    mutating func selectWithString(value: String) {
-        
+    static func selectWithString(value: String) -> GradeTypeEnum {
+        switch value {
+        case "ME":
+            return .ME
+        default:
+            return .BE
+        }
     }
 }
 

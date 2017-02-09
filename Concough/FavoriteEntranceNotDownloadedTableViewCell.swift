@@ -33,6 +33,7 @@ class FavoriteEntranceNotDownloadedTableViewCell: UITableViewCell {
     override func prepareForReuse() {
         self.progressView.hidden = true
         self.downloadView.hidden = false
+        self.progressView.setProgress(0, animated: false)
     }
     
     // MARK: - Functions

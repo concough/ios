@@ -23,6 +23,7 @@ class EDInformationSectionTableViewCell: UITableViewCell {
     override func awakeFromNib() {
         super.awakeFromNib()
         // Initialization code
+        self.selectionStyle = .None
     }
 
     override func setSelected(selected: Bool, animated: Bool) {

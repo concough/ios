@@ -8,6 +8,7 @@
 
 import UIKit
 import DZNEmptyDataSet
+import MBProgressHUD
 
 class BasketCheckoutTableViewController: UIViewController, UITableViewDelegate, UITableViewDataSource, DZNEmptyDataSetDelegate, DZNEmptyDataSetSource {
 
@@ -15,6 +16,8 @@ class BasketCheckoutTableViewController: UIViewController, UITableViewDelegate, 
     @IBOutlet weak var payView: UIView!
     @IBOutlet weak var totalCostLabel: UILabel!
     @IBOutlet weak var localTableView: UITableView!
+    
+    internal var loading: MBProgressHUD?
     
     private lazy var refreshConrtol: UIRefreshControl = {
         var refreshControl = UIRefreshControl()
@@ -52,6 +55,9 @@ class BasketCheckoutTableViewController: UIViewController, UITableViewDelegate, 
             self.payButton.hidden = true
         }
         
+        self.navigationItem.rightBarButtonItem = UIBarButtonItem(barButtonSystemItem: .Refresh, target: self, action: #selector(self.refreshButtonPressed(_:)))
+        self.navigationItem.rightBarButtonItem?.tintColor = UIColor(netHex: BLUE_COLOR_HEX, alpha: 1.0)
+        
     }
 
     override func didReceiveMemoryWarning() {
@@ -60,6 +66,18 @@ class BasketCheckoutTableViewController: UIViewController, UITableViewDelegate, 
     }
 
     // Actions
+    @IBAction func refreshButtonPressed(sender: UIBarButtonItem) {
+        BasketSingleton.sharedInstance.loadBasketItems(viewController: self) { (count) in
+            // basket items loaded
+            print("basket items loaded: \(count)")
+            
+            NSOperationQueue.mainQueue().addOperationWithBlock({ 
+                self.localTableView.reloadData()
+            })
+        }
+        
+    }
+    
     @IBAction func deleteButtonPressed(sender: UIButton) {
         // get tag from it
         let index = sender.tag
@@ -69,6 +87,9 @@ class BasketCheckoutTableViewController: UIViewController, UITableViewDelegate, 
                 self.updateTotalCost()
                 NSOperationQueue.mainQueue().addOperationWithBlock({
                     self.localTableView.deleteRowsAtIndexPaths([NSIndexPath.init(forRow: index, inSection: 0)], withRowAnimation: .Fade)
+                    
+                    AlertClass.showTopMessage(viewController: self, messageType: "ActionResult", messageSubType: "BasketDeleteSuccess", type: "success", completion: nil)
+                    
                     self.localTableView.reloadData()
 
                     if count == 0 {
@@ -83,9 +104,12 @@ class BasketCheckoutTableViewController: UIViewController, UITableViewDelegate, 
     @IBAction func checkoutButtonPressed(sender: UIButton) {
         BasketSingleton.sharedInstance.checkout(viewController: self) { (count, purchased) in
             if let localPurchased = purchased {
-                AlertClass.showSimpleErrorMessage(viewController: self, messageType: "ActionResult", messageSubType: "PurchasedSuccess", completion: {
+                AlertClass.showAlertMessage(viewController: self, messageType: "ActionResult", messageSubType: "PurchasedSuccess", type: "", completion: { 
                     self.tabBarController?.tabBar.items?[2].badgeValue = "\(localPurchased.count)"
                 })
+//                AlertClass.showSimpleErrorMessage(viewController: self, messageType: "ActionResult", messageSubType: "PurchasedSuccess", completion: {
+//                    self.tabBarController?.tabBar.items?[2].badgeValue = "\(localPurchased.count)"
+//                })
             }
             
             NSOperationQueue.mainQueue().addOperationWithBlock({ 

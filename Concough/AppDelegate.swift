@@ -28,9 +28,38 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         let attributes2 = NSDictionary(object: UIFont(name: "IRANYekanMobile-Bold", size: 10)! , forKey: NSFontAttributeName) as! [String: AnyObject]
         UITabBarItem.appearance().setTitleTextAttributes(attributes2, forState: .Normal)
         
+        // TSMessage appearance
+        //TSMessageView.appearance().setValue(13, forKey: "titleFontSize")
+        
+        if let options = launchOptions {
+            let value = options[UIApplicationLaunchOptionsLocalNotificationKey] as? UILocalNotification
+            if let notification = value {
+                self.window?.rootViewController?.tabBarController?.selectedIndex = 2
+            } else {
+                LocalNotificationsSingleton.sharedInstance.touch()
+            }
+        }
+        
         return true
     }
 
+    func application(application: UIApplication, handleEventsForBackgroundURLSession identifier: String, completionHandler: () -> Void) {
+        let bundles = identifier.componentsSeparatedByString(":")
+        if bundles[0] == "Entrance" {
+            if let downloader = DownloaderSingleton.sharedInstance.getMeDownloader(type: bundles[0], uniqueId: bundles[1]) as? EntrancePackageDownloader {
+                downloader.backgroundCompletionHandler = completionHandler
+            }
+        }
+    }
+    
+    func application(application: UIApplication, didRegisterUserNotificationSettings notificationSettings: UIUserNotificationSettings) {
+        if notificationSettings.types == .None {
+            return
+        }
+        
+        LocalNotificationsSingleton.sharedInstance.changeAllowNotification(allow: true)
+    }
+    
     func applicationWillResignActive(application: UIApplication) {
         // Sent when the application is about to move from active to inactive state. This can occur for certain types of temporary interruptions (such as an incoming phone call or SMS message) or when the user quits the application and it begins the transition to the background state.
         // Use this method to pause ongoing tasks, disable timers, and throttle down OpenGL ES frame rates. Games should use this method to pause the game.

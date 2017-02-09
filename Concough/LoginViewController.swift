@@ -7,12 +7,14 @@
 //
 
 import UIKit
+import MBProgressHUD
 
 class LoginViewController: UIViewController, UITextFieldDelegate {
 
     var savedUsername: String?
     
     private var activeTextField: UITextField?
+    private var loading: MBProgressHUD?
     
     @IBOutlet weak var emailTextField: UITextField!
     @IBOutlet weak var passwordTextField: UITextField!
@@ -70,10 +72,17 @@ class LoginViewController: UIViewController, UITextFieldDelegate {
     private func login() {
         if let email = emailTextField.text where email != "", let pass = passwordTextField.text where pass != "" {
             
+            NSOperationQueue.mainQueue().addOperationWithBlock({ 
+                self.loading = AlertClass.showLoadingMessage(viewController: self)
+            })
             // email and password entered correctly
             TokenHandlerSingleton.sharedInstance.setUsernameAndPassword(username: email, password: pass)
             
             TokenHandlerSingleton.sharedInstance.authorize({ (error) in
+                NSOperationQueue.mainQueue().addOperationWithBlock({
+                    AlertClass.hideLoaingMessage(progressHUD: self.loading)
+                })
+
                 if error == .Success {
                     
                     // login passed successfully
@@ -88,32 +97,58 @@ class LoginViewController: UIViewController, UITextFieldDelegate {
                     }
                 } else {
                     // error exist
-                    AlertClass.showSimpleErrorMessage(viewController: self, messageType: "HTTPError", messageSubType: (error?.toString())!, completion: nil)
+                    NSOperationQueue.mainQueue().addOperationWithBlock({ 
+                        AlertClass.showTopMessage(viewController: self, messageType: "HTTPError", messageSubType: (error?.toString())!, type: "error", completion: nil)
+                    })
                 }
                 }, failure: { (error) in
+                    NSOperationQueue.mainQueue().addOperationWithBlock({
+                        AlertClass.hideLoaingMessage(progressHUD: self.loading)
+                    })
                     if let err = error {
                         switch err {
                         case .NoInternetAccess:
-                            AlertClass.showSimpleErrorMessage(viewController: self, messageType: "NetworkError", messageSubType: err.rawValue, completion: {
-                                NSOperationQueue.mainQueue().addOperationWithBlock({ 
-                                    self.login()
-                                })
+                            fallthrough
+                        case .HostUnreachable:
+                            NSOperationQueue.mainQueue().addOperationWithBlock({
+                                AlertClass.showTopMessage(viewController: self, messageType: "NetworkError", messageSubType: err.rawValue, type: "error", completion: nil)
                             })
+//                            AlertClass.showSimpleErrorMessage(viewController: self, messageType: "NetworkError", messageSubType: err.rawValue, completion: {
+//                                NSOperationQueue.mainQueue().addOperationWithBlock({ 
+//                                    self.login()
+//                                })
+//                            })
                         default:
-                            break
+                            NSOperationQueue.mainQueue().addOperationWithBlock({
+                                AlertClass.showTopMessage(viewController: self, messageType: "NetworkError", messageSubType: err.rawValue, type: "", completion: nil)
+                            })
                         }
                     }
             })
         } else {
             // Show alert
-            AlertClass.showSimpleErrorMessage(viewController: self, messageType: "Form", messageSubType: "EmptyFields", completion: nil)
+            NSOperationQueue.mainQueue().addOperationWithBlock({ 
+                AlertClass.showAlertMessage(viewController: self, messageType: "Form", messageSubType: "EmptyFields", type: "warning", completion: nil)
+            })
+//            AlertClass.showSimpleErrorMessage(viewController: self, messageType: "Form", messageSubType: "EmptyFields", completion: nil)
         }
     }
     
     private func getProfile() {
+        NSOperationQueue.mainQueue().addOperationWithBlock({
+            self.loading = AlertClass.showLoadingMessage(viewController: self)
+        })
+        
         ProfileRestAPIClass.getProfileData({ (data, error) in
+            NSOperationQueue.mainQueue().addOperationWithBlock({
+                AlertClass.hideLoaingMessage(progressHUD: self.loading)
+            })
+            
             if error != HTTPErrorType.Success {
                 // sometimes happened
+                NSOperationQueue.mainQueue().addOperationWithBlock({
+                    AlertClass.showTopMessage(viewController: self, messageType: "HTTPError", messageSubType: (error?.toString())!, type: "error", completion: nil)
+                })
             } else {
                 if let localData = data {
                     if let status = localData["status"].string {
@@ -157,16 +192,29 @@ class LoginViewController: UIViewController, UITextFieldDelegate {
                 }
             }
         }, failure: { (error) in
-                if let err = error {
-                    switch err {
-                    case .NoInternetAccess:
-                        AlertClass.showSimpleErrorMessage(viewController: self, messageType: "NetworkError", messageSubType: err.rawValue, completion: {
-                            self.getProfile()
-                        })
-                    default:
-                        break
-                    }
+            NSOperationQueue.mainQueue().addOperationWithBlock({
+                AlertClass.hideLoaingMessage(progressHUD: self.loading)
+            })
+            
+            if let err = error {
+                switch err {
+                case .NoInternetAccess:
+                    fallthrough
+                case .HostUnreachable:
+                    NSOperationQueue.mainQueue().addOperationWithBlock({
+                        AlertClass.showTopMessage(viewController: self, messageType: "NetworkError", messageSubType: err.rawValue, type: "error", completion: nil)
+                    })
+                    
+//                    case .NoInternetAccess:
+//                        AlertClass.showSimpleErrorMessage(viewController: self, messageType: "NetworkError", messageSubType: err.rawValue, completion: {
+//                            self.getProfile()
+//                        })
+                default:
+                    NSOperationQueue.mainQueue().addOperationWithBlock({
+                        AlertClass.showTopMessage(viewController: self, messageType: "NetworkError", messageSubType: err.rawValue, type: "", completion: nil)
+                    })
                 }
+            }
         })
     }
     

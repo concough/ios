@@ -11,6 +11,7 @@ import Alamofire
 import SwiftyJSON
 import DZNEmptyDataSet
 import BBBadgeBarButtonItem
+import MBProgressHUD
 
 class HomeTableViewController: UITableViewController, DZNEmptyDataSetDelegate, DZNEmptyDataSetSource {
 
@@ -19,6 +20,7 @@ class HomeTableViewController: UITableViewController, DZNEmptyDataSetDelegate, D
     var localImageStorage = Dictionary<String, Dictionary<Int, NSData>>()
     private var selectedActivityIndex: Int = -1
     private var rightBarButtonItem: BBBadgeBarButtonItem!
+    private var loading: MBProgressHUD?
     
     let queue = NSOperationQueue()
     var oldOperation: NSBlockOperation? = nil
@@ -26,9 +28,7 @@ class HomeTableViewController: UITableViewController, DZNEmptyDataSetDelegate, D
     override func viewDidLoad() {
         super.viewDidLoad()
 
-        
         // Initialization
-        
         self.localImageStorage.updateValue(Dictionary<Int, NSData>(), forKey: "eset")
         self.queue.maxConcurrentOperationCount = 1  // make serial queue
         
@@ -37,18 +37,10 @@ class HomeTableViewController: UITableViewController, DZNEmptyDataSetDelegate, D
         self.tableView.emptyDataSetSource = self
         self.tableView.tableFooterView = UIView()
         
-        let image = UIImageView(image: UIImage(named: "r2"))
-        let blurEffect = UIBlurEffect(style: UIBlurEffectStyle.Dark)
-        let blurView = UIVisualEffectView(effect: blurEffect)
-        blurView.frame = image.bounds
-        //image.addSubview(blurView)
-        
-        //self.tableView.backgroundView = image
-        
         // uitableview refresh control setup
         if self.refreshControl == nil {
             self.refreshControl = UIRefreshControl()
-            self.refreshControl?.attributedTitle = NSAttributedString(string: "برای به روز رسانی به پایین بکشید")
+            self.refreshControl?.attributedTitle = NSAttributedString(string: "برای به روز رسانی به پایین بکشید", attributes: [NSFontAttributeName: UIFont(name: "IRANYekanMobile-Light", size: 12)!])
         }
         self.refreshControl?.addTarget(self, action: #selector(HomeTableViewController.refreshTableView(_:)), forControlEvents: .ValueChanged)
         
@@ -207,27 +199,25 @@ class HomeTableViewController: UITableViewController, DZNEmptyDataSetDelegate, D
     private func loadFeeds(next next: String?) {
         UIApplication.sharedApplication().networkActivityIndicatorVisible = true
         
+        if next == nil {
+            NSOperationQueue.mainQueue().addOperationWithBlock {
+                self.loading = AlertClass.showLoadingMessage(viewController: self)
+            }            
+        }
+        
         DataRestAPIClass.updateActivity(next: next, completion: {
             refresh, data, error in
                         
             NSOperationQueue.mainQueue().addOperationWithBlock {
+                AlertClass.hideLoaingMessage(progressHUD: self.loading)
                 self.refreshControl?.endRefreshing()
                 UIApplication.sharedApplication().networkActivityIndicatorVisible = false
             }
+            print("--> \(error)")
             
             if let err = error {
                 switch err {
                 case .Success:
-                    /*
-                    if refresh {
-                        self.activityList.removeAll()
-                        self.moreFeedExist = true
-                        
-                        NSOperationQueue.mainQueue().addOperationWithBlock { () -> Void in
-                            self.tableView.reloadData()
-                        }
-                    } */
-
                     var localActivityList = [ConcoughActivity]()
                     
                     if let jsonData = data where jsonData.count > 0 {
@@ -262,26 +252,24 @@ class HomeTableViewController: UITableViewController, DZNEmptyDataSetDelegate, D
                 }
             }
         }, failure: { (error) in
-            NSOperationQueue.mainQueue().addOperationWithBlock {
-                self.refreshControl?.endRefreshing()
-                UIApplication.sharedApplication().networkActivityIndicatorVisible = false
-            }
-            
             if let err = error {
+                NSOperationQueue.mainQueue().addOperationWithBlock {
+                    AlertClass.hideLoaingMessage(progressHUD: self.loading)
+                    self.refreshControl?.endRefreshing()
+                    UIApplication.sharedApplication().networkActivityIndicatorVisible = false
+                }
+                
                 switch err {
                 case .NoInternetAccess:
-                    AlertClass.showSimpleErrorMessage(viewController: self, messageType: "NetworkError", messageSubType: err.rawValue, completion: { 
-                        NSOperationQueue.mainQueue().addOperationWithBlock({ 
-                            self.loadFeeds(next: next)
-                        })
-                    })
+                    fallthrough
                 case .HostUnreachable:
-                    AlertClass.showSimpleErrorMessage(viewController: self, messageType: "NetworkError", messageSubType: err.rawValue, completion: {
-                            NSOperationQueue.mainQueue().addOperationWithBlock({
-                                self.refreshControl?.endRefreshing()
-                            })
-                    })
+                    AlertClass.showTopMessage(viewController: self, messageType: "NetworkError", messageSubType: err.rawValue, type: "error", completion: nil)
+//                    AlertClass.showSimpleErrorMessage(viewController: self, messageType: "NetworkError", messageSubType: err.rawValue, completion: {
+//                    })
                 default:
+                    NSOperationQueue.mainQueue().addOperationWithBlock({ 
+                        AlertClass.showTopMessage(viewController: self, messageType: "NetworkError", messageSubType: err.rawValue, type: "", completion: nil)
+                    })
                     break
                 }
             }

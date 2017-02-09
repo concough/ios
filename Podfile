@@ -15,6 +15,10 @@ target 'Concough' do
     pod 'BBBadgeBarButtonItem'
     #pod 'RealmSwift', '~> 1.1.0'
     pod 'RNCryptor', '~> 4.0'
+    pod 'SwiftMessages', '~> 2.0.0'
+    pod 'MBProgressHUD'
+    pod 'FCAlertView'
+    pod 'SimpleAlert', '~> 1.3.1'
 end
 
 #

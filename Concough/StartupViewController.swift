@@ -10,6 +10,8 @@ import UIKit
 
 class StartupViewController: UIViewController {
     
+    @IBOutlet weak var containerView: UIView!
+    
     enum returnFormSegueType {
         case None
         case ForgotPasswordVC
@@ -22,7 +24,18 @@ class StartupViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
     
+        let singleTapGestureRecognizer = UITapGestureRecognizer(target: self, action: #selector(self.containerViewClicked(_:)))
+        singleTapGestureRecognizer.numberOfTapsRequired = 1
+        singleTapGestureRecognizer.numberOfTouchesRequired = 1
+        singleTapGestureRecognizer.enabled = true
+        
+        self.containerView.userInteractionEnabled = true
+        self.containerView.addGestureRecognizer(singleTapGestureRecognizer)
+        self.containerView.hidden = true
+        
         self.startup()
+        
+        print("--> Initial VC")
     }
     
     override func viewDidAppear(animated: Bool) {
@@ -45,6 +58,14 @@ class StartupViewController: UIViewController {
                 }
             case .None:
                 break
+        }
+    }
+    
+    // MARK: - Actions
+    @IBAction func containerViewClicked(gestureRecognizer: UITapGestureRecognizer) {
+        NSOperationQueue.mainQueue().addOperationWithBlock {
+            self.containerView.hidden = true
+            self.startup()
         }
     }
     
@@ -77,19 +98,28 @@ class StartupViewController: UIViewController {
                         self.performSegueWithIdentifier("LogInVCSegue", sender: self)
                     }
                 }
-                }, failure: { (error) in
-                    if let err = error {
-                        switch err {
-                        case .NoInternetAccess:
-                            AlertClass.showSimpleErrorMessage(viewController: self, messageType: "NetworkError", messageSubType: err.rawValue, completion: {
-                                NSOperationQueue.mainQueue().addOperationWithBlock({ 
-                                    self.startup()
-                                })
-                            })
-                        default:
-                            break
-                        }
-                    }
+            }, failure: { (error) in
+                self.containerView.hidden = false
+                NSOperationQueue.mainQueue().addOperationWithBlock {
+                    self.performSegueWithIdentifier("HomeVCSegue", sender: self)
+                }
+
+//                if let err = error {
+//                    switch err {
+//                    case .NoInternetAccess:
+//                        fallthrough
+//                    case .HostUnreachable:
+//                        AlertClass.showTopMessage(viewController: self, messageType: "NetworkError", messageSubType: err.rawValue, type: "error", completion: nil)
+//                        
+////                            AlertClass.showSimpleErrorMessage(viewController: self, messageType: "NetworkError", messageSubType: err.rawValue, completion: {
+////                                NSOperationQueue.mainQueue().addOperationWithBlock({ 
+////                                    self.startup()
+////                                })
+////                            })
+//                    default:
+//                        AlertClass.showTopMessage(viewController: self, messageType: "NetworkError", messageSubType: err.rawValue, type: "", completion: nil)
+//                    }
+//                }
             })
         } else {
             NSOperationQueue.mainQueue().addOperationWithBlock {
@@ -147,16 +177,22 @@ class StartupViewController: UIViewController {
                 }
             }
         }, failure: { (error) in
+            self.containerView.hidden = false
+            
             if let err = error {
                 switch err {
                 case .NoInternetAccess:
-                    AlertClass.showSimpleErrorMessage(viewController: self, messageType: "NetworkError", messageSubType: err.rawValue, completion: {
-                        NSOperationQueue.mainQueue().addOperationWithBlock({ 
-                            self.getProfile()
-                        })
-                    })
+                    fallthrough
+                case .HostUnreachable:
+                    AlertClass.showTopMessage(viewController: self, messageType: "NetworkError", messageSubType: err.rawValue, type: "error", completion: nil)
+                    
+//                    AlertClass.showSimpleErrorMessage(viewController: self, messageType: "NetworkError", messageSubType: err.rawValue, completion: {
+//                        NSOperationQueue.mainQueue().addOperationWithBlock({ 
+//                            self.getProfile()
+//                        })
+//                    })
                 default:
-                    break
+                    AlertClass.showTopMessage(viewController: self, messageType: "NetworkError", messageSubType: err.rawValue, type: "", completion: nil)
                 }
             }
         })

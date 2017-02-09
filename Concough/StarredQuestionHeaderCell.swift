@@ -20,6 +20,7 @@ class StarredQuestionHeaderCell: UITableViewCell {
         self.countLable.layer.masksToBounds = true
         
         //self.titleLabel.textColor = UIColor(netHex: BLUE_COLOR_HEX, alpha: 1.0)
+        self.selectionStyle = .None
     }
     
     override func prepareForReuse() {

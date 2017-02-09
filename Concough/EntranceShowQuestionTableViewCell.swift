@@ -61,6 +61,9 @@ class EntranceShowQuestionTableViewCell: UITableViewCell {
         if self.questionImageConstraint3 == nil {
             self.questionImageConstraint3 = self.oldConstraint3
         }
+        
+        self.setNeedsLayout()
+        self.updateConstraintsIfNeeded()
     }
     
     override func drawRect(rect: CGRect) {
@@ -211,9 +214,9 @@ class EntranceShowQuestionTableViewCell: UITableViewCell {
             } catch {}
         }
         
-        self.setNeedsUpdateConstraints()
-        self.updateConstraints()
-        self.sizeToFit()
-        self.setNeedsLayout()
+//        self.setNeedsUpdateConstraints()
+//        self.updateConstraints()
+//        self.sizeToFit()
+//        self.setNeedsLayout()
     }
 }

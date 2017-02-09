@@ -12,7 +12,7 @@ class SignupMoreInfoViewController2: UIViewController, UINavigationControllerDel
     internal var infoStruct:SignupMoreInfoStruct!
 
     @IBOutlet weak var datePicker: UIDatePicker!
-    
+
     override func viewDidLoad() {
         super.viewDidLoad()
 
@@ -34,6 +34,23 @@ class SignupMoreInfoViewController2: UIViewController, UINavigationControllerDel
             self.title = "کنکوق"
             self.navigationItem.rightBarButtonItem = UIBarButtonItem(title: "بعدی", style: .Plain, target: self, action: #selector(self.nextButtonPressed(_:)))            
         }
+        
+//        let datePicker1 = FxDatePicker()
+//        self.textField.inputView = datePicker1
+//        
+//        datePicker1.textColor = UIColor.blackColor()
+//        datePicker1.selectedTextColor = UIColor(netHex: BLUE_COLOR_HEX, alpha: 1.0)
+//        datePicker1.bgColor = UIColor(netHex: GRAY_COLOR_HEX_1, alpha: 1.0)
+//        
+//        datePicker1.font = UIFont(name: "IRANYekanMobile", size: 12)!
+//        datePicker1.selectedFont = UIFont(name: "IRANYekanMobile-Bold", size: 14)!
+//        datePicker1.mode = .Date
+//        
+//        datePicker1.locale = NSLocale(localeIdentifier: "fa_IR")
+//        //datePicker1.delegate = self
+//        datePicker1.calendar = calendar!
+        
+        
     }
     
     override func viewWillAppear(animated: Bool) {
@@ -52,6 +69,7 @@ class SignupMoreInfoViewController2: UIViewController, UINavigationControllerDel
     }
     
     // MARK: - Delegates
+    
     func navigationController(navigationController: UINavigationController, willShowViewController viewController: UIViewController, animated: Bool) {
         if let controller = viewController as? SignupMoreInfoViewController1 {
             controller.infoStruct = self.infoStruct

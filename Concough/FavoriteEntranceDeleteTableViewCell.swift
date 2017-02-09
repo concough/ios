@@ -17,12 +17,12 @@ class FavoriteEntranceDeleteTableViewCell: UITableViewCell {
     @IBOutlet weak var extraData: UILabel!
     @IBOutlet weak var entranceImageView: UIImageView!
     @IBOutlet weak var deleteButton: UIButton!
-    
     @IBOutlet weak var deleteStackView: UIStackView!
     
     override func awakeFromNib() {
         super.awakeFromNib()
         // Initialization code
+        self.selectionStyle = .None
     }
 
     override func setSelected(selected: Bool, animated: Bool) {

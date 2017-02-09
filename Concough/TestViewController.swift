@@ -8,6 +8,7 @@
 
 import UIKit
 import Alamofire
+import SwiftMessages
 
 class TestViewController: UIViewController {
 
@@ -48,6 +49,24 @@ class TestViewController: UIViewController {
         if UserDefaultsSingleton.sharedInstance.clearAll() {
             print ("All UserDefaults Value cleared")
         }
+    }
+    
+    @IBAction func showMessaeg(sender: UIButton) {
+        let view = MessageView.viewFromNib(layout: .MessageViewIOS8)
+        var config = SwiftMessages.Config()
+        config.presentationStyle = .Top
+        config.preferredStatusBarStyle = UIStatusBarStyle.Default
+        //config.presentationContext = .Window(windowLevel: UIWindowLevel)
+        config.duration = .Seconds(seconds: 3)
+        config.interactiveHide = true
+        
+        view.configureTheme(.Info)
+        view.configureDropShadow()
+        view.configureContent(title: "تست", body: nil, iconImage: nil, iconText: nil, buttonImage: nil, buttonTitle: nil, buttonTapHandler: nil)
+
+        view.titleLabel?.font = UIFont()
+        SwiftMessages.show(config: config, view: view)
+        
     }
     
 }

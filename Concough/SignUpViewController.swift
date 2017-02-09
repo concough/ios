@@ -7,6 +7,7 @@
 //
 
 import UIKit
+import MBProgressHUD
 
 class SignUpViewController: UIViewController, UITextFieldDelegate {
     
@@ -16,6 +17,7 @@ class SignUpViewController: UIViewController, UITextFieldDelegate {
     private var mainUsernameText: String!
     
     private var activeTextField: UITextField?
+    private var loading: MBProgressHUD?
     
     @IBOutlet weak var emailTextField: UITextField!
     @IBOutlet weak var passwordTextField: UITextField!
@@ -89,13 +91,24 @@ class SignUpViewController: UIViewController, UITextFieldDelegate {
                 self.makePreSignup(username: username, email: email, password: pass)
             }
         } else {
-            AlertClass.showSimpleErrorMessage(viewController: self, messageType: "Form", messageSubType: "EmptyFields", completion: nil)
+            NSOperationQueue.mainQueue().addOperationWithBlock({
+                AlertClass.showAlertMessage(viewController: self, messageType: "Form", messageSubType: "EmptyFields", type: "warning", completion: nil)
+            })
         }
     }
     
     // MARK: - Functions
     private func makePreSignup(username username: String, email: String, password: String) {
+        NSOperationQueue.mainQueue().addOperationWithBlock { 
+            self.loading = AlertClass.showLoadingMessage(viewController: self)
+        }
+        
         AuthRestAPIClass.preSignup(username: username, email: email, completion: { (data, error) in
+            
+            NSOperationQueue.mainQueue().addOperationWithBlock({
+                AlertClass.hideLoaingMessage(progressHUD: self.loading)
+            })
+            
             if error == HTTPErrorType.Success {
                 // data will returned
                 if let localData = data {
@@ -131,19 +144,32 @@ class SignUpViewController: UIViewController, UITextFieldDelegate {
                 }
             } else {
                 // error exist with network
-                AlertClass.showSimpleErrorMessage(viewController: self, messageType: "HTTPError", messageSubType: (error?.toString())!, completion: nil)
+                NSOperationQueue.mainQueue().addOperationWithBlock({
+                    AlertClass.showTopMessage(viewController: self, messageType: "HTTPError", messageSubType: (error?.toString())!, type: "error", completion: nil)
+                })
             }
         }, failure: { (error) in
+            NSOperationQueue.mainQueue().addOperationWithBlock({
+                AlertClass.hideLoaingMessage(progressHUD: self.loading)
+            })
+            
             if let err = error {
                 switch err {
                 case .NoInternetAccess:
-                    AlertClass.showSimpleErrorMessage(viewController: self, messageType: "NetworkError", messageSubType: err.rawValue, completion: {
-                        NSOperationQueue.mainQueue().addOperationWithBlock({ 
-                            self.makePreSignup(username: username, email: email, password: password)
-                        })
+                    fallthrough
+                case .HostUnreachable:
+                    NSOperationQueue.mainQueue().addOperationWithBlock({
+                        AlertClass.showTopMessage(viewController: self, messageType: "NetworkError", messageSubType: err.rawValue, type: "error", completion: nil)
                     })
+//                    AlertClass.showSimpleErrorMessage(viewController: self, messageType: "NetworkError", messageSubType: err.rawValue, completion: {
+//                        NSOperationQueue.mainQueue().addOperationWithBlock({ 
+//                            self.makePreSignup(username: username, email: email, password: password)
+//                        })
+//                    })
                 default:
-                    break
+                    NSOperationQueue.mainQueue().addOperationWithBlock({
+                        AlertClass.showTopMessage(viewController: self, messageType: "NetworkError", messageSubType: err.rawValue, type: "", completion: nil)
+                    })
                 }
             }
         })
@@ -185,18 +211,28 @@ class SignUpViewController: UIViewController, UITextFieldDelegate {
                 // show alert
                 self.usernameMsgLabel.text = self.mainUsernameText
                 self.usernameMsgLabel.textColor = UIColor(netHex: GRAY_COLOR_HEX_1, alpha: 1.0)
-                AlertClass.showSimpleErrorMessage(viewController: self, messageType: "HTTPError", messageSubType: (error?.toString())!, completion: nil)
+                NSOperationQueue.mainQueue().addOperationWithBlock({
+                    AlertClass.showTopMessage(viewController: self, messageType: "HTTPError", messageSubType: (error?.toString())!, type: "error", completion: nil)
+                })
             }
         }, failure: { (error) in
             if let err = error {
                 switch err {
                 case .NoInternetAccess:
-                    AlertClass.showSimpleErrorMessage(viewController: self, messageType: "NetworkError", messageSubType: err.rawValue, completion: { 
-                        NSOperationQueue.mainQueue().addOperationWithBlock({ 
-                            self.checkUsername(username: username)
-                        })
+                    fallthrough
+                case .HostUnreachable:
+                    NSOperationQueue.mainQueue().addOperationWithBlock({
+                        AlertClass.showTopMessage(viewController: self, messageType: "NetworkError", messageSubType: err.rawValue, type: "error", completion: nil)
                     })
+//                    AlertClass.showSimpleErrorMessage(viewController: self, messageType: "NetworkError", messageSubType: err.rawValue, completion: {
+//                        NSOperationQueue.mainQueue().addOperationWithBlock({ 
+//                            self.checkUsername(username: username)
+//                        })
+//                    })
                 default:
+                    NSOperationQueue.mainQueue().addOperationWithBlock({
+                        AlertClass.showTopMessage(viewController: self, messageType: "NetworkError", messageSubType: err.rawValue, type: "", completion: nil)
+                    })
                     break
                 }
             }
