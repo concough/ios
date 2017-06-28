@@ -109,7 +109,12 @@ class ForgotPasswordViewController: UIViewController, UITextFieldDelegate {
     // MARK: - Actions
     @IBAction func sendCodeButtonPressed(sender: UIButton) {
         // sending procedure
-        if let username = self.usernameTextField.text?.trim() where username != "" {
+        if var username = self.usernameTextField.text?.trim() where username != "" {
+            if username.hasPrefix("0") {
+                username = username.substringFromIndex(username.startIndex.advancedBy(1))
+            }
+            username = "98" + username
+            
             self.forgotPassword(username: username)
         } else {
             NSOperationQueue.mainQueue().addOperationWithBlock({ 

@@ -8,10 +8,12 @@
 
 import UIKit
 
-class SignupMoreInfoViewController2: UIViewController, UINavigationControllerDelegate {
-    internal var infoStruct:SignupMoreInfoStruct!
-
-    @IBOutlet weak var datePicker: UIDatePicker!
+class SignupMoreInfoViewController2: UIViewController, UINavigationControllerDelegate, UIPickerViewDelegate, UIPickerViewDataSource {
+    internal var infoStruct:SignupMoreInfoStruct?
+    internal var Years: [Int] = []
+    internal var calendar: NSCalendar!
+    
+    @IBOutlet weak var datePickerYear: UIPickerView!
 
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -19,37 +21,29 @@ class SignupMoreInfoViewController2: UIViewController, UINavigationControllerDel
         // Do any additional setup after loading the view.
         
         //setting calendar of DatePicker
-        let calendar = NSCalendar.init(calendarIdentifier: NSCalendarIdentifierPersian)
-        self.datePicker.timeZone = NSTimeZone(name: "Asia/tehran")
-        self.datePicker.locale = NSLocale(localeIdentifier: "fa_IR")
-        self.datePicker.calendar = calendar
+        self.calendar = NSCalendar.init(calendarIdentifier: NSCalendarIdentifierPersian)
+//        self.datePicker.timeZone = NSTimeZone(name: "Asia/tehran")
+//        self.datePicker.locale = NSLocale(localeIdentifier: "fa_IR")
+//        self.datePicker.calendar = calendar
         
-        if let fifteenYearsToNow = calendar?.dateByAddingUnit(.Year, value: -15, toDate: NSDate(), options: []) {
-            self.datePicker.maximumDate = fifteenYearsToNow
-        } else {
-            self.datePicker.maximumDate = NSDate()
+        self.datePickerYear.dataSource = self
+        self.datePickerYear.delegate = self
+        
+        let fifteenYearsToNow = self.calendar?.dateByAddingUnit(.Year, value: -10, toDate: NSDate(), options: [])
+//            self.datePicker.maximumDate = fifteenYearsToNow
+        let currentYear = self.calendar?.component(.Year, fromDate: fifteenYearsToNow!)
+        for i in (currentYear!-81...currentYear!).reverse() {
+            self.Years.append(i)
         }
+//
+//        } else {
+////            self.datePicker.maximumDate = NSDate()
+//        }
         
         if self.navigationController != nil {
             self.title = "کنکوق"
             self.navigationItem.rightBarButtonItem = UIBarButtonItem(title: "بعدی", style: .Plain, target: self, action: #selector(self.nextButtonPressed(_:)))            
         }
-        
-//        let datePicker1 = FxDatePicker()
-//        self.textField.inputView = datePicker1
-//        
-//        datePicker1.textColor = UIColor.blackColor()
-//        datePicker1.selectedTextColor = UIColor(netHex: BLUE_COLOR_HEX, alpha: 1.0)
-//        datePicker1.bgColor = UIColor(netHex: GRAY_COLOR_HEX_1, alpha: 1.0)
-//        
-//        datePicker1.font = UIFont(name: "IRANYekanMobile", size: 12)!
-//        datePicker1.selectedFont = UIFont(name: "IRANYekanMobile-Bold", size: 14)!
-//        datePicker1.mode = .Date
-//        
-//        datePicker1.locale = NSLocale(localeIdentifier: "fa_IR")
-//        //datePicker1.delegate = self
-//        datePicker1.calendar = calendar!
-        
         
     }
     
@@ -61,11 +55,43 @@ class SignupMoreInfoViewController2: UIViewController, UINavigationControllerDel
         // Dispose of any resources that can be recreated.
     }
     
+    func numberOfComponentsInPickerView(pickerView: UIPickerView) -> Int {
+        return 1
+    }
+    func pickerView(pickerView: UIPickerView, numberOfRowsInComponent component: Int) -> Int {
+        return self.Years.count
+    }
+
+//    func pickerView(pickerView: UIPickerView, titleForRow row: Int, forComponent component: Int) -> String? {
+//        return self.Years[row]
+//    }
+    
+    func pickerView(pickerView: UIPickerView, viewForRow row: Int, forComponent component: Int, reusingView view: UIView?) -> UIView {
+        var label = view as! UILabel!
+        if label == nil {
+            label = UILabel()
+        }
+        
+        let data = self.Years[row]
+        let attributes = NSDictionary(object: UIFont(name: "IRANYekanMobile-Bold", size: 16)! , forKey: NSFontAttributeName) as! [String: AnyObject]
+        let title = NSAttributedString(string: FormatterSingleton.sharedInstance.NumberFormatter.stringFromNumber(data)!, attributes: attributes)
+        label.attributedText = title
+        label.textAlignment = .Center
+        return label
+    }
+    
     // MARK: - Functions
     @IBAction func nextButtonPressed(sender: UIBarButtonItem) {
-        self.infoStruct.birthday = datePicker.date
+        let selected = self.datePickerYear.selectedRowInComponent(0)
+        
+        let dateComponents = NSDateComponents()
+        dateComponents.year = self.Years[selected]
+        
+        let userCalendar = self.calendar
+        self.infoStruct!.birthday = userCalendar.dateFromComponents(dateComponents)
         
         performSegueWithIdentifier("SignupMoreInfoVC3Segue", sender: self)
+        
     }
     
     // MARK: - Delegates

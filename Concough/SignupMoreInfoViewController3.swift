@@ -130,7 +130,7 @@ class SignupMoreInfoViewController3: UIViewController, UINavigationControllerDel
                             UserDefaultsSingleton.sharedInstance.createProfile(firstname: self.infoStruct.firstname!, lastname: self.infoStruct.lastname!, grade: self.infoStruct.grade!, gender: self.infoStruct.gender!, birthday: self.infoStruct.birthday!, modified: modified)
                             
                             // perform segue navigation to home controller
-                            let vc : UIViewController = self.storyboard?.instantiateViewControllerWithIdentifier("NHomeTableViewController") as! UINavigationController;
+                            let vc : UIViewController = self.storyboard?.instantiateViewControllerWithIdentifier("TabHomeTableViewController") as! UITabBarController;
                             
                             NSOperationQueue.mainQueue().addOperationWithBlock({
                                 self.presentViewController(vc, animated: true, completion: nil)

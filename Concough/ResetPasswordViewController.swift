@@ -100,10 +100,15 @@ class ResetPasswordViewController: UIViewController, UITextFieldDelegate {
                     if let status = localData["status"].string {
                         switch status {
                         case "OK":
+                            TokenHandlerSingleton.sharedInstance.setUsernameAndPassword(username: self.signupStruct.username!, password: pass1)
+                            self.startup()
                             // forgot password generate
-                            NSOperationQueue.mainQueue().addOperationWithBlock({
-                                self.performSegueWithIdentifier("StartupVCSegue", sender: self)
-                            })
+//                            NSOperationQueue.mainQueue().addOperationWithBlock({
+//                                self.performSegueWithIdentifier("StartupVCSegue", sender: self)
+//                            })
+//                            NSOperationQueue.mainQueue().addOperationWithBlock({
+//                                self.performSegueWithIdentifier("HomeVCSegue", sender: self)
+//                            })
                             
                         case "Error":
                             if let errorType = localData["error_type"].string {
@@ -166,6 +171,132 @@ class ResetPasswordViewController: UIViewController, UITextFieldDelegate {
             }
         })
     }
+    
+    private func startup() {
+        if TokenHandlerSingleton.sharedInstance.isAuthorized() {
+            if UserDefaultsSingleton.sharedInstance.hasProfile() {
+                NSOperationQueue.mainQueue().addOperationWithBlock {
+                    self.performSegueWithIdentifier("HomeVCSegue", sender: self)
+                }
+            } else {
+                // get profile
+                self.getProfile()
+            }
+        } else if TokenHandlerSingleton.sharedInstance.isAuthenticated() {
+            TokenHandlerSingleton.sharedInstance.assureAuthorized(true, completion: { (authenticated, error) in
+                if authenticated {
+                    print("StartupViewController: Authenticated")
+                    if UserDefaultsSingleton.sharedInstance.hasProfile() {
+                        NSOperationQueue.mainQueue().addOperationWithBlock {
+                            self.performSegueWithIdentifier("HomeVCSegue", sender: self)
+                        }
+                    } else {
+                        // get profile
+                        self.getProfile()
+                    }
+                } else {
+                    print("StartupViewController: Not Authenticated")
+                    NSOperationQueue.mainQueue().addOperationWithBlock {
+                        self.performSegueWithIdentifier("LogInVCSegue", sender: self)
+                    }
+                }
+                }, failure: { (error) in
+                    NSOperationQueue.mainQueue().addOperationWithBlock {
+                        self.performSegueWithIdentifier("HomeVCSegue", sender: self)
+                    }
+                    
+                    //                if let err = error {
+                    //                    switch err {
+                    //                    case .NoInternetAccess:
+                    //                        fallthrough
+                    //                    case .HostUnreachable:
+                    //                        AlertClass.showTopMessage(viewController: self, messageType: "NetworkError", messageSubType: err.rawValue, type: "error", completion: nil)
+                    //
+                    ////                            AlertClass.showSimpleErrorMessage(viewController: self, messageType: "NetworkError", messageSubType: err.rawValue, completion: {
+                    ////                                NSOperationQueue.mainQueue().addOperationWithBlock({
+                    ////                                    self.startup()
+                    ////                                })
+                    ////                            })
+                    //                    default:
+                    //                        AlertClass.showTopMessage(viewController: self, messageType: "NetworkError", messageSubType: err.rawValue, type: "", completion: nil)
+                    //                    }
+                    //                }
+            })
+        } else {
+            NSOperationQueue.mainQueue().addOperationWithBlock {
+                self.performSegueWithIdentifier("LogInVCSegue", sender: self)
+            }            
+        }
+    }
+    
+    private func getProfile() {
+        ProfileRestAPIClass.getProfileData({ (data, error) in
+            if error != HTTPErrorType.Success {
+                NSOperationQueue.mainQueue().addOperationWithBlock({
+                    self.performSegueWithIdentifier("LogInVCSegue", sender: self)
+                })
+            } else {
+                if let localData = data {
+                    if let status = localData["status"].string {
+                        switch status {
+                        case "OK":
+                            // profile exist
+                            let profile = localData["record"][0]
+                            
+                            // save profile
+                            if let gender = profile["gender"].string, let grade = profile["grade"].string, let birthday = profile["birthday"].string, let modified = profile["modified"].string, let firstname = profile["user"]["first_name"].string, let lastname = profile["user"]["last_name"].string {
+                                
+                                let modifiedDate = FormatterSingleton.sharedInstance.UTCDateFormatter.dateFromString(modified)
+                                let birthdayDate = FormatterSingleton.sharedInstance.UTCShortDateFormatter.dateFromString(birthday)
+                                
+                                UserDefaultsSingleton.sharedInstance.createProfile(firstname: firstname, lastname: lastname, grade: grade, gender: gender, birthday: birthdayDate!, modified: modifiedDate!)
+                            }
+                            
+                            if UserDefaultsSingleton.sharedInstance.hasProfile() {
+                                NSOperationQueue.mainQueue().addOperationWithBlock({
+                                    self.performSegueWithIdentifier("HomeVCSegue", sender: self)
+                                })
+                            } else {
+                                // profile not created --> try again
+                            }
+                        case "Error":
+                            if let errorType = localData["error_type"].string {
+                                switch errorType {
+                                case "ProfileNotExist":
+                                    // profile not exist --> perform navigation
+                                    fallthrough
+                                default:
+                                    NSOperationQueue.mainQueue().addOperationWithBlock({
+                                        self.performSegueWithIdentifier("LogInVCSegue", sender: self)
+                                    })
+                                }
+                            }
+                        default:
+                            break
+                        }
+                    }
+                }
+            }
+            }, failure: { (error) in
+                if let err = error {
+                    switch err {
+                    case .NoInternetAccess:
+                        fallthrough
+                    case .HostUnreachable:
+                        AlertClass.showTopMessage(viewController: self, messageType: "NetworkError", messageSubType: err.rawValue, type: "error", completion: nil)
+                        
+                        //                    AlertClass.showSimpleErrorMessage(viewController: self, messageType: "NetworkError", messageSubType: err.rawValue, completion: {
+                        //                        NSOperationQueue.mainQueue().addOperationWithBlock({
+                        //                            self.getProfile()
+                        //                        })
+                    //                    })
+                    default:
+                        AlertClass.showTopMessage(viewController: self, messageType: "NetworkError", messageSubType: err.rawValue, type: "", completion: nil)
+                    }
+                }
+        })
+    }
+    
     
     // MARK: - TextField Delegate Methods
     

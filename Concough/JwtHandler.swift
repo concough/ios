@@ -11,7 +11,7 @@ import SwiftyJSON
 
 class JwtHandler {
     class func getPayloadData(data: String) -> JSON? {
-        let splittedData = data.componentsSeparatedByString(".")
+        var splittedData = data.componentsSeparatedByString(".")
         let jsonString: NSData = splittedData[1].base64Decoded()
         let json = JSON(data: jsonString)
         return json

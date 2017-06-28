@@ -81,14 +81,30 @@ class SignUpViewController: UIViewController, UITextFieldDelegate {
     
     // MARK - Actions
     @IBAction func signupButtonPressed(sender: UIButton) {
-        if let email = self.emailTextField.text where email != "", let pass = self.passwordTextField.text where pass != "", let username = self.usernameTextField.text where username != "" {
-           
-            if self.isUsernameValid && self.isEmailValid {
+//        if let email = self.emailTextField.text where email != "", let pass = self.passwordTextField.text where pass != "", let username = self.usernameTextField.text where username != "" {
+//           
+//            if self.isUsernameValid && self.isEmailValid {
+//                self.signupStruct.username = username
+//                self.signupStruct.password = pass
+//                self.signupStruct.email = email
+//
+//                self.makePreSignup(username: username, email: email, password: pass)
+//            }
+//        } else {
+//            NSOperationQueue.mainQueue().addOperationWithBlock({
+//                AlertClass.showAlertMessage(viewController: self, messageType: "Form", messageSubType: "EmptyFields", type: "warning", completion: nil)
+//            })
+//        }
+        if var username = self.usernameTextField.text where username != "" {
+            
+            if self.isUsernameValid {
+                if username.hasPrefix("0") {
+                    username = username.substringFromIndex(username.startIndex.advancedBy(1))
+                }
+                username = "98" + username
+                
                 self.signupStruct.username = username
-                self.signupStruct.password = pass
-                self.signupStruct.email = email
-
-                self.makePreSignup(username: username, email: email, password: pass)
+                self.makePreSignup(username: username)
             }
         } else {
             NSOperationQueue.mainQueue().addOperationWithBlock({
@@ -98,12 +114,12 @@ class SignUpViewController: UIViewController, UITextFieldDelegate {
     }
     
     // MARK: - Functions
-    private func makePreSignup(username username: String, email: String, password: String) {
+    private func makePreSignup(username username: String) {
         NSOperationQueue.mainQueue().addOperationWithBlock { 
             self.loading = AlertClass.showLoadingMessage(viewController: self)
         }
         
-        AuthRestAPIClass.preSignup(username: username, email: email, completion: { (data, error) in
+        AuthRestAPIClass.preSignup(username: username, completion: { (data, error) in
             
             NSOperationQueue.mainQueue().addOperationWithBlock({
                 AlertClass.hideLoaingMessage(progressHUD: self.loading)
@@ -254,33 +270,39 @@ class SignUpViewController: UIViewController, UITextFieldDelegate {
             self.usernameMsgLabel.text = self.mainUsernameText
             self.usernameMsgLabel.textColor = UIColor(netHex: GRAY_COLOR_HEX_1, alpha: 1.0)
             
-            if let username = textField.text where username != "" {
-                if username.isValidUsername {
+            if var username = textField.text where username != "" {
+                if username.isValidPhoneNumber {
                     self.emailMsgStackView.hidden = false
                     self.usernameMsgRefreshControl.startAnimating()
+                    
+                    if username.hasPrefix("0") {
+                        username = username.substringFromIndex(username.startIndex.advancedBy(1))
+                    }
+                    username = "98" + username
+                    
                     
                     self.checkUsername(username: username)
                 } else {
                     //print("invalid username")
-                    self.usernameMsgLabel.text = "نام کاربری وارد شده صحیح نمی باشد"
+                    self.usernameMsgLabel.text = "شماره همراه وارد شده صحیح نمی باشد"
                     self.usernameMsgLabel.textColor = UIColor(netHex: RED_COLOR_HEX, alpha: 1.0)
                 }
             }
             
-        } else if textField == self.emailTextField {
-            if let email = self.emailTextField.text?.stringByTrimmingCharactersInSet(NSCharacterSet.whitespaceAndNewlineCharacterSet()) {
-                
-                if email.isValidEmail {
-                    self.isEmailValid = true
-                    self.emailMsgLabel.text = ""
-                    self.emailMsgStackView.hidden = true
-                } else {
-                    self.isEmailValid = false
-                    self.emailMsgLabel.text = "ایمیل معتبر وارد نمایید"
-                    self.emailMsgLabel.textColor = UIColor(netHex: RED_COLOR_HEX, alpha: 1.0)
-                    self.emailMsgStackView.hidden = false
-                }
-            }
+//        } else if textField == self.emailTextField {
+//            if let email = self.emailTextField.text?.stringByTrimmingCharactersInSet(NSCharacterSet.whitespaceAndNewlineCharacterSet()) {
+//                
+//                if email.isValidEmail {
+//                    self.isEmailValid = true
+//                    self.emailMsgLabel.text = ""
+//                    self.emailMsgStackView.hidden = true
+//                } else {
+//                    self.isEmailValid = false
+//                    self.emailMsgLabel.text = "ایمیل معتبر وارد نمایید"
+//                    self.emailMsgLabel.textColor = UIColor(netHex: RED_COLOR_HEX, alpha: 1.0)
+//                    self.emailMsgStackView.hidden = false
+//                }
+//            }
         } else if textField == self.passwordTextField {
             // validate password
         }

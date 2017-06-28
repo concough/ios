@@ -76,7 +76,13 @@ class LoginViewController: UIViewController, UITextFieldDelegate {
                 self.loading = AlertClass.showLoadingMessage(viewController: self)
             })
             // email and password entered correctly
-            TokenHandlerSingleton.sharedInstance.setUsernameAndPassword(username: email, password: pass)
+            var username = email
+            if username.hasPrefix("0") {
+                username = username.substringFromIndex(username.startIndex.advancedBy(1))
+            }
+            username = "98" + username
+            
+            TokenHandlerSingleton.sharedInstance.setUsernameAndPassword(username: username, password: pass)
             
             TokenHandlerSingleton.sharedInstance.authorize({ (error) in
                 NSOperationQueue.mainQueue().addOperationWithBlock({

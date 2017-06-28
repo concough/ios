@@ -19,13 +19,22 @@ extension String {
         return base64String!
     }
     
-    func base64Decoded() -> String {
+    mutating func base64Decoded() -> String {
+        let reminder = self.characters.count % 4
+        if reminder > 0 {
+            self = self.stringByPaddingToLength(self.characters.count + 4 - reminder, withString: "=", startingAtIndex: 0)
+        }
+        
         let decodedData = NSData(base64EncodedString: self, options: NSDataBase64DecodingOptions.init(rawValue: 0))
         let decodedString = String(data: decodedData!, encoding: NSUTF8StringEncoding)
         return decodedString!
     }
 
-    func base64DecodedUsingAscii() -> String {
+    mutating func base64DecodedUsingAscii() -> String {
+        let reminder = self.characters.count % 4
+        if reminder > 0 {
+            self = self.stringByPaddingToLength(self.characters.count + 4 - reminder, withString: "=", startingAtIndex: 0)
+        }
         let decodedData = NSData(base64EncodedString: self, options: NSDataBase64DecodingOptions.init(rawValue: 0))
         let decodedString = String(data: decodedData!, encoding: NSASCIIStringEncoding)
         return decodedString!
@@ -36,7 +45,11 @@ extension String {
         return plainData!
     }
     
-    func base64Decoded() -> NSData {
+    mutating func base64Decoded() -> NSData {
+        let reminder = self.characters.count % 4
+        if reminder > 0 {
+            self = self.stringByPaddingToLength(self.characters.count + 4 - reminder, withString: "=", startingAtIndex: 0)
+        }
         let decodedData = NSData(base64EncodedString: self, options: NSDataBase64DecodingOptions.init(rawValue: 0))
         return decodedData!
     }

@@ -336,7 +336,7 @@
                 </tableViewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="Py7-vA-yU5" userLabel="First Responder" sceneMemberID="firstResponder"/>
             </objects>
-            <point key="canvasLocation" x="2100" y="275.7042253521127"/>
+            <point key="canvasLocation" x="2100" y="331"/>
         </scene>
         <!--Archive Table View Controller-->
         <scene sceneID="GeB-Xa-jXf">
@@ -1370,7 +1370,7 @@
                 </tableViewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="Myl-1Q-IbV" userLabel="First Responder" sceneMemberID="firstResponder"/>
             </objects>
-            <point key="canvasLocation" x="3795" y="302"/>
+            <point key="canvasLocation" x="3795" y="331"/>
         </scene>
         <!--Basket Checkout Table View Controller-->
         <scene sceneID="c4C-71-LTF">
@@ -2693,25 +2693,36 @@
                                                 <nil key="highlightedColor"/>
                                             </label>
                                             <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" spacing="8" translatesAutoresizingMaskIntoConstraints="NO" id="JsB-lH-YUY">
-                                                <rect key="frame" x="16" y="239.5" width="288" height="245"/>
+                                                <rect key="frame" x="16" y="240" width="288" height="245"/>
                                                 <subviews>
                                                     <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" spacing="8" translatesAutoresizingMaskIntoConstraints="NO" id="fkt-Nb-Chl">
                                                         <rect key="frame" x="0.0" y="0.0" width="288" height="78"/>
                                                         <subviews>
-                                                            <textField opaque="NO" clipsSubviews="YES" contentMode="scaleToFill" semanticContentAttribute="forceRightToLeft" contentHorizontalAlignment="right" contentVerticalAlignment="center" borderStyle="roundedRect" placeholder="نام کاربری (حداکثر ۳۰ حرف)" textAlignment="right" minimumFontSize="15" clearButtonMode="whileEditing" translatesAutoresizingMaskIntoConstraints="NO" id="Zil-Wh-tym">
+                                                            <stackView opaque="NO" contentMode="scaleToFill" spacing="8" translatesAutoresizingMaskIntoConstraints="NO" id="ybx-Ur-nhp">
                                                                 <rect key="frame" x="0.0" y="0.0" width="288" height="40"/>
-                                                                <color key="backgroundColor" red="0.92156862745098034" green="0.92156862745098034" blue="0.92156862745098034" alpha="1" colorSpace="calibratedRGB"/>
-                                                                <constraints>
-                                                                    <constraint firstAttribute="height" constant="40" id="a2e-NJ-Wy2"/>
-                                                                </constraints>
-                                                                <nil key="textColor"/>
-                                                                <fontDescription key="fontDescription" name="IRANYekanMobile" family="IRANYekanMobile" pointSize="17"/>
-                                                                <textInputTraits key="textInputTraits" autocorrectionType="no" spellCheckingType="no" returnKeyType="next" enablesReturnKeyAutomatically="YES"/>
-                                                            </textField>
+                                                                <subviews>
+                                                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="+98" textAlignment="right" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="khg-WG-04a">
+                                                                        <rect key="frame" x="0.0" y="0.0" width="29" height="40"/>
+                                                                        <fontDescription key="fontDescription" name="IRANYekanMobile" family="IRANYekanMobile" pointSize="17"/>
+                                                                        <color key="textColor" red="0.0" green="0.50196078430000002" blue="0.0" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                                                                        <nil key="highlightedColor"/>
+                                                                    </label>
+                                                                    <textField opaque="NO" clipsSubviews="YES" contentMode="scaleToFill" semanticContentAttribute="forceRightToLeft" contentHorizontalAlignment="right" contentVerticalAlignment="center" borderStyle="roundedRect" placeholder="شماره همراه" textAlignment="right" minimumFontSize="15" clearButtonMode="whileEditing" translatesAutoresizingMaskIntoConstraints="NO" id="Zil-Wh-tym">
+                                                                        <rect key="frame" x="37" y="0.0" width="251" height="40"/>
+                                                                        <color key="backgroundColor" red="0.92156862745098034" green="0.92156862745098034" blue="0.92156862745098034" alpha="1" colorSpace="calibratedRGB"/>
+                                                                        <constraints>
+                                                                            <constraint firstAttribute="height" constant="40" id="a2e-NJ-Wy2"/>
+                                                                        </constraints>
+                                                                        <nil key="textColor"/>
+                                                                        <fontDescription key="fontDescription" name="IRANYekanMobile" family="IRANYekanMobile" pointSize="17"/>
+                                                                        <textInputTraits key="textInputTraits" autocorrectionType="no" spellCheckingType="no" returnKeyType="next" enablesReturnKeyAutomatically="YES"/>
+                                                                    </textField>
+                                                                </subviews>
+                                                            </stackView>
                                                             <stackView opaque="NO" contentMode="scaleToFill" spacing="8" translatesAutoresizingMaskIntoConstraints="NO" id="yFF-4t-pBR">
                                                                 <rect key="frame" x="0.0" y="48" width="288" height="20"/>
                                                                 <subviews>
-                                                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="فقط حروف، اعداد، @، +، - ، ـ و نقطه مجاز است" textAlignment="right" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="WPJ-St-JOG">
+                                                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="مثال: 09121234567" textAlignment="right" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="WPJ-St-JOG">
                                                                         <rect key="frame" x="0.0" y="0.0" width="260" height="20"/>
                                                                         <fontDescription key="fontDescription" name="IRANYekanMobile-Bold" family="IRANYekanMobile" pointSize="14"/>
                                                                         <color key="textColor" red="0.71764705882352942" green="0.71764705882352942" blue="0.71764705882352942" alpha="1" colorSpace="calibratedRGB"/>
@@ -2731,7 +2742,7 @@
                                                             </view>
                                                         </subviews>
                                                     </stackView>
-                                                    <textField opaque="NO" clipsSubviews="YES" contentMode="scaleToFill" semanticContentAttribute="forceRightToLeft" contentHorizontalAlignment="right" contentVerticalAlignment="center" borderStyle="roundedRect" placeholder="آدرس الکترونیکی" textAlignment="right" minimumFontSize="14" clearButtonMode="whileEditing" translatesAutoresizingMaskIntoConstraints="NO" id="kcx-pR-vR1">
+                                                    <textField hidden="YES" opaque="NO" clipsSubviews="YES" contentMode="scaleToFill" semanticContentAttribute="forceRightToLeft" contentHorizontalAlignment="right" contentVerticalAlignment="center" borderStyle="roundedRect" placeholder="آدرس الکترونیکی" textAlignment="right" minimumFontSize="14" clearButtonMode="whileEditing" translatesAutoresizingMaskIntoConstraints="NO" id="kcx-pR-vR1">
                                                         <rect key="frame" x="0.0" y="86" width="288" height="40"/>
                                                         <color key="backgroundColor" red="0.92212716819999996" green="0.92212716819999996" blue="0.92212716819999996" alpha="1" colorSpace="calibratedRGB"/>
                                                         <constraints>
@@ -2744,7 +2755,7 @@
                                                     <stackView opaque="NO" contentMode="scaleToFill" spacing="8" translatesAutoresizingMaskIntoConstraints="NO" id="Hrr-I7-H1s">
                                                         <rect key="frame" x="0.0" y="134" width="288" height="15"/>
                                                         <subviews>
-                                                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="..." textAlignment="right" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="kFH-5s-PRy">
+                                                            <label hidden="YES" opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="..." textAlignment="right" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="kFH-5s-PRy">
                                                                 <rect key="frame" x="0.0" y="0.0" width="288" height="15"/>
                                                                 <fontDescription key="fontDescription" name="IRANYekanMobile-Bold" family="IRANYekanMobile" pointSize="14"/>
                                                                 <color key="textColor" red="0.71764705880000002" green="0.71764705880000002" blue="0.71764705880000002" alpha="1" colorSpace="calibratedRGB"/>
@@ -2752,7 +2763,7 @@
                                                             </label>
                                                         </subviews>
                                                     </stackView>
-                                                    <textField opaque="NO" clipsSubviews="YES" contentMode="scaleToFill" semanticContentAttribute="forceRightToLeft" contentHorizontalAlignment="right" contentVerticalAlignment="center" borderStyle="roundedRect" placeholder="گذرواژه" textAlignment="right" minimumFontSize="15" clearButtonMode="whileEditing" translatesAutoresizingMaskIntoConstraints="NO" id="3eS-Aj-rs6">
+                                                    <textField hidden="YES" opaque="NO" clipsSubviews="YES" contentMode="scaleToFill" semanticContentAttribute="forceRightToLeft" contentHorizontalAlignment="right" contentVerticalAlignment="center" borderStyle="roundedRect" placeholder="گذرواژه" textAlignment="right" minimumFontSize="15" clearButtonMode="whileEditing" translatesAutoresizingMaskIntoConstraints="NO" id="3eS-Aj-rs6">
                                                         <rect key="frame" x="0.0" y="157" width="288" height="40"/>
                                                         <color key="backgroundColor" red="0.92212716819999996" green="0.92212716819999996" blue="0.92212716819999996" alpha="1" colorSpace="calibratedRGB"/>
                                                         <constraints>
@@ -2778,8 +2789,8 @@
                                                     </button>
                                                 </subviews>
                                             </stackView>
-                                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="ایمیلی حاوی کد فعالسازی برای شما ارسال خواهد شد." textAlignment="right" lineBreakMode="tailTruncation" numberOfLines="2" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="05e-3L-hI2">
-                                                <rect key="frame" x="16" y="492.5" width="288" height="13"/>
+                                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" misplaced="YES" text="ایمیلی حاوی کد فعالسازی برای شما ارسال خواهد شد." textAlignment="right" lineBreakMode="tailTruncation" numberOfLines="2" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="05e-3L-hI2">
+                                                <rect key="frame" x="16" y="519" width="288" height="13"/>
                                                 <fontDescription key="fontDescription" name="IRANYekanMobile" family="IRANYekanMobile" pointSize="12"/>
                                                 <color key="textColor" red="0.34149816179999998" green="0.34149816179999998" blue="0.34149816179999998" alpha="1" colorSpace="calibratedRGB"/>
                                                 <nil key="highlightedColor"/>
@@ -3156,7 +3167,7 @@
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
                             <stackView opaque="NO" contentMode="scaleToFill" alignment="center" spacing="8" translatesAutoresizingMaskIntoConstraints="NO" id="eDk-VM-gUy">
-                                <rect key="frame" x="104.5" y="94" width="112.5" height="40"/>
+                                <rect key="frame" x="104.5" y="50" width="112.5" height="40"/>
                                 <subviews>
                                     <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="تاریخ تولد" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="CGT-AX-TTD">
                                         <rect key="frame" x="0.0" y="11" width="64.5" height="18.5"/>
@@ -3174,37 +3185,33 @@
                                 </subviews>
                             </stackView>
                             <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="duq-5B-C2w">
-                                <rect key="frame" x="56" y="158" width="208" height="1"/>
+                                <rect key="frame" x="56" y="114" width="208" height="1"/>
                                 <color key="backgroundColor" red="0.92212716819999996" green="0.92212716819999996" blue="0.92212716819999996" alpha="1" colorSpace="calibratedRGB"/>
                                 <constraints>
                                     <constraint firstAttribute="height" relation="greaterThanOrEqual" constant="1" id="T9B-Zq-009"/>
                                     <constraint firstAttribute="height" constant="1" id="VhS-Od-Tyv"/>
                                 </constraints>
                             </view>
-                            <datePicker contentMode="scaleToFill" semanticContentAttribute="forceRightToLeft" fixedFrame="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" datePickerMode="date" minuteInterval="1" translatesAutoresizingMaskIntoConstraints="NO" id="CCE-n5-4lH">
-                                <rect key="frame" x="28" y="176" width="264" height="194"/>
-                                <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMaxY="YES"/>
-                                <date key="date" timeIntervalSinceReferenceDate="503135466.07054102">
-                                    <!--2016-12-11 07:51:06 +0000-->
-                                </date>
-                                <date key="maximumDate" timeIntervalSinceReferenceDate="1167562800">
-                                    <!--2037-12-31 11:00:00 +0000-->
-                                </date>
-                                <locale key="locale" localeIdentifier="fa_IR"/>
-                            </datePicker>
+                            <pickerView contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="C5j-xO-0Iw">
+                                <rect key="frame" x="56" y="123" width="208" height="216"/>
+                            </pickerView>
                         </subviews>
                         <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
                         <constraints>
+                            <constraint firstItem="C5j-xO-0Iw" firstAttribute="top" secondItem="duq-5B-C2w" secondAttribute="bottom" constant="8" id="DsB-hw-cmL"/>
                             <constraint firstItem="eDk-VM-gUy" firstAttribute="centerX" secondItem="nKS-qr-bon" secondAttribute="centerX" id="Kcu-gL-BZd"/>
                             <constraint firstItem="duq-5B-C2w" firstAttribute="leading" secondItem="nKS-qr-bon" secondAttribute="leadingMargin" constant="40" id="Okc-6i-J5k"/>
+                            <constraint firstAttribute="trailingMargin" secondItem="C5j-xO-0Iw" secondAttribute="trailing" constant="40" id="aQi-3q-uFh"/>
+                            <constraint firstItem="C5j-xO-0Iw" firstAttribute="centerX" secondItem="nKS-qr-bon" secondAttribute="centerX" id="bQ4-cM-PML"/>
                             <constraint firstItem="duq-5B-C2w" firstAttribute="top" secondItem="eDk-VM-gUy" secondAttribute="bottom" constant="24" id="cXh-uR-3Bo"/>
+                            <constraint firstItem="C5j-xO-0Iw" firstAttribute="leading" secondItem="nKS-qr-bon" secondAttribute="leadingMargin" constant="40" id="g2h-k0-cWo"/>
                             <constraint firstItem="eDk-VM-gUy" firstAttribute="top" secondItem="vNW-Wt-Iqh" secondAttribute="bottom" constant="30" id="jdc-05-tTg"/>
                             <constraint firstAttribute="trailingMargin" secondItem="duq-5B-C2w" secondAttribute="trailing" constant="40" id="jvM-8e-Xt9"/>
                         </constraints>
                     </view>
                     <toolbarItems/>
                     <connections>
-                        <outlet property="datePicker" destination="CCE-n5-4lH" id="HeK-T6-VXu"/>
+                        <outlet property="datePickerYear" destination="C5j-xO-0Iw" id="Oxj-j9-gRD"/>
                         <segue destination="LQD-0d-YOt" kind="show" identifier="SignupMoreInfoVC3Segue" id="5vY-Ux-wrL"/>
                     </connections>
                 </viewController>
@@ -3225,7 +3232,7 @@
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
                             <stackView opaque="NO" contentMode="scaleToFill" alignment="center" spacing="8" translatesAutoresizingMaskIntoConstraints="NO" id="XTc-AJ-9Vy">
-                                <rect key="frame" x="82" y="94" width="156" height="40"/>
+                                <rect key="frame" x="82" y="50" width="156" height="40"/>
                                 <subviews>
                                     <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="اطلاعات تحصیلی" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="Eri-qp-8Gu">
                                         <rect key="frame" x="0.0" y="11" width="108" height="18.5"/>
@@ -3243,7 +3250,7 @@
                                 </subviews>
                             </stackView>
                             <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="nrj-VY-Piy">
-                                <rect key="frame" x="40" y="158" width="240" height="1"/>
+                                <rect key="frame" x="40" y="114" width="240" height="1"/>
                                 <color key="backgroundColor" red="0.92212716819999996" green="0.92212716819999996" blue="0.92212716819999996" alpha="1" colorSpace="calibratedRGB"/>
                                 <constraints>
                                     <constraint firstAttribute="height" relation="lessThanOrEqual" constant="1" id="0nH-ew-PgP"/>
@@ -3252,7 +3259,7 @@
                                 </constraints>
                             </view>
                             <stackView opaque="NO" contentMode="scaleToFill" spacing="8" translatesAutoresizingMaskIntoConstraints="NO" id="ED9-qL-4aY">
-                                <rect key="frame" x="40" y="183" width="240" height="28"/>
+                                <rect key="frame" x="40" y="139" width="240" height="28"/>
                                 <subviews>
                                     <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="BHX-F0-gjA">
                                         <rect key="frame" x="0.0" y="0.0" width="152" height="28"/>
@@ -3273,7 +3280,7 @@
                                 </subviews>
                             </stackView>
                             <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="N3U-5l-gt9">
-                                <rect key="frame" x="40" y="235" width="240" height="1"/>
+                                <rect key="frame" x="40" y="191" width="240" height="1"/>
                                 <color key="backgroundColor" red="0.92212716819999996" green="0.92212716819999996" blue="0.92212716819999996" alpha="1" colorSpace="calibratedRGB"/>
                                 <constraints>
                                     <constraint firstAttribute="height" constant="1" id="Edu-0b-29G"/>
@@ -3283,7 +3290,7 @@
                                 </constraints>
                             </view>
                             <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="VJa-TE-0f6">
-                                <rect key="frame" x="40" y="260" width="100" height="30"/>
+                                <rect key="frame" x="40" y="216" width="100" height="30"/>
                                 <color key="backgroundColor" red="0.0" green="0.47843137250000001" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                                 <constraints>
                                     <constraint firstAttribute="height" constant="30" id="VaL-oD-JyJ"/>
@@ -3359,16 +3366,27 @@
                                             <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" spacing="8" translatesAutoresizingMaskIntoConstraints="NO" id="dvp-r1-Usb">
                                                 <rect key="frame" x="16" y="239.5" width="288" height="136"/>
                                                 <subviews>
-                                                    <textField opaque="NO" clipsSubviews="YES" contentMode="scaleToFill" semanticContentAttribute="forceRightToLeft" contentHorizontalAlignment="right" contentVerticalAlignment="center" borderStyle="roundedRect" placeholder="نام کاربری" textAlignment="right" minimumFontSize="14" clearButtonMode="whileEditing" translatesAutoresizingMaskIntoConstraints="NO" id="cpr-uo-yPz">
+                                                    <stackView opaque="NO" contentMode="scaleToFill" spacing="8" translatesAutoresizingMaskIntoConstraints="NO" id="TTU-kf-g6h">
                                                         <rect key="frame" x="0.0" y="0.0" width="288" height="40"/>
-                                                        <color key="backgroundColor" red="0.92212716819999996" green="0.92212716819999996" blue="0.92212716819999996" alpha="1" colorSpace="calibratedRGB"/>
-                                                        <constraints>
-                                                            <constraint firstAttribute="height" constant="40" id="Tq3-DX-2z2"/>
-                                                        </constraints>
-                                                        <nil key="textColor"/>
-                                                        <fontDescription key="fontDescription" name="IRANYekanMobile" family="IRANYekanMobile" pointSize="17"/>
-                                                        <textInputTraits key="textInputTraits" autocorrectionType="no" spellCheckingType="no" keyboardType="emailAddress" returnKeyType="next" enablesReturnKeyAutomatically="YES"/>
-                                                    </textField>
+                                                        <subviews>
+                                                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="+98" textAlignment="right" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="Vfo-Eu-ZTO">
+                                                                <rect key="frame" x="0.0" y="0.0" width="29" height="40"/>
+                                                                <fontDescription key="fontDescription" name="IRANYekanMobile" family="IRANYekanMobile" pointSize="17"/>
+                                                                <color key="textColor" white="0.33333333333333331" alpha="1" colorSpace="calibratedWhite"/>
+                                                                <nil key="highlightedColor"/>
+                                                            </label>
+                                                            <textField opaque="NO" clipsSubviews="YES" contentMode="scaleToFill" semanticContentAttribute="forceRightToLeft" contentHorizontalAlignment="right" contentVerticalAlignment="center" borderStyle="roundedRect" placeholder="شماره همراه" textAlignment="right" minimumFontSize="14" clearButtonMode="whileEditing" translatesAutoresizingMaskIntoConstraints="NO" id="cpr-uo-yPz">
+                                                                <rect key="frame" x="37" y="0.0" width="251" height="40"/>
+                                                                <color key="backgroundColor" red="0.92212716819999996" green="0.92212716819999996" blue="0.92212716819999996" alpha="1" colorSpace="calibratedRGB"/>
+                                                                <constraints>
+                                                                    <constraint firstAttribute="height" constant="40" id="Tq3-DX-2z2"/>
+                                                                </constraints>
+                                                                <nil key="textColor"/>
+                                                                <fontDescription key="fontDescription" name="IRANYekanMobile" family="IRANYekanMobile" pointSize="17"/>
+                                                                <textInputTraits key="textInputTraits" autocorrectionType="no" spellCheckingType="no" keyboardType="emailAddress" returnKeyType="next" enablesReturnKeyAutomatically="YES"/>
+                                                            </textField>
+                                                        </subviews>
+                                                    </stackView>
                                                     <textField opaque="NO" clipsSubviews="YES" contentMode="scaleToFill" semanticContentAttribute="forceRightToLeft" contentHorizontalAlignment="right" contentVerticalAlignment="center" borderStyle="roundedRect" placeholder="گذرواژه" textAlignment="right" minimumFontSize="15" clearButtonMode="whileEditing" translatesAutoresizingMaskIntoConstraints="NO" id="e3J-Jt-TH9">
                                                         <rect key="frame" x="0.0" y="48" width="288" height="40"/>
                                                         <color key="backgroundColor" red="0.92212716819999996" green="0.92212716819999996" blue="0.92212716819999996" alpha="1" colorSpace="calibratedRGB"/>
@@ -3507,16 +3525,27 @@
                                             <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" spacing="8" translatesAutoresizingMaskIntoConstraints="NO" id="T6D-GH-MFW">
                                                 <rect key="frame" x="16" y="231.5" width="288" height="88"/>
                                                 <subviews>
-                                                    <textField opaque="NO" clipsSubviews="YES" contentMode="scaleToFill" semanticContentAttribute="forceRightToLeft" contentHorizontalAlignment="right" contentVerticalAlignment="center" borderStyle="roundedRect" placeholder="نام کاربری" textAlignment="center" minimumFontSize="14" clearButtonMode="whileEditing" translatesAutoresizingMaskIntoConstraints="NO" id="xzG-we-t1Y">
+                                                    <stackView opaque="NO" contentMode="scaleToFill" spacing="8" translatesAutoresizingMaskIntoConstraints="NO" id="hVr-Ep-bqG">
                                                         <rect key="frame" x="0.0" y="0.0" width="288" height="40"/>
-                                                        <color key="backgroundColor" red="0.92212716819999996" green="0.92212716819999996" blue="0.92212716819999996" alpha="1" colorSpace="calibratedRGB"/>
-                                                        <constraints>
-                                                            <constraint firstAttribute="height" constant="40" id="Ofx-dZ-tJq"/>
-                                                        </constraints>
-                                                        <nil key="textColor"/>
-                                                        <fontDescription key="fontDescription" name="IRANYekanMobile" family="IRANYekanMobile" pointSize="17"/>
-                                                        <textInputTraits key="textInputTraits" autocorrectionType="no" spellCheckingType="no" keyboardType="emailAddress" returnKeyType="done" enablesReturnKeyAutomatically="YES"/>
-                                                    </textField>
+                                                        <subviews>
+                                                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="+98" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="5go-fQ-IFD">
+                                                                <rect key="frame" x="0.0" y="0.0" width="29" height="40"/>
+                                                                <fontDescription key="fontDescription" name="IRANYekanMobile" family="IRANYekanMobile" pointSize="17"/>
+                                                                <color key="textColor" white="0.33333333333333331" alpha="1" colorSpace="calibratedWhite"/>
+                                                                <nil key="highlightedColor"/>
+                                                            </label>
+                                                            <textField opaque="NO" clipsSubviews="YES" contentMode="scaleToFill" semanticContentAttribute="forceRightToLeft" contentHorizontalAlignment="right" contentVerticalAlignment="center" borderStyle="roundedRect" placeholder="نام کاربری" textAlignment="center" minimumFontSize="14" clearButtonMode="whileEditing" translatesAutoresizingMaskIntoConstraints="NO" id="xzG-we-t1Y">
+                                                                <rect key="frame" x="37" y="0.0" width="251" height="40"/>
+                                                                <color key="backgroundColor" red="0.92212716819999996" green="0.92212716819999996" blue="0.92212716819999996" alpha="1" colorSpace="calibratedRGB"/>
+                                                                <constraints>
+                                                                    <constraint firstAttribute="height" constant="40" id="Ofx-dZ-tJq"/>
+                                                                </constraints>
+                                                                <nil key="textColor"/>
+                                                                <fontDescription key="fontDescription" name="IRANYekanMobile" family="IRANYekanMobile" pointSize="17"/>
+                                                                <textInputTraits key="textInputTraits" autocorrectionType="no" spellCheckingType="no" keyboardType="emailAddress" returnKeyType="done" enablesReturnKeyAutomatically="YES"/>
+                                                            </textField>
+                                                        </subviews>
+                                                    </stackView>
                                                     <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="rcH-3E-Pxg">
                                                         <rect key="frame" x="0.0" y="48" width="288" height="40"/>
                                                         <color key="backgroundColor" red="0.0" green="0.47843137250000001" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
@@ -3721,6 +3750,7 @@
                         <segue destination="3NZ-7r-QJC" kind="show" identifier="StartupVCSegue" id="ccg-2T-hev"/>
                         <segue destination="IZd-aF-LVr" kind="unwind" identifier="ForgotPasswordResendVCUnSegue" unwindAction="unwindResendForgotPasswordPressed:" id="o3C-OD-sfO"/>
                         <segue destination="IZd-aF-LVr" kind="unwind" identifier="ForgotPasswordVCUnSegue" unwindAction="unwindForgotPasswordPressed:" id="9hb-xb-p1I"/>
+                        <segue destination="5Hb-Vt-2we" kind="show" identifier="HomeVCSegue" id="hbA-eO-i0u"/>
                     </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="iJw-aq-MtV" userLabel="First Responder" sceneMemberID="firstResponder"/>
@@ -3797,7 +3827,7 @@
                 </navigationController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="Wtz-ff-Oqn" userLabel="First Responder" sceneMemberID="firstResponder"/>
             </objects>
-            <point key="canvasLocation" x="1080" y="275.7042253521127"/>
+            <point key="canvasLocation" x="1080" y="331"/>
         </scene>
         <!--Navigation Controller-->
         <scene sceneID="2Oz-Rk-Qas">
@@ -3828,7 +3858,7 @@
         <!--Tab Bar Controller-->
         <scene sceneID="CeX-lm-x5O">
             <objects>
-                <tabBarController automaticallyAdjustsScrollViewInsets="NO" id="5Hb-Vt-2we" sceneMemberID="viewController">
+                <tabBarController storyboardIdentifier="TabHomeTableViewController" automaticallyAdjustsScrollViewInsets="NO" id="5Hb-Vt-2we" sceneMemberID="viewController">
                     <toolbarItems/>
                     <tabBar key="tabBar" contentMode="scaleToFill" semanticContentAttribute="forceRightToLeft" translucent="NO" id="3AN-NQ-m4Q">
                         <rect key="frame" x="0.0" y="0.0" width="1000" height="1000"/>
@@ -3844,7 +3874,7 @@
                 </tabBarController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="fit-1h-DAi" userLabel="First Responder" sceneMemberID="firstResponder"/>
             </objects>
-            <point key="canvasLocation" x="82.5" y="275.7042253521127"/>
+            <point key="canvasLocation" x="90" y="331"/>
         </scene>
         <!--محصولات-->
         <scene sceneID="C3C-J1-K3f">
@@ -4497,12 +4527,12 @@
         <image name="gender_other" width="100" height="100"/>
     </resources>
     <inferredMetricsTieBreakers>
-        <segue reference="T19-b0-hto"/>
+        <segue reference="fAL-ZR-6Mx"/>
         <segue reference="VHg-zv-SI1"/>
         <segue reference="73w-gD-DGy"/>
-        <segue reference="l5g-93-r6Z"/>
-        <segue reference="Oix-eN-ygJ"/>
-        <segue reference="6Au-XJ-D5M"/>
+        <segue reference="T19-b0-hto"/>
+        <segue reference="5Ug-VJ-bur"/>
         <segue reference="aCU-ui-6ox"/>
+        <segue reference="RC5-m4-vma"/>
     </inferredMetricsTieBreakers>
 </document>

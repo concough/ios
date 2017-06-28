@@ -11,7 +11,7 @@ import Foundation
 struct SignupStructure {
     var username: String?
     var password: String?
-    var email: String?
+//    var email: String?
     var preSignupId: Int?
 }
 

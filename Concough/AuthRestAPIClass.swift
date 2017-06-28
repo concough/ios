@@ -46,14 +46,13 @@ class AuthRestAPIClass {
         
     }
     
-    class func preSignup(username username: String, email: String, completion: (data: JSON?, error: HTTPErrorType?) -> (), failure: (error: NetworkErrorType?) -> ()) {
+    class func preSignup(username username: String, completion: (data: JSON?, error: HTTPErrorType?) -> (), failure: (error: NetworkErrorType?) -> ()) {
         
         guard let fullPath = UrlMakerSingleton.sharedInstance.preSignupUrl() else {
             return
         }
         
-        let parameters: [String: String] = ["username": username,
-                                            "email": email]
+        let parameters: [String: String] = ["username": username]
         let headers: [String: String] = ["Content-Type": "application/json",
                                          "Accept": "application/json"]
         
@@ -79,15 +78,46 @@ class AuthRestAPIClass {
             }
         }
     }
+//    class func preSignup(username username: String, email: String, completion: (data: JSON?, error: HTTPErrorType?) -> (), failure: (error: NetworkErrorType?) -> ()) {
+//        
+//        guard let fullPath = UrlMakerSingleton.sharedInstance.preSignupUrl() else {
+//            return
+//        }
+//        
+//        let parameters: [String: String] = ["username": username,
+//                                            "email": email]
+//        let headers: [String: String] = ["Content-Type": "application/json",
+//                                         "Accept": "application/json"]
+//        
+//        Alamofire.request(.POST, fullPath, parameters: parameters, encoding: .JSON, headers: headers).responseJSON { response in
+//            
+//            switch response.result {
+//            case .Success:
+//                let statusCode = response.response?.statusCode
+//                let errorType = HTTPErrorType.toType(statusCode!)
+//                
+//                switch errorType {
+//                case .Success:
+//                    if let json = response.result.value {
+//                        let jsonData = JSON(json)
+//                        
+//                        completion(data: jsonData, error: .Success)
+//                    }
+//                default:
+//                    completion(data: nil, error: errorType)
+//                }
+//            case .Failure(let error):
+//                failure(error: NetworkErrorType.toType(error))
+//            }
+//        }
+//    }
     
-    class func signup(username username: String, id: Int, code: Int, email: String, password: String, completion: (data: JSON?, error: HTTPErrorType?) -> (), failure: (error: NetworkErrorType?) -> ()) {
+    class func signup(username username: String, id: Int, code: Int, completion: (data: JSON?, error: HTTPErrorType?) -> (), failure: (error: NetworkErrorType?) -> ()) {
         guard let fullPath = UrlMakerSingleton.sharedInstance.signupUrl() else {
             return
         }
         
         let parameters: [String: AnyObject] = ["username": username,
-                                               "email": email,
-                                               "password": password,
                                             "id": id,
                                             "code": code]
         let headers: [String: String] = ["Content-Type": "application/json",

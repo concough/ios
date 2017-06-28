@@ -81,7 +81,7 @@ class SubmitSignupCodeViewController: UIViewController, UITextFieldDelegate {
                 self.loading = AlertClass.showLoadingMessage(viewController: self)
             })
             
-            AuthRestAPIClass.preSignup(username: self.signupStruct.username!, email: self.signupStruct.email!, completion: { (data, error) in
+            AuthRestAPIClass.preSignup(username: self.signupStruct.username!, completion: { (data, error) in
                 NSOperationQueue.mainQueue().addOperationWithBlock({
                     AlertClass.hideLoaingMessage(progressHUD: self.loading)
                 })
@@ -233,7 +233,7 @@ class SubmitSignupCodeViewController: UIViewController, UITextFieldDelegate {
                     self.loading = AlertClass.showLoadingMessage(viewController: self)
                 })
                 
-                AuthRestAPIClass.signup(username: self.signupStruct.username!, id: self.signupStruct.preSignupId!, code: intCode, email: self.signupStruct.email!, password: self.signupStruct.password!, completion: { (data, error) in
+                AuthRestAPIClass.signup(username: self.signupStruct.username!, id: self.signupStruct.preSignupId!, code: intCode, completion: { (data, error) in
                     NSOperationQueue.mainQueue().addOperationWithBlock({
                         AlertClass.hideLoaingMessage(progressHUD: self.loading)
                     })
@@ -250,6 +250,7 @@ class SubmitSignupCodeViewController: UIViewController, UITextFieldDelegate {
                                     self.view.endEditing(true)
                                     //print("Code Approved successfully")
                                     // make login request
+                                    self.signupStruct.password = code
                                     self.makeLoginRequest()
                                 case "Error":
                                     if let errorType = localData["error_type"].string {
