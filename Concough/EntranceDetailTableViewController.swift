@@ -227,7 +227,15 @@ class EntranceDetailTableViewController: UITableViewController {
             })
             
             if error != HTTPErrorType.Success {
-                AlertClass.showTopMessage(viewController: self, messageType: "HTTPError", messageSubType: (error?.toString())!, type: "error", completion: nil)                
+                if error == HTTPErrorType.Refresh {
+                    let operation = NSBlockOperation(block: {
+                        self.downloadEntrance()
+                    })
+                    self.queue.addOperation(operation)
+                } else {
+                    AlertClass.showTopMessage(viewController: self, messageType: "HTTPError", messageSubType: (error?.toString())!, type: "error", completion: nil)
+                    
+                }
             } else {
                 if let localData = data {
                     if let status = localData["status"].string {
@@ -340,7 +348,14 @@ class EntranceDetailTableViewController: UITableViewController {
             })
             
             if error != HTTPErrorType.Success {
-                AlertClass.showTopMessage(viewController: self, messageType: "HTTPError", messageSubType: (error?.toString())!, type: "error", completion: nil)
+                if error == HTTPErrorType.Refresh {
+                    let operation = NSBlockOperation(block: {
+                        self.downloadUserPurchaseData()
+                    })
+                    self.queue.addOperation(operation)
+                } else {
+                    AlertClass.showTopMessage(viewController: self, messageType: "HTTPError", messageSubType: (error?.toString())!, type: "error", completion: nil)
+                }
             } else {
                 if let localData = data {
                     if let status = localData["status"].string {
@@ -461,7 +476,14 @@ class EntranceDetailTableViewController: UITableViewController {
             })
             
             if error != HTTPErrorType.Success {
-                AlertClass.showTopMessage(viewController: self, messageType: "HTTPError", messageSubType: (error?.toString())!, type: "error", completion: nil)
+                if error == HTTPErrorType.Refresh {
+                    let operation = NSBlockOperation(block: {
+                        self.refreshUserPurchaseData()
+                    })
+                    self.queue.addOperation(operation)
+                } else {
+                    AlertClass.showTopMessage(viewController: self, messageType: "HTTPError", messageSubType: (error?.toString())!, type: "error", completion: nil)
+                }
             } else {
                 if let localData = data {
                     if let status = localData["status"].string {
@@ -552,7 +574,15 @@ class EntranceDetailTableViewController: UITableViewController {
             })
             
             if error != HTTPErrorType.Success {
-                AlertClass.showTopMessage(viewController: self, messageType: "HTTPError", messageSubType: (error?.toString())!, type: "error", completion: nil)
+                if error == HTTPErrorType.Refresh {
+                    let operation = NSBlockOperation(block: {
+                        self.updateUserPurchaseData()
+                    })
+                    self.queue.addOperation(operation)
+                    
+                } else {
+                    AlertClass.showTopMessage(viewController: self, messageType: "HTTPError", messageSubType: (error?.toString())!, type: "error", completion: nil)
+                }
             } else {
                 if let localData = data {
                     if let status = localData["status"].string {
@@ -644,7 +674,16 @@ class EntranceDetailTableViewController: UITableViewController {
             })
             
             if error != HTTPErrorType.Success {
-                AlertClass.showTopMessage(viewController: self, messageType: "HTTPError", messageSubType: (error?.toString())!, type: "error", completion: nil)
+                if error == HTTPErrorType.Refresh {
+                    let operation = NSBlockOperation(block: {
+                        self.downloadEntranceStat()
+                    })
+                    self.queue.addOperation(operation)
+
+                } else {
+                    AlertClass.showTopMessage(viewController: self, messageType: "HTTPError", messageSubType: (error?.toString())!, type: "error", completion: nil)
+   
+                }
             } else {
                 if let localData = data {
                     if let status = localData["status"].string {
@@ -743,7 +782,15 @@ class EntranceDetailTableViewController: UITableViewController {
             })
             
             if error != HTTPErrorType.Success {
-                AlertClass.showTopMessage(viewController: self, messageType: "HTTPError", messageSubType: (error?.toString())!, type: "error", completion: nil)
+                if error == HTTPErrorType.Refresh {
+                    let operation = NSBlockOperation(block: {
+                        self.downloadEntranceSale()
+                    })
+                    self.queue.addOperation(operation)
+                    
+                } else {
+                    AlertClass.showTopMessage(viewController: self, messageType: "HTTPError", messageSubType: (error?.toString())!, type: "error", completion: nil)
+                }
             } else {
                 if let localData = data {
                     if let status = localData["status"].string {

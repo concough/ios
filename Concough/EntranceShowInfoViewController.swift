@@ -77,8 +77,12 @@ class EntranceShowInfoViewController: UIViewController {
                     
                     if error != .Success {
                         // print the error for now
-                        self.entranceImageView?.image = UIImage()
-                        print("error in downloaing image from \(fullPath!)")
+                        if error == HTTPErrorType.Refresh {
+                            self.downloadImage(esetId: esetId, indexPath: indexPath)
+                        } else {
+                            self.entranceImageView?.image = UIImage()
+                            print("error in downloaing image from \(fullPath!)")
+                        }
                         
                     } else {
                         if let myData = data {

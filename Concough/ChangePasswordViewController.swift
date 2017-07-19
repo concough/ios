@@ -90,9 +90,13 @@ class ChangePasswordViewController: UIViewController, UITextFieldDelegate {
                 AlertClass.hideLoaingMessage(progressHUD: self.loading)
             })
             if error != HTTPErrorType.Success {
-                NSOperationQueue.mainQueue().addOperationWithBlock({
-                    AlertClass.showTopMessage(viewController: self, messageType: "HTTPError", messageSubType: (error?.toString())!, type: "error", completion: nil)
-                })
+                if error == HTTPErrorType.Refresh {
+                    self.changePassword(oldPassword: pass1, newPassword: pass2)
+                } else {
+                    NSOperationQueue.mainQueue().addOperationWithBlock({
+                        AlertClass.showTopMessage(viewController: self, messageType: "HTTPError", messageSubType: (error?.toString())!, type: "error", completion: nil)
+                    })
+                }
             } else {
                 if let localData = data {
                     if let status = localData["status"].string {

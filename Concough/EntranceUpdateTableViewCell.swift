@@ -79,6 +79,10 @@ class EntranceUpdateTableViewCell: UITableViewCell {
         
         let imageID = target["entrance_set"]["id"].intValue
         
+        self.downloadEsetImage(imageID, indexPath: indexPath)
+    }
+    
+    private func downloadEsetImage(imageID: Int, indexPath: NSIndexPath) {
         if let esetUrl = MediaRestAPIClass.makeEsetImageUri(imageID) {
             MediaRequestRepositorySingleton.sharedInstance.cancel(key: "\(self.localName):\(indexPath.section):\(indexPath.row):\(esetUrl)")
             
@@ -86,14 +90,21 @@ class EntranceUpdateTableViewCell: UITableViewCell {
                 self.entranceImage.image = UIImage(data: myData)
                 
             } else {
+                // set associate object of entracneImage
                 self.entranceImage.assicatedObject = esetUrl
-
+                
+                // cancel download image request
+                
                 MediaRestAPIClass.downloadEsetImage(localName: self.localName, indexPath: indexPath, imageId: imageID, completion: {
                     fullPath, data, error in
                     
                     MediaRequestRepositorySingleton.sharedInstance.remove(key: "\(self.localName):\(indexPath.section):\(indexPath.row):\(esetUrl)")
+                    
                     if error != .Success {
                         // print the error for now
+                        if error == HTTPErrorType.Refresh {
+                            self.downloadEsetImage(imageID, indexPath: indexPath)
+                        }
                         print("error in downloaing image from \(fullPath!)")
                         
                     } else {
@@ -107,15 +118,15 @@ class EntranceUpdateTableViewCell: UITableViewCell {
                             }
                         }
                     }
-                }, failure: { (error) in
-                    if let err = error {
-                        switch err {
-                        case .NoInternetAccess:
-                            break
-                        default:
-                            break
+                    }, failure: { (error) in
+                        if let err = error {
+                            switch err {
+                            case .NoInternetAccess:
+                                break
+                            default:
+                                break
+                            }
                         }
-                    }
                 })
             }
         }

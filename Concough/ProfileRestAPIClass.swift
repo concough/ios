@@ -43,7 +43,7 @@ class ProfileRestAPIClass {
                         case .ForbidenAccess:
                             TokenHandlerSingleton.sharedInstance.assureAuthorized(true, completion: { (authenticated, error) in
                                 if authenticated && error == .Success {
-                                    completion(data: nil, error: error)
+                                    completion(data: nil, error: HTTPErrorType.Refresh)
                                 }
                             }, failure: { (error) in
                                 failure(error: error)
@@ -109,7 +109,7 @@ class ProfileRestAPIClass {
                         case .ForbidenAccess:
                             TokenHandlerSingleton.sharedInstance.assureAuthorized(true, completion: { (authenticated, err) in
                                 if authenticated && error == .Success {
-                                    completion(data: nil, error: err)
+                                    completion(data: nil, error: HTTPErrorType.Refresh)
                                 }
                             }, failure: { (error) in
                                 failure(error: error)
@@ -167,7 +167,7 @@ class ProfileRestAPIClass {
                         case .ForbidenAccess:
                             TokenHandlerSingleton.sharedInstance.assureAuthorized(true, completion: { (authenticated, err) in
                                 if authenticated && error == .Success {
-                                    completion(data: nil, error: err)
+                                    completion(data: nil, error: HTTPErrorType.Refresh)
                                 }
                                 }, failure: { (error) in
                                     failure(error: error)

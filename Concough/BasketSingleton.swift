@@ -62,7 +62,11 @@ class BasketSingleton {
                 }
             }
             if error != HTTPErrorType.Success {
-                AlertClass.showSimpleErrorMessage(viewController: viewController, messageType: "HTTPError", messageSubType: (error?.toString())!, completion: nil)
+                if error == HTTPErrorType.Refresh {
+                    self.loadBasketItems(viewController: viewController, completion: completion)
+                } else {
+                    AlertClass.showSimpleErrorMessage(viewController: viewController, messageType: "HTTPError", messageSubType: (error?.toString())!, completion: nil)
+                }
             } else {
                 if let localData = data {
                     if let status = localData["status"].string {
@@ -177,9 +181,13 @@ class BasketSingleton {
     internal func createBasket(viewController viewController: UIViewController, completion: (() -> ())?) {
         BasketRestAPIClass.createBasket({ (data, error) in
             if error != HTTPErrorType.Success {
-                NSOperationQueue.mainQueue().addOperationWithBlock({ 
-                    AlertClass.showTopMessage(viewController: viewController, messageType: "HTTPError", messageSubType: (error?.toString())!, type: "error", completion: nil)
-                })
+                if error == HTTPErrorType.Refresh {
+                    self.createBasket(viewController: viewController, completion: completion)
+                } else {
+                    NSOperationQueue.mainQueue().addOperationWithBlock({
+                        AlertClass.showTopMessage(viewController: viewController, messageType: "HTTPError", messageSubType: (error?.toString())!, type: "error", completion: nil)
+                    })
+                }
                 
 //                AlertClass.showSimpleErrorMessage(viewController: viewController, messageType: "HTTPError", messageSubType: (error?.toString())!, completion: nil)
             } else {
@@ -240,8 +248,19 @@ class BasketSingleton {
     
     internal func addSale(saleId saleId: Int, created: NSDate, cost: Int, target: Any, type: String) {
         synchronized(self._lock, criticalSection: {
-            self._sales.append((id: saleId, created: created, cost: cost, target: target, type: type))
-            self._totalCost += cost
+            var product_id: String? = nil
+            if type == "Entrance" {
+                if let entrance = target as? EntranceStructure {
+                    product_id = entrance.entranceUniqueId!
+                    
+                    if self.findSaleByTargetId(targetId: product_id!, type: type) != nil {
+                        return
+                    } else {
+                        self._sales.append((id: saleId, created: created, cost: cost, target: target, type: type))
+                        self._totalCost += cost
+                    }
+                }
+            }
         })
     }
 
@@ -259,9 +278,13 @@ class BasketSingleton {
         if product_id != nil {
                 BasketRestAPIClass.addProductToBasket(basketId: self._basketId!, productId: product_id!, productType: type, completion: { (data, error) in
                     if error != HTTPErrorType.Success {
-                        NSOperationQueue.mainQueue().addOperationWithBlock({
-                            AlertClass.showTopMessage(viewController: viewController, messageType: "HTTPError", messageSubType: (error?.toString())!, type: "error", completion: nil)
-                        })
+                        if error == HTTPErrorType.Refresh {
+                            self.addSale(viewController: viewController, target: target, type: type, completion: completion)
+                        } else {
+                            NSOperationQueue.mainQueue().addOperationWithBlock({
+                                AlertClass.showTopMessage(viewController: viewController, messageType: "HTTPError", messageSubType: (error?.toString())!, type: "error", completion: nil)
+                            })
+                        }
                         
 //                        AlertClass.showSimpleErrorMessage(viewController: viewController, messageType: "HTTPError", messageSubType: (error?.toString())!, completion: nil)
                     } else {
@@ -390,17 +413,23 @@ class BasketSingleton {
         if self.findSaleById(saleId: saleId) != nil {
             BasketRestAPIClass.removeSaleFormBasket(basketId: self._basketId!, saleId: saleId, completion: { (data, error) in
                 if error != HTTPErrorType.Success {
-                    NSOperationQueue.mainQueue().addOperationWithBlock({
-                        AlertClass.showTopMessage(viewController: viewController, messageType: "HTTPError", messageSubType: (error?.toString())!, type: "error", completion: nil)
-                    })
-                    
+                    if error == HTTPErrorType.Refresh {
+                        self.removeSaleById(viewController: viewController, saleId: saleId, completion: completion)
+                    } else {
+                        NSOperationQueue.mainQueue().addOperationWithBlock({
+                            AlertClass.showTopMessage(viewController: viewController, messageType: "HTTPError", messageSubType: (error?.toString())!, type: "error", completion: nil)
+                        })
+                    }
 //                    AlertClass.showSimpleErrorMessage(viewController: viewController, messageType: "HTTPError", messageSubType: (error?.toString())!, completion: nil)
                 } else {
                     if let localData = data {
                         if let status = localData["status"].string {
                             switch status {
                             case "OK":
-                                self.removeSaleById(saleId: saleId)
+                                synchronized(self._lock, criticalSection: { 
+                                    self.removeSaleById(saleId: saleId)
+                                })
+                                
                                 
                                 if let compl = completion {
                                     compl(count: self._sales.count)
@@ -456,9 +485,13 @@ class BasketSingleton {
     internal func checkout(viewController viewController: UIViewController, completion: ((count: Int, purchased: [Int: (Int, Int, NSDate)]?) -> ())?) {
             BasketRestAPIClass.checkoutBasket(basketId: self._basketId!, completion: { (data, error) in
                 if error != HTTPErrorType.Success {
-                    NSOperationQueue.mainQueue().addOperationWithBlock({
-                        AlertClass.showTopMessage(viewController: viewController, messageType: "HTTPError", messageSubType: (error?.toString())!, type: "error", completion: nil)
-                    })
+                    if error == HTTPErrorType.Refresh {
+                        self.checkout(viewController: viewController, completion: completion)
+                    } else {
+                        NSOperationQueue.mainQueue().addOperationWithBlock({
+                            AlertClass.showTopMessage(viewController: viewController, messageType: "HTTPError", messageSubType: (error?.toString())!, type: "error", completion: nil)
+                        })
+                    }
                     
 //                    AlertClass.showSimpleErrorMessage(viewController: viewController, messageType: "HTTPError", messageSubType: (error?.toString())!, completion: nil)
                 } else {
@@ -621,6 +654,7 @@ class BasketSingleton {
         
         if self._sales.count == 0 {
             self._basketId = nil
+            self._totalCost = 0
         }
     }
     
@@ -628,6 +662,7 @@ class BasketSingleton {
         synchronized(self._lock, criticalSection: {
             self._sales.removeAll()
             self._totalCost = 0
+            self._basketId = nil
         })
     }
     

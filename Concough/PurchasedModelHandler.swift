@@ -118,12 +118,12 @@ class PurchasedModelHandler {
     }
     
     class func getAllPurchased(username username: String) -> Results<PurchasedModel> {
-        let items = RealmSingleton.sharedInstance.DefaultRealm.objects(PurchasedModel.self).filter("username = '\(username)'")
+        let items = RealmSingleton.sharedInstance.DefaultRealm.objects(PurchasedModel.self).filter("username = '\(username)'").sorted("created", ascending: false)
         return items
     }
 
     class func getAllPurchasedNotIn(username username: String, ids: [Int]) -> Results<PurchasedModel> {
-        let items = RealmSingleton.sharedInstance.DefaultRealm.objects(PurchasedModel.self).filter("username = '\(username)' AND NOT id IN %@", ids)
+        let items = RealmSingleton.sharedInstance.DefaultRealm.objects(PurchasedModel.self).filter("username = '\(username)' AND NOT id IN %@", ids).sorted("created", ascending: false)
         return items
     }
 

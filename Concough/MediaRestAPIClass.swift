@@ -48,7 +48,7 @@ class MediaRestAPIClass {
                             case .ForbidenAccess:
                                 TokenHandlerSingleton.sharedInstance.assureAuthorized(true, completion: { (authenticated, err) in
                                     if authenticated && error == .Success {
-                                        completion(fullUrl: fullPath, data: nil, error: err)
+                                        completion(fullUrl: fullPath, data: nil, error: HTTPErrorType.Refresh)
                                     }
                                 }, failure: { (error) in
                                     failure(error: error)
@@ -104,7 +104,7 @@ class MediaRestAPIClass {
                             case .ForbidenAccess:
                                 TokenHandlerSingleton.sharedInstance.assureAuthorized(true, completion: { (authenticated, err) in
                                     if authenticated && error == .Success {
-                                        completion(fullUrl: fullPath, data: nil, error: err)
+                                        completion(fullUrl: fullPath, data: nil, error: HTTPErrorType.Refresh)
                                     }
                                     }, failure: { (error) in
                                         failure(error: error)

@@ -101,7 +101,7 @@ class StartupViewController: UIViewController {
             }, failure: { (error) in
                 self.containerView.hidden = false
                 NSOperationQueue.mainQueue().addOperationWithBlock {
-                    self.performSegueWithIdentifier("HomeVCSegue", sender: self)
+                    self.performSegueWithIdentifier("LogInVCSegue", sender: self)
                 }
 
 //                if let err = error {
@@ -157,6 +157,10 @@ class StartupViewController: UIViewController {
                                 })
                             } else {
                                 // profile not created --> try again
+                                NSOperationQueue.mainQueue().addOperationWithBlock({
+                                    self.performSegueWithIdentifier("", sender: self)
+                                })
+                                
                             }
                         case "Error":
                             if let errorType = localData["error_type"].string {

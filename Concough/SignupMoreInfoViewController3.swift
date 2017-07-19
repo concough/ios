@@ -114,9 +114,13 @@ class SignupMoreInfoViewController3: UIViewController, UINavigationControllerDel
                 AlertClass.hideLoaingMessage(progressHUD: self.loading)
             })
             if error != HTTPErrorType.Success {
-                NSOperationQueue.mainQueue().addOperationWithBlock({ 
-                    AlertClass.showTopMessage(viewController: self, messageType: "HTTPError", messageSubType: (error?.toString())!, type: "error", completion: nil)
-                })
+                if error == HTTPErrorType.Refresh {
+                    self.postProfile()
+                } else {
+                    NSOperationQueue.mainQueue().addOperationWithBlock({
+                        AlertClass.showTopMessage(viewController: self, messageType: "HTTPError", messageSubType: (error?.toString())!, type: "error", completion: nil)
+                    })
+                }
             } else {
                 if let localData = data {
                     if let status = localData["status"].string {

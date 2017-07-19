@@ -76,11 +76,14 @@ class ArchiveAdvanceTableViewCell: UITableViewCell {
                     MediaRequestRepositorySingleton.sharedInstance.remove(key: "\(self.localName):\(indexPath.section):\(indexPath.row):\(esetUrl)")
                     
                     if error != .Success {
-                        // print the error for now
-//                        self.entranceSetImageView?.image = UIImage()
-//                        self.setNeedsLayout()
-                        print("error in downloaing image from \(fullPath!)")
-                        
+                        if error == HTTPErrorType.Refresh {
+                            self.downloadImage(esetId: esetId, indexPath: indexPath)
+                        } else {
+                            // print the error for now
+                            //                        self.entranceSetImageView?.image = UIImage()
+                            //                        self.setNeedsLayout()
+                            print("error in downloaing image from \(fullPath!)")
+                        }
                     } else {
                         if let myData = data {
                             MediaCacheSingleton.sharedInstance[fullPath!] = myData

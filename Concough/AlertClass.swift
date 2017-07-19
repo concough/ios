@@ -82,7 +82,7 @@ class AlertClass {
                 message = "گذرواژه شما با موفقیت تغییر یافت"
             case "FreeMemorySuccess":
                 title = "پیغام"
-                message = "داده هاس شما با موفقیت پاک گردید"
+                message = "داده های شما با موفقیت پاک گردید"
             default:
                 showMessage = false
             }
@@ -132,7 +132,7 @@ class AlertClass {
             switch messageSubType {
             case "ExistUsername":
                 title = "خطا"
-                message = "این نام کاربری قبلا انتخاب شده است"
+                message = "این شماره همراه قبلا انتخاب شده است"
             case "UserNotExist":
                 title = "خطا"
                 message = "لطفا ابتدا ثبت نام کنید"

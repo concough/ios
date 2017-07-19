@@ -224,7 +224,14 @@ class ArchiveTableViewController: UITableViewController, EHHorizontalSelectionVi
             })
             
             if error != HTTPErrorType.Success {
-                AlertClass.showTopMessage(viewController: self, messageType: "HTTPError", messageSubType: (error?.toString())!, type: "error", completion: nil)
+                if error == HTTPErrorType.Refresh {
+                    let operation = NSBlockOperation(block: {
+                        self.getEntranceTypes()
+                    })
+                    self.queue.addOperation(operation)
+                } else {
+                    AlertClass.showTopMessage(viewController: self, messageType: "HTTPError", messageSubType: (error?.toString())!, type: "error", completion: nil)
+                }
             } else {
                 if let localData = data {
                     if let status = localData["status"].string {
@@ -333,7 +340,14 @@ class ArchiveTableViewController: UITableViewController, EHHorizontalSelectionVi
             })
             
             if error != HTTPErrorType.Success {
-                AlertClass.showTopMessage(viewController: self, messageType: "HTTPError", messageSubType: (error?.toString())!, type: "error", completion: nil)
+                if error == HTTPErrorType.Refresh {
+                    let operation = NSBlockOperation(block: {
+                        self.getEntranceGroups(entranceTypeId: etypeId)
+                    })
+                    self.queue.addOperation(operation)
+                } else {
+                    AlertClass.showTopMessage(viewController: self, messageType: "HTTPError", messageSubType: (error?.toString())!, type: "error", completion: nil)
+                }
             } else {
                 if let localData = data {
                     if let status = localData["status"].string {
@@ -449,7 +463,14 @@ class ArchiveTableViewController: UITableViewController, EHHorizontalSelectionVi
             })
             
             if error != HTTPErrorType.Success {
-                AlertClass.showTopMessage(viewController: self, messageType: "HTTPError", messageSubType: (error?.toString())!, type: "error", completion: nil)
+                if error == HTTPErrorType.Refresh {
+                    let operation = NSBlockOperation(block: {
+                        self.getEntranceSets(entranceGroupId: groupId)
+                    })
+                    self.queue.addOperation(operation)
+                } else {
+                    AlertClass.showTopMessage(viewController: self, messageType: "HTTPError", messageSubType: (error?.toString())!, type: "error", completion: nil)
+                }
             } else {
                 if let localData = data {
                     if let status = localData["status"].string {

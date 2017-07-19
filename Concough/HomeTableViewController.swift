@@ -247,6 +247,12 @@ class HomeTableViewController: UITableViewController, DZNEmptyDataSetDelegate, D
                         self.moreFeedExist = false
                         
                     }
+                case .Refresh:
+                    let operation = NSBlockOperation() {
+                        self.loadFeeds(next: next)
+                    }
+                    self.queue.addOperation(operation)
+                    
                 default:
                     print("HomeTableViewController --> loadFeeds: error = \(err)")
                 }

@@ -95,7 +95,6 @@ class ArchiveDetailTableViewController: UITableViewController, DZNEmptyDataSetSo
         let operation = NSBlockOperation() {
             self.getEntrances()
         }
-        
         queue.addOperation(operation)
     }
     
@@ -114,7 +113,14 @@ class ArchiveDetailTableViewController: UITableViewController, DZNEmptyDataSetSo
                 }
 
                 if error != HTTPErrorType.Success {
-                    AlertClass.showTopMessage(viewController: self, messageType: "HTTPError", messageSubType: (error?.toString())!, type: "error", completion: nil)
+                    if error == HTTPErrorType.Refresh {
+                        let operation = NSBlockOperation() {
+                            self.getEntrances()
+                        }
+                        self.queue.addOperation(operation)
+                    } else {
+                        AlertClass.showTopMessage(viewController: self, messageType: "HTTPError", messageSubType: (error?.toString())!, type: "error", completion: nil)
+                    }
                 } else {
                     if let localData = data {
                         if let status = localData["status"].string {

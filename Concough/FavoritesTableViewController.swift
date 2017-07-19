@@ -187,7 +187,11 @@ class FavoritesTableViewController: UITableViewController {
             }
             
             if error != HTTPErrorType.Success {
-                AlertClass.showTopMessage(viewController: self, messageType: "HTTPError", messageSubType: (error?.toString())!, type: "error", completion: nil)
+                if error == HTTPErrorType.Refresh {
+                    self.syncWithServer()
+                } else {
+                    AlertClass.showTopMessage(viewController: self, messageType: "HTTPError", messageSubType: (error?.toString())!, type: "error", completion: nil)
+                }
             } else {
                 if let localData = data {
                     if let status = localData["status"].string {
@@ -408,7 +412,11 @@ class FavoritesTableViewController: UITableViewController {
             })
             
             if error != HTTPErrorType.Success {
-                AlertClass.showTopMessage(viewController: self, messageType: "HTTPError", messageSubType: (error?.toString())!, type: "error", completion: nil)
+                if error == HTTPErrorType.Refresh {
+                    self.updateUserPurchaseData(productId: productId, productType: productType)
+                } else {
+                    AlertClass.showTopMessage(viewController: self, messageType: "HTTPError", messageSubType: (error?.toString())!, type: "error", completion: nil)
+                }
             } else {
                 if let localData = data {
                     if let status = localData["status"].string {

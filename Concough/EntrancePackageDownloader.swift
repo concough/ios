@@ -124,6 +124,9 @@ class EntrancePackageDownloader {
         MediaRestAPIClass.downloadEntranceQuestionImage(manager: self.backgroundManager, uniqueId: self.entranceUniqueId, imageId: imageId, completion: { (fullUrl, data, error) in
             if error != .Success {
                 // print the error for now
+                if error == HTTPErrorType.Refresh {
+                    self.downloadOneImage(saveDirectory: saveDirectory, imageId: imageId, questionId: questionId)
+                }
                 print("error in downloaing image from \(fullUrl!)")
                 
             } else {
@@ -224,7 +227,11 @@ class EntrancePackageDownloader {
     internal func downloadInitialData(queue: NSOperationQueue, completion: (result: Bool, indexPath: NSIndexPath?) -> ()) {
         EntranceRestAPIClass.getEntrancePackageDataInit(uniqueId: self.entranceUniqueId, completion: { (data, error) in
             if error != HTTPErrorType.Success {
-                AlertClass.showTopMessage(viewController: self.viewController, messageType: "HTTPError", messageSubType: (error?.toString())!, type: "error", completion: nil)
+                if error == HTTPErrorType.Refresh {
+                    self.downloadInitialData(queue, completion: completion)
+                } else {
+                    AlertClass.showTopMessage(viewController: self.viewController, messageType: "HTTPError", messageSubType: (error?.toString())!, type: "error", completion: nil)
+                }
             } else {
                 if let localData = data {
                     if let status = localData["status"].string {

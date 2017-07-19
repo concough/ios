@@ -147,7 +147,7 @@ class SignUpViewController: UIViewController, UITextFieldDelegate {
                             if let errorType = localData["error_type"].string {
                                 switch errorType {
                                     case "ExistUsername":
-                                        self.usernameMsgLabel.text = "این نام کاربری قبلا انتخاب شده است"
+                                        self.usernameMsgLabel.text = "این شماره همراه قبلا انتخاب شده است"
                                         self.usernameMsgLabel.textColor = UIColor(netHex: RED_COLOR_HEX, alpha: 1.0)
                                         AlertClass.showSimpleErrorMessage(viewController: self, messageType: "AuthProfile", messageSubType: errorType, completion: nil)
                                     default:
@@ -201,15 +201,16 @@ class SignUpViewController: UIViewController, UITextFieldDelegate {
                         case "OK":
                             //print("Signup OK received")
                             self.isUsernameValid = true
-                            self.usernameMsgLabel.text = "نام کاربری انتخاب شده صحیح است"
+                            self.usernameMsgLabel.text = "شماره همراه وارد شده آزاد است"
                             self.usernameMsgLabel.textColor = UIColor(netHex: GREEN_COLOR_HEX, alpha: 1.0)
                             
                         case "Error":
+                            self.isUsernameValid = false
                             if let errorType = localData["error_type"].string {
                                 switch errorType {
                                 case "ExistUsername":
                                     self.usernameMsgRefreshControl.stopAnimating()
-                                    self.usernameMsgLabel.text = "این نام کاربری قبلا انتخاب شده است"
+                                    self.usernameMsgLabel.text = "این شماره همراه قبلا انتخاب شده است"
                                     self.usernameMsgLabel.textColor = UIColor(netHex: RED_COLOR_HEX, alpha: 1.0)
                                     
                                 default:

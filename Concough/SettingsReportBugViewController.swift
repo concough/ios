@@ -61,9 +61,13 @@ class SettingsReportBugViewController: UIViewController {
             
             if error != HTTPErrorType.Success {
                 // sometimes happened
-                NSOperationQueue.mainQueue().addOperationWithBlock({
-                    AlertClass.showTopMessage(viewController: self, messageType: "HTTPError", messageSubType: (error?.toString())!, type: "error", completion: nil)
-                })
+                if error == HTTPErrorType.Refresh {
+                    self.reportBug(text: text)
+                } else {
+                    NSOperationQueue.mainQueue().addOperationWithBlock({
+                        AlertClass.showTopMessage(viewController: self, messageType: "HTTPError", messageSubType: (error?.toString())!, type: "error", completion: nil)
+                    })
+                }
             } else {
                 if let localData = data {
                     if let status = localData["status"].string {

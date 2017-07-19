@@ -164,9 +164,13 @@ class SettingsTableViewController: UITableViewController, ContactsProtocol {
         SettingsRestAPIClass.inviteFriends(emails: emails, completion: { (data, error) in
             if error != HTTPErrorType.Success {
                 // sometimes happened
-                NSOperationQueue.mainQueue().addOperationWithBlock({
-                    AlertClass.showTopMessage(viewController: self, messageType: "HTTPError", messageSubType: (error?.toString())!, type: "error", completion: nil)
-                })
+                if error == HTTPErrorType.Refresh {
+                    self.contactsSelected(list: list)
+                } else {
+                    NSOperationQueue.mainQueue().addOperationWithBlock({
+                        AlertClass.showTopMessage(viewController: self, messageType: "HTTPError", messageSubType: (error?.toString())!, type: "error", completion: nil)
+                    })
+                }
             } else {
                 if let localData = data {
                     if let status = localData["status"].string {
@@ -252,9 +256,13 @@ class SettingsTableViewController: UITableViewController, ContactsProtocol {
             })
             
             if error != HTTPErrorType.Success {
-                NSOperationQueue.mainQueue().addOperationWithBlock({
-                    AlertClass.showTopMessage(viewController: self, messageType: "HTTPError", messageSubType: (error?.toString())!, type: "error", completion: nil)
-                })
+                if error == HTTPErrorType.Refresh {
+                    self.changeGrade(title: title)
+                } else {
+                    NSOperationQueue.mainQueue().addOperationWithBlock({
+                        AlertClass.showTopMessage(viewController: self, messageType: "HTTPError", messageSubType: (error?.toString())!, type: "error", completion: nil)
+                    })
+                }
             } else {
                 if let localData = data {
                     print(localData)

@@ -135,9 +135,13 @@ class ForgotPasswordViewController: UIViewController, UITextFieldDelegate {
             })
             
             if error != HTTPErrorType.Success {
-                NSOperationQueue.mainQueue().addOperationWithBlock({
-                    AlertClass.showTopMessage(viewController: self, messageType: "HTTPError", messageSubType: (error?.toString())!, type: "error", completion: nil)
-                })
+                if error == HTTPErrorType.Refresh {
+                    self.forgotPassword(username: username)
+                } else {
+                    NSOperationQueue.mainQueue().addOperationWithBlock({
+                        AlertClass.showTopMessage(viewController: self, messageType: "HTTPError", messageSubType: (error?.toString())!, type: "error", completion: nil)
+                    })
+                }
             } else {
                 if let localData = data {
                     if let status = localData["status"].string {

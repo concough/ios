@@ -15,6 +15,7 @@ enum HTTPErrorType: Int, ErrorType {
     case ForbidenAccess = 403
     case NotFound = 404
     case ServerInternalError = 500
+    case Refresh = 1000
     case UnKnown = 0
     
     static func toType(item: Int) -> HTTPErrorType {
@@ -31,6 +32,8 @@ enum HTTPErrorType: Int, ErrorType {
             return .NotFound
         case 500:
             return .ServerInternalError
+        case 1000:
+            return .Refresh
         default:
             return .UnKnown
         }
@@ -50,6 +53,8 @@ enum HTTPErrorType: Int, ErrorType {
             return "ServerInternalError"
         case .UnAuthorized:
             return "UnAuthorized"
+        case .Refresh:
+            return "Refresh"
         case .UnKnown:
             return "UnKnown"
         }

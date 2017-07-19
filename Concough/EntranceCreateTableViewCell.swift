@@ -76,6 +76,10 @@ class EntranceCreateTableViewCell: UITableViewCell {
         
         let imageID = target["entrance_set"]["id"].intValue
         
+        self.downloadEsetImage(imageID, indexPath: indexPath)
+    }
+    
+    private func downloadEsetImage(imageID: Int, indexPath: NSIndexPath) {
         if let esetUrl = MediaRestAPIClass.makeEsetImageUri(imageID) {
             MediaRequestRepositorySingleton.sharedInstance.cancel(key: "\(self.localName):\(indexPath.section):\(indexPath.row):\(esetUrl)")
             
@@ -95,6 +99,9 @@ class EntranceCreateTableViewCell: UITableViewCell {
                     
                     if error != .Success {
                         // print the error for now
+                        if error == HTTPErrorType.Refresh {
+                            self.downloadEsetImage(imageID, indexPath: indexPath)
+                        }
                         print("error in downloaing image from \(fullPath!)")
                         
                     } else {
@@ -108,18 +115,18 @@ class EntranceCreateTableViewCell: UITableViewCell {
                             }
                         }
                     }
-                }, failure: { (error) in
-                    if let err = error {
-                        switch err {
-                        case .NoInternetAccess:
-                            break
-                        default:
-                            break
+                    }, failure: { (error) in
+                        if let err = error {
+                            switch err {
+                            case .NoInternetAccess:
+                                break
+                            default:
+                                break
+                            }
                         }
-                    }
                 })
             }
         }
-        
+   
     }
 }

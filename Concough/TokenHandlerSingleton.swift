@@ -264,20 +264,33 @@ class TokenHandlerSingleton {
                     if error == .Success {
                         completion(authenticated: true, error: error)
                     } else {
-//                        if error == .BadRequest || error == .UnAuthorized {
+                        if error == .BadRequest || error == .ServerInternalError {
                             self.authorize({ (error) in
                                 if error == .Success {
                                     completion(authenticated: true, error: error)
                                 } else {
-                                    if error == .BadRequest {
-                                        KeyChainAccessProxy.clearAllValue()
-                                        UserDefaultsSingleton.sharedInstance.clearAll()
-                                    }
                                     completion(authenticated: false, error: error)
                                 }
-                            }, failure: { (error) in
-                                failure(error: error)
+                                }, failure: { (error) in
+                                    failure(error: error)
                             })
+                        }
+                        completion(authenticated: false, error: error)
+                        
+//                        if error == .BadRequest || error == .UnAuthorized {
+//                            self.authorize({ (error) in
+//                                if error == .Success {
+//                                    completion(authenticated: true, error: error)
+//                                } else {
+//                                    if error == .BadRequest {
+//                                        KeyChainAccessProxy.clearAllValue()
+//                                        UserDefaultsSingleton.sharedInstance.clearAll()
+//                                    }
+//                                    completion(authenticated: false, error: error)
+//                                }
+//                            }, failure: { (error) in
+//                                failure(error: error)
+//                            })
 //                        }
 //                        completion(authenticated: false, error: error)
                     }
@@ -293,20 +306,32 @@ class TokenHandlerSingleton {
                             if error == .Success {
                                 completion(authenticated: true, error: error)
                             } else {
-//                                if error == .BadRequest {
+                                if error == .BadRequest || error == .ServerInternalError {
                                     self.authorize({ (error) in
                                         if error == .Success {
                                             completion(authenticated: true, error: error)
                                         } else {
-                                            if error == .BadRequest {
-                                                KeyChainAccessProxy.clearAllValue()
-                                                UserDefaultsSingleton.sharedInstance.clearAll()
-                                            }
                                             completion(authenticated: false, error: error)
                                         }
-                                    }, failure: { (error) in
+                                        }, failure: { (error) in
                                             failure(error: error)
                                     })
+                                }
+                                completion(authenticated: false, error: error)
+//                                if error == .BadRequest {
+//                                    self.authorize({ (error) in
+//                                        if error == .Success {
+//                                            completion(authenticated: true, error: error)
+//                                        } else {
+//                                            if error == .BadRequest {
+//                                                KeyChainAccessProxy.clearAllValue()
+//                                                UserDefaultsSingleton.sharedInstance.clearAll()
+//                                            }
+//                                            completion(authenticated: false, error: error)
+//                                        }
+//                                    }, failure: { (error) in
+//                                            failure(error: error)
+//                                    })
 //                                }
 //                                completion(authenticated: false, error: error)
                             }

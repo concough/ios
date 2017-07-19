@@ -152,9 +152,13 @@ class LoginViewController: UIViewController, UITextFieldDelegate {
             
             if error != HTTPErrorType.Success {
                 // sometimes happened
-                NSOperationQueue.mainQueue().addOperationWithBlock({
-                    AlertClass.showTopMessage(viewController: self, messageType: "HTTPError", messageSubType: (error?.toString())!, type: "error", completion: nil)
-                })
+                if error == HTTPErrorType.Refresh {
+                    self.getProfile()
+                } else {
+                    NSOperationQueue.mainQueue().addOperationWithBlock({
+                        AlertClass.showTopMessage(viewController: self, messageType: "HTTPError", messageSubType: (error?.toString())!, type: "error", completion: nil)
+                    })
+                }
             } else {
                 if let localData = data {
                     if let status = localData["status"].string {

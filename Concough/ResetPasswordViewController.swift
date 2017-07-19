@@ -232,9 +232,13 @@ class ResetPasswordViewController: UIViewController, UITextFieldDelegate {
     private func getProfile() {
         ProfileRestAPIClass.getProfileData({ (data, error) in
             if error != HTTPErrorType.Success {
-                NSOperationQueue.mainQueue().addOperationWithBlock({
-                    self.performSegueWithIdentifier("LogInVCSegue", sender: self)
-                })
+                if error == HTTPErrorType.Refresh {
+                    self.getProfile()
+                } else {
+                    NSOperationQueue.mainQueue().addOperationWithBlock({
+                        self.performSegueWithIdentifier("LogInVCSegue", sender: self)
+                    })
+                }
             } else {
                 if let localData = data {
                     if let status = localData["status"].string {

@@ -52,10 +52,13 @@ class EDInitialSectionTableViewCell: UITableViewCell {
                     
                     if error != .Success {
                         // print the error for now
-                        self.entranceImageView?.image = UIImage()
-                        self.setNeedsLayout()
-                        print("error in downloaing image from \(fullPath!)")
-                        
+                        if error == HTTPErrorType.Refresh {
+                            self.downloadImage(esetId: esetId, indexPath: indexPath)
+                        } else {
+                            self.entranceImageView?.image = UIImage()
+                            self.setNeedsLayout()
+                            print("error in downloaing image from \(fullPath!)")                            
+                        }
                     } else {
                         if let myData = data {
                             MediaCacheSingleton.sharedInstance[fullPath!] = myData

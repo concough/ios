@@ -43,7 +43,7 @@ class BasketRestAPIClass {
                         case .ForbidenAccess:
                             TokenHandlerSingleton.sharedInstance.assureAuthorized(true, completion: { (authenticated, error) in
                                 if authenticated && error == .Success {
-                                    completion(data: nil, error: error)
+                                    completion(data: nil, error: HTTPErrorType.Refresh)
                                 }
                                 }, failure: { (error) in
                                     failure(error: error)
@@ -96,7 +96,7 @@ class BasketRestAPIClass {
                         case .ForbidenAccess:
                             TokenHandlerSingleton.sharedInstance.assureAuthorized(true, completion: { (authenticated, error) in
                                 if authenticated && error == .Success {
-                                    completion(data: nil, error: error)
+                                    completion(data: nil, error: HTTPErrorType.Refresh)
                                 }
                                 }, failure: { (error) in
                                     failure(error: error)
@@ -147,7 +147,7 @@ class BasketRestAPIClass {
                         case .ForbidenAccess:
                             TokenHandlerSingleton.sharedInstance.assureAuthorized(true, completion: { (authenticated, error) in
                                 if authenticated && error == .Success {
-                                    completion(data: nil, error: error)
+                                    completion(data: nil, error: HTTPErrorType.Refresh)
                                 }
                                 }, failure: { (error) in
                                     failure(error: error)
@@ -198,7 +198,7 @@ class BasketRestAPIClass {
                         case .ForbidenAccess:
                             TokenHandlerSingleton.sharedInstance.assureAuthorized(true, completion: { (authenticated, error) in
                                 if authenticated && error == .Success {
-                                    completion(data: nil, error: error)
+                                    completion(data: nil, error: HTTPErrorType.Refresh)
                                 }
                                 }, failure: { (error) in
                                     failure(error: error)
@@ -249,7 +249,7 @@ class BasketRestAPIClass {
                         case .ForbidenAccess:
                             TokenHandlerSingleton.sharedInstance.assureAuthorized(true, completion: { (authenticated, error) in
                                 if authenticated && error == .Success {
-                                    completion(data: nil, error: error)
+                                    completion(data: nil, error: HTTPErrorType.Refresh)
                                 }
                             }, failure: { (error) in
                                 failure(error: error)
