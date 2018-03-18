@@ -16,5 +16,7 @@ struct ArchiveEntranceStructure {
     var buyCount: Int?
     var lastPablished: NSDate?
     var uniqueId: String?
+    var bookletCount: Int?
+    var entranceDuration: Int?
 }
 

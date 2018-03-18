@@ -31,23 +31,27 @@ class EntranceDetailTableViewController: UITableViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
-
-        if self.refreshControl == nil {
-            self.refreshControl = UIRefreshControl()
-            self.refreshControl?.attributedTitle = NSAttributedString(string: "برای به روز رسانی به پایین بکشید", attributes: [NSFontAttributeName: UIFont(name: "IRANYekanMobile-Light", size: 12)!])
-        }
-        self.refreshControl?.addTarget(self, action: #selector(self.refreshTableView(_:)), forControlEvents: .ValueChanged)
         
-        self.title = "کنکور"
+        
+        self.title = "آزمون"
         self.queue = NSOperationQueue()
     }
 
     override func viewWillAppear(animated: Bool) {
+        if self.refreshControl == nil {
+            self.refreshControl = UIRefreshControl()
+            self.refreshControl?.attributedTitle = NSAttributedString(string: "برای به روز رسانی به پایین بکشید", attributes: [NSFontAttributeName: UIFont(name: "IRANSansMobile-UltraLight", size: 12)!])
+        }
+        self.refreshControl?.addTarget(self, action: #selector(self.refreshTableView(_:)), forControlEvents: .ValueChanged)
+        self.refreshControl?.endRefreshing()
+
         self.resetView()
     }
 
     override func viewDidAppear(animated: Bool) {
         self.updateBasketBadge(count: BasketSingleton.sharedInstance.SalesCount)
+
+
     }
     
     override func didReceiveMemoryWarning() {
@@ -56,6 +60,7 @@ class EntranceDetailTableViewController: UITableViewController {
     }
 
     func refreshTableView(refreshControl_: UIRefreshControl) {
+//        self.refreshControl?.endRefreshing()
         self.resetView()
     }
     
@@ -83,16 +88,20 @@ class EntranceDetailTableViewController: UITableViewController {
             b.addTarget(self, action: #selector(self.basketButtonPressed(_:)), forControlEvents: .TouchUpInside)
             
             self.rightBarButtonItem = BBBadgeBarButtonItem(customUIButton: b)
-            self.rightBarButtonItem.badgeValue = "0"
+            self.rightBarButtonItem.badgeValue = FormatterSingleton.sharedInstance.NumberFormatter.stringFromNumber(0)
             self.rightBarButtonItem.badgeBGColor = UIColor(netHex: RED_COLOR_HEX_2, alpha: 0.8)
             self.rightBarButtonItem.badgeTextColor = UIColor.whiteColor()
-            self.rightBarButtonItem.badgeFont = UIFont(name: "IRANYekanMobile-Bold", size: 12)
+            self.rightBarButtonItem.badgeFont = UIFont(name: "IRANSansMobile-Medium", size: 12)
             self.rightBarButtonItem.shouldHideBadgeAtZero = true
             self.rightBarButtonItem.shouldAnimateBadge = true
             self.rightBarButtonItem.badgeOriginX = 15.0
             self.rightBarButtonItem.badgeOriginY = -5.0
+            self.rightBarButtonItem.badgePadding = 2.0
             
             self.navigationItem.rightBarButtonItem = self.rightBarButtonItem
+        } else {
+            self.rightBarButtonItem = nil
+            self.navigationItem.rightBarButtonItem = nil
         }
     }
     
@@ -215,15 +224,15 @@ class EntranceDetailTableViewController: UITableViewController {
     }
     
     private func downloadEntrance() {
-        NSOperationQueue.mainQueue().addOperationWithBlock { 
-            self.loading = AlertClass.showLoadingMessage(viewController: self)
-        }
+//        NSOperationQueue.mainQueue().addOperationWithBlock { 
+//            self.loading = AlertClass.showLoadingMessage(viewController: self)
+//        }
         
         EntranceRestAPIClass.getEntranceWithBuyInfo(uniqueId: self.entranceUniqueId, completion: { (data, error) in
             
             NSOperationQueue.mainQueue().addOperationWithBlock({
                 self.refreshControl?.endRefreshing()
-                AlertClass.hideLoaingMessage(progressHUD: self.loading)
+//                AlertClass.hideLoaingMessage(progressHUD: self.loading)
             })
             
             if error != HTTPErrorType.Success {
@@ -307,7 +316,7 @@ class EntranceDetailTableViewController: UITableViewController {
         }, failure: { (error) in
             NSOperationQueue.mainQueue().addOperationWithBlock({
                 self.refreshControl?.endRefreshing()
-                AlertClass.hideLoaingMessage(progressHUD: self.loading)
+//                AlertClass.hideLoaingMessage(progressHUD: self.loading)
             })
             
             if let err = error {
@@ -344,7 +353,9 @@ class EntranceDetailTableViewController: UITableViewController {
         
         PurchasedRestAPIClass.getEntrancePurchasedData(uniqueId: self.entranceUniqueId, completion: { (data, error) in
             NSOperationQueue.mainQueue().addOperationWithBlock({ 
+                self.refreshControl?.endRefreshing()
                 AlertClass.hideLoaingMessage(progressHUD: self.loading)
+                
             })
             
             if error != HTTPErrorType.Success {
@@ -466,14 +477,14 @@ class EntranceDetailTableViewController: UITableViewController {
     }
 
     private func refreshUserPurchaseData() {
-        NSOperationQueue.mainQueue().addOperationWithBlock { 
-            self.loading = AlertClass.showLoadingMessage(viewController: self)
-        }
+//        NSOperationQueue.mainQueue().addOperationWithBlock { 
+//            self.loading = AlertClass.showLoadingMessage(viewController: self)
+//        }
         
         PurchasedRestAPIClass.getEntrancePurchasedData(uniqueId: self.entranceUniqueId, completion: { (data, error) in
-            NSOperationQueue.mainQueue().addOperationWithBlock({ 
-                AlertClass.hideLoaingMessage(progressHUD: self.loading)
-            })
+//            NSOperationQueue.mainQueue().addOperationWithBlock({ 
+//                AlertClass.hideLoaingMessage(progressHUD: self.loading)
+//            })
             
             if error != HTTPErrorType.Success {
                 if error == HTTPErrorType.Refresh {
@@ -533,9 +544,9 @@ class EntranceDetailTableViewController: UITableViewController {
                 }
             }
             }, failure: { (error) in
-                NSOperationQueue.mainQueue().addOperationWithBlock({
-                    AlertClass.hideLoaingMessage(progressHUD: self.loading)
-                })
+//                NSOperationQueue.mainQueue().addOperationWithBlock({
+//                    AlertClass.hideLoaingMessage(progressHUD: self.loading)
+//                })
                 
                 if let err = error {
                     switch err {
@@ -564,14 +575,14 @@ class EntranceDetailTableViewController: UITableViewController {
     }
     
     private func updateUserPurchaseData() {
-        NSOperationQueue.mainQueue().addOperationWithBlock { 
-            self.loading = AlertClass.showUpdatingMessage(viewController: self)
-        }
+//        NSOperationQueue.mainQueue().addOperationWithBlock { 
+//            self.loading = AlertClass.showUpdatingMessage(viewController: self)
+//        }
         
         PurchasedRestAPIClass.putEntrancePurchasedDownload(uniqueId: self.entranceUniqueId, completion: { (data, error) in
-            NSOperationQueue.mainQueue().addOperationWithBlock({ 
-                AlertClass.hideLoaingMessage(progressHUD: self.loading)
-            })
+//            NSOperationQueue.mainQueue().addOperationWithBlock({ 
+//                AlertClass.hideLoaingMessage(progressHUD: self.loading)
+//            })
             
             if error != HTTPErrorType.Success {
                 if error == HTTPErrorType.Refresh {
@@ -633,9 +644,9 @@ class EntranceDetailTableViewController: UITableViewController {
                 }
             }
             }, failure: { (error) in
-                NSOperationQueue.mainQueue().addOperationWithBlock({
-                    AlertClass.hideLoaingMessage(progressHUD: self.loading)
-                })
+//                NSOperationQueue.mainQueue().addOperationWithBlock({
+//                    AlertClass.hideLoaingMessage(progressHUD: self.loading)
+//                })
                 
                 if let err = error {
                     switch err {
@@ -664,14 +675,14 @@ class EntranceDetailTableViewController: UITableViewController {
     }
     
     private func downloadEntranceStat() {
-        NSOperationQueue.mainQueue().addOperationWithBlock { 
-            self.loading = AlertClass.showLoadingMessage(viewController: self)
-        }
+//        NSOperationQueue.mainQueue().addOperationWithBlock { 
+//            self.loading = AlertClass.showLoadingMessage(viewController: self)
+//        }
         
         ProductRestAPIClass.getEntranceStatData(uniqueId: self.entranceUniqueId, completion: { (data, error) in
-            NSOperationQueue.mainQueue().addOperationWithBlock({ 
-                AlertClass.hideLoaingMessage(progressHUD: self.loading)
-            })
+//            NSOperationQueue.mainQueue().addOperationWithBlock({ 
+//                AlertClass.hideLoaingMessage(progressHUD: self.loading)
+//            })
             
             if error != HTTPErrorType.Success {
                 if error == HTTPErrorType.Refresh {
@@ -741,9 +752,9 @@ class EntranceDetailTableViewController: UITableViewController {
             }
             
         }) { (error) in
-            NSOperationQueue.mainQueue().addOperationWithBlock({
-                AlertClass.hideLoaingMessage(progressHUD: self.loading)
-            })
+//            NSOperationQueue.mainQueue().addOperationWithBlock({
+//                AlertClass.hideLoaingMessage(progressHUD: self.loading)
+//            })
             
             if let err = error {
                 switch err {
@@ -772,13 +783,15 @@ class EntranceDetailTableViewController: UITableViewController {
     }
     
     private func downloadEntranceSale() {
-        NSOperationQueue.mainQueue().addOperationWithBlock { 
-            self.loading = AlertClass.showLoadingMessage(viewController: self)
-        }
+//        NSOperationQueue.mainQueue().addOperationWithBlock { 
+//            self.loading = AlertClass.showLoadingMessage(viewController: self)
+//        }
         
         ProductRestAPIClass.getEntranceSaleData(uniqueId: self.entranceUniqueId, completion: { (data, error) in
             NSOperationQueue.mainQueue().addOperationWithBlock({ 
+                self.refreshControl?.endRefreshing()
                 AlertClass.hideLoaingMessage(progressHUD: self.loading)
+                
             })
             
             if error != HTTPErrorType.Success {
@@ -844,6 +857,7 @@ class EntranceDetailTableViewController: UITableViewController {
             
         }) { (error) in
             NSOperationQueue.mainQueue().addOperationWithBlock({
+                self.refreshControl?.endRefreshing()
                 AlertClass.hideLoaingMessage(progressHUD: self.loading)
             })
             
@@ -909,6 +923,15 @@ class EntranceDetailTableViewController: UITableViewController {
             self.state! = EntranceVCStateEnum.Downloaded
             self.stateMachine()
             return
+        } else {
+            DownloaderSingleton.sharedInstance.removeDownloader(uniqueId: self.entranceUniqueId)
+
+            AlertClass.showTopMessage(viewController: self, messageType: "ActionResult", messageSubType: "DownloadFailed", type: "error", completion: nil)
+            
+            self.state! = EntranceVCStateEnum.Purchased
+            self.stateMachine()
+            return
+
         }
         
     }
@@ -923,8 +946,14 @@ class EntranceDetailTableViewController: UITableViewController {
         }
     }
     
+    
+    
     // MARK: - Actions
     @IBAction func buyButtonPressed(sender: UIButton) {
+        if let cell = self.tableView.cellForRowAtIndexPath(NSIndexPath(forRow: 0, inSection: 1)) as? EDSaleSectionTableViewCell {
+            cell.disableBuyButton()
+        }
+        
         if BasketSingleton.sharedInstance.BasketId == nil {
             BasketSingleton.sharedInstance.createBasket(viewController: self, completion: { 
                 if let id = BasketSingleton.sharedInstance.findSaleByTargetId(targetId: self.entranceUniqueId, type: "Entrance") {
@@ -936,6 +965,10 @@ class EntranceDetailTableViewController: UITableViewController {
                         NSOperationQueue.mainQueue().addOperationWithBlock {
                             self.tableView.reloadData()
                         }
+                        }, failure: {
+                            if let cell = self.tableView.cellForRowAtIndexPath(NSIndexPath(forRow: 0, inSection: 1)) as? EDSaleSectionTableViewCell {
+                                cell.changeButtonState(state: self.selfBasketAdd)
+                            }
                     })
                 } else {
                     BasketSingleton.sharedInstance.addSale(viewController: self, target: self.entrance! as Any, type: "Entrance", completion: { (count) in
@@ -945,31 +978,46 @@ class EntranceDetailTableViewController: UITableViewController {
                         NSOperationQueue.mainQueue().addOperationWithBlock {
                             self.tableView.reloadData()
                         }
+                        }, failure: {
+                            if let cell = self.tableView.cellForRowAtIndexPath(NSIndexPath(forRow: 0, inSection: 1)) as? EDSaleSectionTableViewCell {
+                                cell.changeButtonState(state: self.selfBasketAdd)
+                            }
                     })
                 }
                 
+                }, failure: {
+                    if let cell = self.tableView.cellForRowAtIndexPath(NSIndexPath(forRow: 0, inSection: 1)) as? EDSaleSectionTableViewCell {
+                        cell.changeButtonState(state: self.selfBasketAdd)
+                    }
             })
         } else {
             if let id = BasketSingleton.sharedInstance.findSaleByTargetId(targetId: self.entranceUniqueId, type: "Entrance") {
                 // sale object exist --> remove it
                 BasketSingleton.sharedInstance.removeSaleById(viewController: self, saleId: id, completion: { (count) in
-                    print ("sale count: \(count)")
                     self.selfBasketAdd = !self.selfBasketAdd
                     self.updateBasketBadge(count: count)
                     
                     NSOperationQueue.mainQueue().addOperationWithBlock {
                         self.tableView.reloadData()
                     }
+                    }, failure: {
+                        if let cell = self.tableView.cellForRowAtIndexPath(NSIndexPath(forRow: 0, inSection: 1)) as? EDSaleSectionTableViewCell {
+                            cell.changeButtonState(state: self.selfBasketAdd)
+                        }
                 })
             } else {
                 BasketSingleton.sharedInstance.addSale(viewController: self, target: self.entrance! as Any, type: "Entrance", completion: { (count) in
-                    print("sales count: \(count)")
                     self.selfBasketAdd = !self.selfBasketAdd
                     self.updateBasketBadge(count: count)
                     
                     NSOperationQueue.mainQueue().addOperationWithBlock {
                         self.tableView.reloadData()
                     }
+                    }, failure: {
+                        if let cell = self.tableView.cellForRowAtIndexPath(NSIndexPath(forRow: 0, inSection: 1)) as? EDSaleSectionTableViewCell {
+                            cell.changeButtonState(state: self.selfBasketAdd)
+                        }
+                
                 })
             }
         }
@@ -993,30 +1041,32 @@ class EntranceDetailTableViewController: UITableViewController {
             let operation = NSBlockOperation(block: {
                 let downloader = DownloaderSingleton.sharedInstance.getMeDownloader(type: "Entrance", uniqueId: self.entranceUniqueId) as! EntrancePackageDownloader
                 downloader.initialize(entranceUniqueId: self.entranceUniqueId!, viewController: self, vcType: "ED", username: username)
-                if downloader.fillImagesArray() == true {
-                    let filemgr = NSFileManager.defaultManager()
-                    let dirPaths = NSSearchPathForDirectoriesInDomains(.DocumentDirectory, .UserDomainMask, true)
-                    
-                    let docsDir = dirPaths[0] as NSString
-                    let newDir = docsDir.stringByAppendingPathComponent(self.entranceUniqueId!)
-                    
-                    var isDir: ObjCBool = false
-                    if filemgr.fileExistsAtPath(newDir, isDirectory: &isDir) == true {
-                        if isDir {
-                            let count = downloader.DownloadCount
-                            
-                            if let cell = self.tableView.cellForRowAtIndexPath(NSIndexPath(forRow: 0, inSection: 1)) as? EDPurchasedSectionTableViewCell {
-                                cell.changeToDownloadState(total: count)
-                                cell.setNeedsLayout()
+                downloader.fillImagesArray({ (result) in
+                    if result == true {
+                        let filemgr = NSFileManager.defaultManager()
+                        let dirPaths = NSSearchPathForDirectoriesInDomains(.DocumentDirectory, .UserDomainMask, true)
+                        
+                        let docsDir = dirPaths[0] as NSString
+                        let newDir = docsDir.stringByAppendingPathComponent(self.entranceUniqueId!)
+                        
+                        var isDir: ObjCBool = false
+                        if filemgr.fileExistsAtPath(newDir, isDirectory: &isDir) == true {
+                            if isDir {
+                                let count = downloader.DownloadCount
+                                
+                                if let cell = self.tableView.cellForRowAtIndexPath(NSIndexPath(forRow: 0, inSection: 1)) as? EDPurchasedSectionTableViewCell {
+                                    cell.changeToDownloadState(total: count)
+                                    cell.setNeedsLayout()
+                                }
+                                
+                                DownloaderSingleton.sharedInstance.setDownloaderStarted(uniqueId: self.entranceUniqueId)
+                                
+                                downloader.downloadPackageImages(saveDirectory: newDir)
                             }
-                            
-                            DownloaderSingleton.sharedInstance.setDownloaderStarted(uniqueId: self.entranceUniqueId)
-                            
-                            downloader.downloadPackageImages(saveDirectory: newDir)
                         }
                     }
-                        
-                }
+                })
+                
             })
             self.queue.addOperation(operation)
             
@@ -1078,8 +1128,23 @@ class EntranceDetailTableViewController: UITableViewController {
     }
     
     @IBAction func showEntranceButtonPressed(sender: UIButton) {
-        NSOperationQueue.mainQueue().addOperationWithBlock { 
-            self.performSegueWithIdentifier("EntranceShowVCSegue", sender: self)
+        var canShow = true
+        let username = UserDefaultsSingleton.sharedInstance.getUsername()!
+        if let counter = SnapshotCounterHandler.getByUsernameAndProductId(username: username, productUniqueId: self.entranceUniqueId, productType: "Entrance") {
+            if let blockTime = counter.blockTo {
+                if blockTime.compare(NSDate()) == .OrderedDescending {
+                    canShow = false
+                    let date = FormatterSingleton.sharedInstance.IRDateFormatter.stringFromDate(blockTime)
+                    AlertClass.showAlertMessageWithParams(viewController: self, messageType: "ActionResult", messageSubType: "BlockedByScreenshotTime", params: [date], type: "error", completion: nil)
+
+                }
+            }
+        }
+
+        if canShow {
+            NSOperationQueue.mainQueue().addOperationWithBlock {
+                self.performSegueWithIdentifier("EntranceShowVCSegue", sender: self)
+            }
         }
     }
     
@@ -1134,12 +1199,12 @@ class EntranceDetailTableViewController: UITableViewController {
             switch indexPath.row {
             case 0:
                 if let cell = self.tableView.dequeueReusableCellWithIdentifier("INITIAL_SECTION", forIndexPath: indexPath) as? EDInitialSectionTableViewCell {
-                    cell.configureCell(title: "\(self.entrance!.entranceTypeTitle!) \(self.entrance!.entranceOrgTitle!)", subTitle: "\(self.entrance!.entranceGroupTitle!) (\(self.entrance!.entranceSetTitle!))", imageId: self.entrance!.entranceSetId!, indexPath: indexPath)
+                    cell.configureCell(title: "\(self.entrance!.entranceTypeTitle!)", subTitle: "\(self.entrance!.entranceSetTitle!) (\(self.entrance!.entranceGroupTitle!))", imageId: self.entrance!.entranceSetId!, indexPath: indexPath)
                     return cell
                 }
             case 1:
                 if let cell = self.tableView.dequeueReusableCellWithIdentifier("HEADER_SECTION", forIndexPath: indexPath) as? EDHeaderSectionTableViewCell {
-                    cell.configureCell(title: "اطلاعات آزمون", extraData: self.entrance!.entranceExtraData)
+                    cell.configureCell(title: "اطلاعات آزمون", extraData: self.entrance!.entranceOrgTitle!)
                     return cell
                 }
             case 2:
@@ -1195,9 +1260,9 @@ class EntranceDetailTableViewController: UITableViewController {
         case 0:
             switch indexPath.row {
             case 0:
-                return 170.0
+                return 180.0
             case 1:
-                return 65.0
+                return 70.0
             case 2:
                 return 80.0
             default:
@@ -1206,12 +1271,12 @@ class EntranceDetailTableViewController: UITableViewController {
         case 1:
             if self.state! == .ShowSaleInfo {
                 if self.selfBasketAdd == true {
-                    return 160.0
+                    return 185.0
                 } else {
                     return 90.0
                 }
             } else if self.state! == .Purchased || self.state! == .Downloaded || self.state! == .DownloadStarted {
-                return 80.0
+                return 100.0
             }
         default:
             break

@@ -39,7 +39,12 @@ class ArchiveAdvanceTableViewCell: UITableViewCell {
     internal func configureCell(indexPath indexPath: NSIndexPath, setId: Int, title: String, subTitle: String, code: Int) {
         self.entranceSetTitle.text = title
         self.entranceSetSubTitle.text = subTitle
-        self.entranceCodeLabel.text = "کد: " + FormatterSingleton.sharedInstance.NumberFormatter.stringFromNumber(code)!
+        if code == 0 {
+            self.entranceCodeLabel.text = "کد: ندارد"
+            
+        } else {
+            self.entranceCodeLabel.text = "کد: " + FormatterSingleton.sharedInstance.NumberFormatter.stringFromNumber(code)!
+        }
         
         self.downloadImage(esetId: setId, indexPath: indexPath)
     }
@@ -54,7 +59,7 @@ class ArchiveAdvanceTableViewCell: UITableViewCell {
             self.selectionStyle = .Default
         }
         
-        self.configureCell(indexPath: indexPath, setId: set.id!, title: set.title!, subTitle: "\(count!) کنکور", code: set.code!)
+        self.configureCell(indexPath: indexPath, setId: set.id!, title: set.title!, subTitle: "\(count!) آزمون", code: set.code!)
     }
     
     private func downloadImage(esetId esetId: Int, indexPath: NSIndexPath) {

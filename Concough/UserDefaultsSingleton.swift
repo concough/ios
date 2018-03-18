@@ -7,6 +7,7 @@
 //
 
 import Foundation
+import NSUserDefaults_SevenSecurityLayers
 
 class UserDefaultsSingleton {
     private var _settings: NSUserDefaults!
@@ -14,8 +15,11 @@ class UserDefaultsSingleton {
     static let sharedInstance = UserDefaultsSingleton()
         
     private init() {
-        self._settings = NSUserDefaults.standardUserDefaults()
+        let l = NSUserDefaults.securedUserDefaults().setSecretKey(SECRET_KEY)
+        self._settings = l
     }
+    
+    func touch() {}
     
     private func setValue(value: AnyObject, key: String) {
         self._settings.setObject(value, forKey: key)
@@ -28,6 +32,8 @@ class UserDefaultsSingleton {
     func clearAll() -> Bool {
         let appDomain = NSBundle.mainBundle().bundleIdentifier!
         self._settings.removePersistentDomainForName(appDomain)
+        
+        
         return true
     }
     
@@ -38,25 +44,27 @@ class UserDefaultsSingleton {
         return false
     }
     
-    func createProfile(firstname firstname: String, lastname: String, grade: String, gender: String, birthday: NSDate, modified: NSDate) {
+    func createProfile(firstname firstname: String, lastname: String, grade: String, gradeString: String, gender: String, birthday: NSDate, modified: NSDate) {
         self.setValue(firstname, key: "Profile.Firstname")
         self.setValue(lastname, key: "Profile.Lastname")
         self.setValue(grade, key: "Profile.Grade")
+        self.setValue(gradeString, key: "Profile.GradeString")
         self.setValue(gender, key: "Profile.Gender")
         self.setValue(birthday, key: "Profile.Birthday")
         self.setValue(modified, key: "Profile.Modified")
         self.setValue(true, key: "Profile.Created")
     }
     
-    func getProfile() -> (firstname: String, lastname: String, grade: String, gender: String, birthday: NSDate, modified: NSDate)? {
+    func getProfile() -> (firstname: String, lastname: String, grade: String, gradeString: String, gender: String, birthday: NSDate, modified: NSDate)? {
         if let firstname = self.getValue(key: "Profile.Firstname") as? String,
             let lastname = self.getValue(key: "Profile.Lastname") as? String,
             let grade = self.getValue(key: "Profile.Grade") as? String,
             let gender = self.getValue(key: "Profile.Gender") as? String,
             let birthday = self.getValue(key: "Profile.Birthday") as? NSDate,
-            let modified = self.getValue(key: "Profile.Modified") as? NSDate {
+            let modified = self.getValue(key: "Profile.Modified") as? NSDate,
+            let gradeString = self.getValue(key: "Profile.GradeString") as? String {
             
-            return (firstname: firstname, lastname: lastname, grade: grade, gender: gender, birthday: birthday, modified: modified)
+            return (firstname: firstname, lastname: lastname, grade: grade, gradeString: gradeString, gender: gender, birthday: birthday, modified: modified)
         }
         
         return nil
@@ -67,8 +75,9 @@ class UserDefaultsSingleton {
         self._settings.synchronize()
     }
     
-    func updateGrade(grade grade: String, modified: NSDate) {
+    func updateGrade(grade grade: String, gradeString: String, modified: NSDate) {
         self.setValue(grade, key: "Profile.Grade")
+        self.setValue(gradeString, key: "Profile.GradeString")
         self.setValue(modified, key: "Profile.Modified")
     }
     

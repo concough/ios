@@ -9,12 +9,13 @@
 import UIKit
 import MBProgressHUD
 
-class SettingsReportBugViewController: UIViewController {
+class SettingsReportBugViewController: UIViewController, UITextViewDelegate {
 
     @IBOutlet weak var reportTextView: UITextView!
     @IBOutlet weak var reportButton: UIButton!
     
     private var loading: MBProgressHUD?
+    private var isFirstTime: Bool = true
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -29,11 +30,20 @@ class SettingsReportBugViewController: UIViewController {
         self.reportTextView.layer.masksToBounds = true
         self.reportTextView.layer.borderColor = UIColor(netHex: 0xDDDDDD, alpha: 1.0).CGColor
         self.reportTextView.layer.borderWidth = 1.0
+        
+        self.reportTextView.delegate = self
     }
 
     override func didReceiveMemoryWarning() {
         super.didReceiveMemoryWarning()
         // Dispose of any resources that can be recreated.
+    }
+    
+    func textViewDidBeginEditing(textView: UITextView) {
+        if self.isFirstTime {
+            textView.text = ""
+            self.isFirstTime = false
+        }
     }
     
     // MARK: - Actions

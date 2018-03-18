@@ -13,7 +13,9 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
 
     var window: UIWindow?
 
-
+    var path: String? = nil
+    var backgroundUpdateTask: UIBackgroundTaskIdentifier!
+    
     func application(application: UIApplication, didFinishLaunchingWithOptions launchOptions: [NSObject: AnyObject]?) -> Bool {
         // Override point for customization after application launch.
         
@@ -21,12 +23,16 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         //UINavigationBar.appearance().backgroundColor = UIColor(netHex: 0xFFFFFF, alpha: 0.5)
         //UINavigationBar.appearance().barTintColor =
         
-        let attributes = NSDictionary(object: UIFont(name: "IRANYekanMobile-Bold", size: 14)! , forKey: NSFontAttributeName) as! [String: AnyObject]
+        let attributes = NSDictionary(object: UIFont(name: "IRANSansMobile-Bold", size: 14)! , forKey: NSFontAttributeName) as! [String: AnyObject]
         
         UIBarButtonItem.appearance().setTitleTextAttributes(attributes, forState: .Normal)
 
-        let attributes2 = NSDictionary(object: UIFont(name: "IRANYekanMobile-Bold", size: 10)! , forKey: NSFontAttributeName) as! [String: AnyObject]
+        let attributes2 = NSDictionary(object: UIFont(name: "IRANSansMobile-Bold", size: 10)! , forKey: NSFontAttributeName) as! [String: AnyObject]
         UITabBarItem.appearance().setTitleTextAttributes(attributes2, forState: .Normal)
+        
+        application.idleTimerDisabled = false
+        
+        
         
         // TSMessage appearance
         //TSMessageView.appearance().setValue(13, forKey: "titleFontSize")
@@ -40,8 +46,25 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
             }
         }
         
+        application.setMinimumBackgroundFetchInterval(UIApplicationBackgroundFetchIntervalMinimum)
+        
+        application.ignoreSnapshotOnNextApplicationLaunch()
+        
         return true
     }
+    
+    func application(application: UIApplication, openURL url: NSURL,
+                     sourceApplication: String?, annotation: AnyObject)-> Bool {
+        
+        if let scheme = url.scheme, host = url.host {
+            if scheme == "concough" && host == "concough.zhycan.com" {
+                return true
+            }
+        }
+        
+        return false
+    }
+    
 
     func application(application: UIApplication, handleEventsForBackgroundURLSession identifier: String, completionHandler: () -> Void) {
         let bundles = identifier.componentsSeparatedByString(":")
@@ -50,6 +73,35 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
                 downloader.backgroundCompletionHandler = completionHandler
             }
         }
+    }
+    
+    func application(application: UIApplication, performFetchWithCompletionHandler completionHandler: (UIBackgroundFetchResult) -> Void) {
+//        print("====================NEWDATA")
+//        completionHandler(.NewData)
+//                var hasContinue = false
+//
+//                for downloader in DownloaderSingleton.sharedInstance.AllDownloadersId {
+//                    if downloader.1.state == DownloaderSingleton.DownloaderState.Started {
+//                        completionHandler(.NewData)
+//                        if downloader.1.type == "Entrance" {
+//                            if let d = downloader.1.object as? EntrancePackageDownloader {
+//        
+//                                print("**** resume")
+//                                d.downloadPackageImages()
+//                            }
+//                        }
+//                        hasContinue = true
+//                    }
+//                }
+        
+        
+        completionHandler(.NewData)
+        
+
+//        if !hasContinue {
+//            completionHandler(.NoData)
+//        }
+        
     }
     
     func application(application: UIApplication, didRegisterUserNotificationSettings notificationSettings: UIUserNotificationSettings) {
@@ -68,6 +120,56 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     func applicationDidEnterBackground(application: UIApplication) {
         // Use this method to release shared resources, save user data, invalidate timers, and store enough application state information to restore your application to its current state in case it is terminated later.
         // If your application supports background execution, this method is called instead of applicationWillTerminate: when the user quits.
+        
+        
+        
+        dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0)) { 
+            self.beginBackgroundDownload()
+        }
+        
+//        for downloader in DownloaderSingleton.sharedInstance.AllDownloadersId {
+//            if downloader.1.state == DownloaderSingleton.DownloaderState.Started {
+////                completionHandler(.NewData)
+//                if downloader.1.type == "Entrance" {
+//                    if let d = downloader.1.object as? EntrancePackageDownloader {
+//                        
+//                        print("**** resume")
+//                        d.downloadPackageImages()
+//                    }
+//                }
+////                hasContinue = true
+//            }
+//        }
+        
+    }
+    
+    func beginBackgroundDownload() {
+        
+        self.backgroundUpdateTask = UIApplication.sharedApplication().beginBackgroundTaskWithExpirationHandler({
+            for downloader in DownloaderSingleton.sharedInstance.AllDownloadersId {
+                if downloader.1.state == DownloaderSingleton.DownloaderState.Started {
+                    if downloader.1.type == "Entrance" {
+                        if let d = downloader.1.object as? EntrancePackageDownloader {
+                            d.downloadPackageImages()
+                        }
+                    }
+                }
+            }
+            
+            var finished = true
+            while(finished) {
+                finished = true
+                for downloader in DownloaderSingleton.sharedInstance.AllDownloadersId {
+                    if downloader.1.state == DownloaderSingleton.DownloaderState.Started {
+                        finished = false
+                    }
+                }
+                sleep(1)
+            }
+            
+            UIApplication.sharedApplication().endBackgroundTask(self.backgroundUpdateTask)
+            self.backgroundUpdateTask = UIBackgroundTaskInvalid
+        })
     }
 
     func applicationWillEnterForeground(application: UIApplication) {

@@ -100,6 +100,7 @@ class ChangePasswordViewController: UIViewController, UITextFieldDelegate {
             } else {
                 if let localData = data {
                     if let status = localData["status"].string {
+                        print(localData)
                         switch status {
                         case "OK":
                             let modifiedStr = localData["modified"].stringValue
@@ -113,10 +114,11 @@ class ChangePasswordViewController: UIViewController, UITextFieldDelegate {
                             if let errorType = localData["error_type"].string {
                                 switch errorType {
                                 case "PassCannotChange":
-                                    NSOperationQueue.mainQueue().addOperationWithBlock({ 
+                                    fallthrough
+                                case "FieldTooSmall":
+                                    NSOperationQueue.mainQueue().addOperationWithBlock({
                                         AlertClass.showTopMessage(viewController: self, messageType: "AuthProfile", messageSubType: errorType, type: "error", completion: nil)
                                     })
-                                    fallthrough
                                 case "MultiRecord":
                                     fallthrough
                                 case "BadData":
@@ -204,6 +206,7 @@ class ChangePasswordViewController: UIViewController, UITextFieldDelegate {
             }
         }
     }
+    
     
     // MARK: - TextField Delegate Methods
     func textFieldDidBeginEditing(textField: UITextField) {

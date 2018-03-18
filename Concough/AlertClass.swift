@@ -45,6 +45,10 @@ class AlertClass {
             case "CodeWrong":
                 title = "خطا"
                 message = "کد وارد شده صحیح نمی باشد"
+            case "PhoneVerifyWrong":
+                title = "خطا"
+                message = "فرمت شماره همراه اشتباه است"
+                
             default:
                 showMessage = false
             }
@@ -55,10 +59,13 @@ class AlertClass {
                 message = "کد فعالسازی مجددا ارسال شد"
             case "PurchasedSuccess":
                 title = "پیغام"
-                message = "خرید با موفقیت انجام گردید"
+                message = "خرید با موفقیت انجام گردید. جهت دانلود به بخش کتابخانه من مراجعه نمایید."
             case "DownloadSuccess":
                 title = "پیغام"
                 message = "دانلود با موفقیت انجام گردید"
+            case "DownloadFailed":
+                title = "پیغام"
+                message = "دانلود با خطا مواجه گردید"
             case "BasketDeleteSuccess":
                 title = "پیغام"
                 message = "از سبد کالا با موفقیت حذف شد"
@@ -83,6 +90,26 @@ class AlertClass {
             case "FreeMemorySuccess":
                 title = "پیغام"
                 message = "داده های شما با موفقیت پاک گردید"
+            case "ScreenshotTaken":
+                title = "پیغام"
+                message = "خواهشمندیم به منظور حفظ حقوق نرم افزار از گرفتن هرگونه اسکرین شات خودداری بفرمایید"
+            case "BlockedByScreenshot":
+                title = "پیغام"
+                message = "دسترسی به این آیتم محدود شد"
+            case "BlockedByScreenshotTime":
+                title = "پیغام"
+                message = "دسترسی به این آیتم تا %%% به دلیل عدم رعایت قوانین مقدور نمی باشد"
+            default:
+                showMessage = false
+            }
+        case "DeviceInfoError":
+            switch messageSubType {
+            case "AnotherDevice":
+                title = "خطا"
+                message = "اکانت شما توسط دستگاه دیگری در حال استفاده می باشد، در صورتی که به دستگاه فعال دسترسی دارید گزینه 'قفل دستگاه' در تنظیمات کنکوق را فشار دهید و در غیر اینصورت از دکمه بازیایی گذرواژه همین دستگاه استفاده نمایید"
+            case "DeviceNotRegistered":
+                title = "خطا"
+                message = "دستگاه شما با این اکانت ثبت نشده است"
             default:
                 showMessage = false
             }
@@ -102,7 +129,7 @@ class AlertClass {
                 message = "اطلاعات نامشخص است"
             case "EmptyArray":
                 title = "خطا"
-                message = "اطلاعات برای نمایش ناموجود"                
+                message = "اطلاعات برای نمایش ناموجود است"
             default:
                 showMessage = false
             }
@@ -110,7 +137,7 @@ class AlertClass {
             switch messageSubType {
             case "EntranceNotExist":
                 title = "خطا"
-                message = "کنکور درخواستی موجود نمی باشد"
+                message = "آزمون درخواستی موجود نمی باشد"
             default:
                 showMessage = false
             }
@@ -125,6 +152,21 @@ class AlertClass {
             case "EmptyBasket":
                 title = "خطا"
                 message = "سبد خرید شما خالی است"
+            case "PaymentProviderError":
+                title = "خطا"
+                message = "خطا در اتصال به بانک"
+            case "NotPaymnetRecord":
+                title = "خطا"
+                message = "پرداختی ثبت نشده است"
+            case "CheckoutPending":
+                title = "خطا"
+                message = "وضعیت سبد خرید قبلی شما در حالت معلق است، آن را نهایی نمایید"
+            case "CheckoutError":
+                title = "خطا"
+                message = "پرداخت نا موفق بود! در که صورتی که مبلغ از حساب شما کسر شده است حداکثر تا یک روز کاری به حسابتان باز خواهد گشت"
+            case "MustCheckoutLast":
+                title = "خطا"
+                message = "ابتدا پرداخت قبلی خود را نهایی نمایید"
             default:
                 showMessage = false
             }
@@ -139,12 +181,27 @@ class AlertClass {
             case "PreAuthNotExist":
                 title = "خطا"
                 message = "لطفا مجددا تقاضای کد نمایید"
+            case "FieldTooSmall":
+                title = "خطا"
+                message = "طول فیلد وارد شده کوتاه است"
             case "MismatchPassword":
                 title = "خطا"
                 message = "هر دو فیلد گذرواژه باید یکی باشند"
             case "PassCannotChange":
                 title = "خطا"
                 message = "امکان تغییر گذرواژه وجود ندارد"
+            case "SMSSendError":
+                title = "خطا"
+                message = "ارسال پیامک با خطا مواجه شد. مجددا سعی نمایید"
+            case "CallSendError":
+                title = "خطا"
+                message = "تماس صوتی با خطا مواجه شد. مجددا سعی نمایید"
+            case "ExceedToday":
+                title = "خطا"
+                message = "ظرقیت ارسال پیامک امروز شما به پایان رسید"
+            case "ExceedCallToday":
+                title = "خطا"
+                message = "لطفا فردا سعی نمایید. ظرفیت امروز شما برای ارسال پیامک و یا تماس صوتی به پایان رسید."
             default:
                 showMessage = false
             }
@@ -183,6 +240,14 @@ class AlertClass {
             default:
                 showMessage = false
             }
+        case "DeviceAction":
+            switch messageSubType {
+            case "UpdateApp":
+                title = "نسخه جدید نرم افزار"
+                message = "نسخه %s منتشر شده است"
+            default:
+                showMessage = false
+            }
         default:
             showMessage = false
         }
@@ -190,47 +255,47 @@ class AlertClass {
         return (title, message, showMessage)
     }
     
-    class func showSimpleErrorMessage(viewController viewController: UIViewController, messageType: String, messageSubType: String, completion: (() -> ())?) {
-        
-        var showMessage: Bool = true
-        var title: String = ""
-        var message: String = ""
-        
-        (title, message, showMessage) = AlertClass.convertMessage(messageType: messageType, messageSubType: messageSubType)
-        
-        if showMessage {
-            NSOperationQueue.mainQueue().addOperationWithBlock({
-                let titleFont = [NSFontAttributeName: UIFont(name: "IRANYekanMobile-Bold", size: 16.0)!]
-                let messageFont = [NSFontAttributeName: UIFont(name: "IRANYekanMobile-Light", size: 12.0)!]
-                
-                let titleAttrString = NSMutableAttributedString(string: title, attributes: titleFont as [String: AnyObject])
-                let messageAttrString = NSMutableAttributedString(string: message, attributes: messageFont as [String: AnyObject])
-                
-                let alertController = UIAlertController(title: title, message: message, preferredStyle: .Alert)
-                alertController.setValue(titleAttrString, forKey: "attributedTitle")
-                alertController.setValue(messageAttrString, forKey: "attributedMessage")
-                
-                let action = UIAlertAction(title: "متوجه شدم", style: .Default, handler: { (action) in
-                    if let completeHandler = completion {
-                        completeHandler()
-                    }
-                })
-                
-                let actionFont = [NSFontAttributeName: UIFont(name: "IRANYekanMobile-Bold", size: 12.0)!]
-                let actionAttrString = NSMutableAttributedString(string: "متوجه شدم", attributes: actionFont as [String: AnyObject])
-                
-                let a = action.valueForKey("__representer")
-                print("--> \(a)")
-                if let label = action.valueForKey("__representer")?.valueForKey("label") as? UILabel {
-                    label.attributedText = actionAttrString
-                }
-                
-                alertController.addAction(action)
-                viewController.presentViewController(alertController, animated: true) {
-                }
-            })
-        }
-    }
+//    class func showSimpleErrorMessage(viewController viewController: UIViewController, messageType: String, messageSubType: String, completion: (() -> ())?) {
+//        
+//        var showMessage: Bool = true
+//        var title: String = ""
+//        var message: String = ""
+//        
+//        (title, message, showMessage) = AlertClass.convertMessage(messageType: messageType, messageSubType: messageSubType)
+//        
+//        if showMessage {
+//            NSOperationQueue.mainQueue().addOperationWithBlock({
+//                let titleFont = [NSFontAttributeName: UIFont(name: "IRANSansMobile-Bold", size: 16.0)!]
+//                let messageFont = [NSFontAttributeName: UIFont(name: "IRANSansMobile-Light", size: 12.0)!]
+//                
+//                let titleAttrString = NSMutableAttributedString(string: title, attributes: titleFont as [String: AnyObject])
+//                let messageAttrString = NSMutableAttributedString(string: message, attributes: messageFont as [String: AnyObject])
+//                
+//                let alertController = UIAlertController(title: title, message: message, preferredStyle: .Alert)
+//                alertController.setValue(titleAttrString, forKey: "attributedTitle")
+//                alertController.setValue(messageAttrString, forKey: "attributedMessage")
+//                
+//                let action = UIAlertAction(title: "متوجه شدم", style: .Default, handler: { (action) in
+//                    if let completeHandler = completion {
+//                        completeHandler()
+//                    }
+//                })
+//                
+//                let actionFont = [NSFontAttributeName: UIFont(name: "IRANSansMobile-Bold", size: 12.0)!]
+//                let actionAttrString = NSMutableAttributedString(string: "متوجه شدم", attributes: actionFont as [String: AnyObject])
+//                
+//                let a = action.valueForKey("__representer")
+//                print("--> \(a)")
+//                if let label = action.valueForKey("__representer")?.valueForKey("label") as? UILabel {
+//                    label.attributedText = actionAttrString
+//                }
+//                
+//                alertController.addAction(action)
+//                viewController.presentViewController(alertController, animated: true) {
+//                }
+//            })
+//        }
+//    }
     
     class func showTopMessage(viewController viewController: UIViewController, messageType: String, messageSubType: String, type: String, completion: (() -> ())?) {
         
@@ -239,7 +304,7 @@ class AlertClass {
         if showMessage == true {
             let view = MessageView.viewFromNib(layout: .MessageViewIOS8)
             view.configureDropShadow()
-            view.titleLabel?.font = UIFont(name: "IRANYekanMobile-Bold", size: 13)!
+            view.titleLabel?.font = UIFont(name: "IRANSansMobile-Medium", size: 13)!
             view.titleLabel?.textAlignment =  .Center
 
             var config = SwiftMessages.Config()
@@ -275,11 +340,12 @@ class AlertClass {
             hud.animationType = .Fade
             hud.mode = .Indeterminate
             hud.label.text = "حوصله نمایید ..."
-            hud.label.font = UIFont(name: "IRANYekanMobile-Bold", size: 14)
+            hud.label.font = UIFont(name: "IRANSansMobile", size: 14)
             hud.dimBackground = true
             hud.bezelView.style = .Blur
             hud.bezelView.backgroundColor = UIColor.whiteColor()
-            hud.backgroundView.style = .Blur
+//            hud.backgroundView.style = .SolidColor
+//            hud.backgroundColor = UIColor(white: 0.0, alpha: 0.4)
             return hud
     }
 
@@ -289,11 +355,12 @@ class AlertClass {
         hud.animationType = .Fade
         hud.mode = .AnnularDeterminate
         hud.label.text = "به روز رسانی ..."
-        hud.label.font = UIFont(name: "IRANYekanMobile-Bold", size: 14)
+        hud.label.font = UIFont(name: "IRANSansMobile", size: 14)
         hud.dimBackground = true
         hud.bezelView.style = .Blur
         hud.bezelView.backgroundColor = UIColor.whiteColor()
-        hud.backgroundView.style = .Blur
+//        hud.backgroundView.style = .SolidColor
+//        hud.backgroundColor = UIColor(white: 0.0, alpha: 0.4)
         return hud
     }
     
@@ -304,47 +371,122 @@ class AlertClass {
     }
     
     class func showAlertMessage(viewController viewController: UIViewController, messageType: String, messageSubType: String, type: String, completion: (() -> ())?) {
+        return AlertClass.showAlertMessageWithParams(viewController: viewController, messageType: messageType, messageSubType: messageSubType, params: nil, type: type, completion: completion)
+    }
+
+    class func showAlertMessageWithParams(viewController viewController: UIViewController, messageType: String, messageSubType: String, params: [String]?, type: String, completion: (() -> ())?) {
         
         let (title, message, showMessage) = AlertClass.convertMessage(messageType: messageType, messageSubType: messageSubType)
         
+        var msg = message
+        if let parameters = params {
+            let message_parts = message.componentsSeparatedByString("%%%")
+            msg = ""
+            for (index, item) in message_parts.enumerate() {
+                if index < message_parts.count - 1 {
+                    msg += item + parameters[index]
+                } else {
+                    msg += item
+                }
+            }
+        }
+        
+        let u = UIImage(named: "logo_white_share")
+        
         if showMessage == true {
             let alert = FCAlertView()
-            alert.showAlertInView(viewController, withTitle: title, withSubtitle: message, withCustomImage: nil, withDoneButtonTitle: "متوجه شدم", andButtons: nil)
+            alert.showAlertInView(viewController, withTitle: title, withSubtitle: msg, withCustomImage: u, withDoneButtonTitle: "متوجه شدم", andButtons: nil)
             alert.animateAlertInFromTop = true
             alert.animateAlertOutToBottom = true
             alert.doneButtonTitleColor = UIColor.whiteColor()
             alert.hideSeparatorLineView = true
             alert.bounceAnimations = true
-
+            alert.dismissOnOutsideTouch = false
+            
+            alert.titleFont = UIFont(name: "IRANSansMobile-Medium", size: 16)!
+            alert.subtitleFont = UIFont(name: "IRANSansMobile", size: 12)!
+            alert.firstButtonCustomFont = UIFont(name: "IRANSansMobile-Medium", size: 14)!
+            alert.secondButtonCustomFont = UIFont(name: "IRANSansMobile-Medium", size: 14)!
+            alert.doneButtonCustomFont = UIFont(name: "IRANSansMobile-Medium", size: 14)!
+            
+            alert.customImageScale = 1.3
+            alert.avoidCustomImageTint = true
+            
+            switch type {
+            case "success":
+                alert.colorScheme = alert.flatGreen
+            case "error":
+                alert.colorScheme = alert.flatRed
+            case "warning":
+                alert.colorScheme = alert.flatOrange
+            default:
+                alert.colorScheme = alert.flatBlue
+            }
+            
             if let compl = completion {
                 alert.doneActionBlock({
                     compl()
                 })
             }
-
-            switch type {
-            case "success":
-                alert.makeAlertTypeSuccess()
-            case "error":
-                alert.makeAlertTypeWarning()
-            default:
-                alert.makeAlertTypeCaution()
-            }
+            
         }
     }
-
-    class func showAlertMessageCustom(viewController viewController: UIViewController, title: String, message: String, yesButtonTitle: String, noButtonTitle: String, completion: (() -> ())?) {
+    
+    
+    class func showAlertMessageCustom(viewController viewController: UIViewController, title: String, message: String, yesButtonTitle: String, noButtonTitle: String, completion: (() -> ())?, noCompletion: (() -> ())?) {
+        
+        let u = UIImage(named: "logo_white_share")
         
         let alert = FCAlertView()
-        alert.showAlertInView(viewController, withTitle: title, withSubtitle: message, withCustomImage: nil, withDoneButtonTitle: yesButtonTitle, andButtons: nil)
-        alert.addButton(noButtonTitle, withActionBlock: nil)
+        alert.showAlertInView(viewController, withTitle: title, withSubtitle: message, withCustomImage: u, withDoneButtonTitle: yesButtonTitle, andButtons: nil)
+        alert.addButton(noButtonTitle, withActionBlock: noCompletion)
+        alert.animateAlertInFromTop = true
+        alert.animateAlertOutToBottom = true
+        alert.doneButtonTitleColor = UIColor.whiteColor()
+        alert.hideSeparatorLineView = true
+        alert.dismissOnOutsideTouch = false
+        alert.bounceAnimations = true
+        
+        alert.titleFont = UIFont(name: "IRANSansMobile-Medium", size: 16)!
+        alert.subtitleFont = UIFont(name: "IRANSansMobile", size: 12)!
+        alert.firstButtonCustomFont = UIFont(name: "IRANSansMobile-Medium", size: 14)!
+        alert.secondButtonCustomFont = UIFont(name: "IRANSansMobile-Medium", size: 14)!
+        alert.doneButtonCustomFont = UIFont(name: "IRANSansMobile-Medium", size: 14)!
+
+        alert.colorScheme = alert.flatRed
+        alert.customImageScale = 1.3
+        alert.avoidCustomImageTint = true
+
+        if let compl = completion {
+            alert.doneActionBlock({
+                compl()
+            })
+        }
+    }
+    class func showSuccessMessageCustom(viewController viewController: UIViewController, title: String, message: String, yesButtonTitle: String, noButtonTitle: String, completion: (() -> ())?, noCompletion: (() -> ())?) {
+
+        let u = UIImage(named: "logo_white_share")
+        
+        let alert = FCAlertView()
+        alert.showAlertInView(viewController, withTitle: title, withSubtitle: message, withCustomImage: u, withDoneButtonTitle: yesButtonTitle, andButtons: nil)
+        alert.addButton(noButtonTitle, withActionBlock: noCompletion)
         alert.animateAlertInFromTop = true
         alert.animateAlertOutToBottom = true
         alert.doneButtonTitleColor = UIColor.whiteColor()
         alert.hideSeparatorLineView = true
         alert.bounceAnimations = true
+        alert.dismissOnOutsideTouch = false
         
-        alert.makeAlertTypeWarning()
+        alert.titleFont = UIFont(name: "IRANSansMobile-Medium", size: 16)!
+        alert.subtitleFont = UIFont(name: "IRANSansMobile", size: 12)!
+        alert.firstButtonCustomFont = UIFont(name: "IRANSansMobile-Medium", size: 14)!
+        alert.secondButtonCustomFont = UIFont(name: "IRANSansMobile-Medium", size: 14)!
+        alert.doneButtonCustomFont = UIFont(name: "IRANSansMobile-Medium", size: 14)!
+
+        
+        alert.colorScheme = alert.flatGreen
+        alert.customImageScale = 1.3
+        alert.avoidCustomImageTint = true
         
         if let compl = completion {
             alert.doneActionBlock({

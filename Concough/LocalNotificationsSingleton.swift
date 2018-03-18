@@ -29,13 +29,14 @@ class LocalNotificationsSingleton {
         
     }
     
-    internal func createNotification(alertBody alertBody: String, fireDate: NSDate) {
+    internal func createNotification(alertTitle alertTitle: String, alertBody: String, fireDate: NSDate) {
         if self._allowNotification {
             let notification = UILocalNotification()
             notification.fireDate = fireDate
             notification.timeZone = NSTimeZone(name: "Asia/tehran")
             notification.alertBody = alertBody
-            
+            notification.alertTitle = alertTitle
+            notification.alertLaunchImage = "logo_white_transparent_notification"
             notification.hasAction = false
             
             UIApplication.sharedApplication().applicationIconBadgeNumber += 1

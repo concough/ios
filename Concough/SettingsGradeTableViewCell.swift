@@ -29,7 +29,13 @@ class SettingsGradeTableViewCell: UITableViewCell {
         self.changeButton.layer.borderWidth = 0.8
     }
     
-    internal func configureCell(gradeTitle gradeTitle: String) {
+    internal func configureCell(gradeTitle gradeTitle: String, isEditing: Bool) {
         self.gradeLabel.text = gradeTitle
+        
+        if isEditing {
+            changeButton.hidden = false
+        } else {
+            changeButton.hidden = true
+        }
     }
 }

@@ -24,6 +24,7 @@ class EntranceModelHandler {
         entrance.uniqueId = e.entranceUniqueId!
         entrance.year = e.entranceYear!
         entrance.username = username
+        entrance.pUniqueId = "\(username)-\(NSUUID().UUIDString.lowercaseString)"
         
         do {
             try RealmSingleton.sharedInstance.DefaultRealm.write({ 

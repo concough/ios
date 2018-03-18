@@ -20,6 +20,8 @@ class TokenHandlerSingleton {
     
     static let sharedInstance = TokenHandlerSingleton()
     
+    func touch() {}
+    
     func setUsernameAndPassword(username username: String, password: String) {
         self._username = username
         self._password = password
@@ -274,8 +276,9 @@ class TokenHandlerSingleton {
                                 }, failure: { (error) in
                                     failure(error: error)
                             })
+                        } else {
+                            completion(authenticated: false, error: error)
                         }
-                        completion(authenticated: false, error: error)
                         
 //                        if error == .BadRequest || error == .UnAuthorized {
 //                            self.authorize({ (error) in
@@ -316,8 +319,9 @@ class TokenHandlerSingleton {
                                         }, failure: { (error) in
                                             failure(error: error)
                                     })
+                                } else {
+                                    completion(authenticated: false, error: error)
                                 }
-                                completion(authenticated: false, error: error)
 //                                if error == .BadRequest {
 //                                    self.authorize({ (error) in
 //                                        if error == .Success {
@@ -341,6 +345,8 @@ class TokenHandlerSingleton {
                     } else {
                         completion(authenticated: true, error: .Success)
                     }
+                } else {
+                    completion(authenticated: false, error: nil)
                 }
             }
         } else {

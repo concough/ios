@@ -10,12 +10,25 @@ import Foundation
 import UIKit
 
 // Application Version
-let APP_VERSION = "v1"
+let APP_VERSION = 1
 let API_VERSION = "v1"
-let SECRET_KEY = "67mnnv^vs7&^v87YrV&6*njs*99__==ncdjncdujb"
+let PRE = "67mnnv^vs7&^v87YrV&hd8bw92bu9b%$$#b8728^%93y6==37yb&BBB6*njs*99__=="
+let PRO = "ncdjncdujb"
+let array = [7, 11, 13, 15, 17, 19, 23, 29, 31]
+var SECRET_KEY: String {
+    get {
+        let str = array.reverse().map({(element: Int) -> String in
+            return "\(element)"
+        }).joinWithSeparator("")
+        return "\(PRE)\(str)\(PRO)"
+    }
+}
 
 // Host Urls
-let BASE_URL = "http://192.168.1.15:8000/api/"
+//let BASE_URL = "http://192.168.0.21:8000/api/"
+let BASE_URL = "https://concough.zhycan.com/api/"
+let ABOUT_URL = "https://zhycan.com/concough/fa/"
+let HELP_URL = "https://zhycan.com/concough/fa/help/"
 let MEDIA_CLASS_NAME = "media"
 let ACTIVITY_CLASS_NAME = "activities"
 let ARCHIVE_CLASS_NAME = "archive"
@@ -27,6 +40,7 @@ let ENTRANCE_CLASS_NAME = "entrance"
 let PURCHASED_CLASS_NAME = "purchased"
 let PRODUCT_CLASS_NAME = "product"
 let BASKET_CLASS_NAME = "basket"
+let DEVICE_CLASS_NAME = "device"
 let JWT_URL_PREFIX = "j"
 
 // Cache Configurations
@@ -46,6 +60,7 @@ let OAUTH_LAST_ACCESS_KEY = "oauthLastAccess"
 let OAUTH_EXPIRES_IN_KEY = "oauthExpiresIn"
 let USERNAME_KEY = "authUsername"
 let PASSWORD_KEY = "authPassword"
+let IDENTIFIER_FOR_VENDOR_KEY = "identifierForVendor"
 
 
 // Validator Regex
@@ -60,3 +75,8 @@ let RED_COLOR_HEX:Int = 0x960000
 let RED_COLOR_HEX_2:Int = 0xDD0000
 let GREEN_COLOR_HEX:Int = 0x1008000
 let GRAY_COLOR_HEX_1: Int = 0xB7B7B7
+
+// Downloader Settings
+let DOWNLOAD_IMAGE_COUNT = 15
+let CONNECTION_MAX_RETRY = 3
+

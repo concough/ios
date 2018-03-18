@@ -12,6 +12,7 @@ import RealmSwift
 class EntranceModel: Object {
     dynamic var username: String = ""
     dynamic var uniqueId: String = ""
+    dynamic var pUniqueId: String = ""
     dynamic var type: String = ""
     dynamic var organization: String = ""
     dynamic var group: String = ""
@@ -26,6 +27,6 @@ class EntranceModel: Object {
     let booklets = List<EntranceBookletModel>()
     
     override static func primaryKey() -> String? {
-        return "uniqueId"
+        return "pUniqueId"
     }
 }

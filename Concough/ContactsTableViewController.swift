@@ -156,7 +156,7 @@ class ContactsTableViewController: UITableViewController, UINavigationController
         cell.accessoryType = rowIsSelected ? .Checkmark : .None
         
         cell.textLabel?.text = item.fullname
-        cell.textLabel?.font = UIFont(name: "IRANYekanMobile", size: 14)!
+        cell.textLabel?.font = UIFont(name: "IRANSansMobile", size: 14)!
         
         cell.detailTextLabel?.text = item.email
         cell.detailTextLabel?.textColor = UIColor.darkGrayColor()

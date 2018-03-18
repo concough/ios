@@ -9,8 +9,9 @@
 import UIKit
 import SwiftyJSON
 import MBProgressHUD
+import DZNEmptyDataSet
 
-class FavoritesTableViewController: UITableViewController {
+class FavoritesTableViewController: UITableViewController, DZNEmptyDataSetDelegate, DZNEmptyDataSetSource {
 
     private var purchased: [(uniqueId: String ,type: String, object: Any, purchased: Any, starred: Int, opened: Int, questionsCount: Int)] = []
     private var queue: NSOperationQueue!
@@ -20,6 +21,7 @@ class FavoritesTableViewController: UITableViewController {
     private var showType: String = "Normal"
     private var DownloadedCount: [Int] = []
     private var loading: MBProgressHUD?
+    private var filemgr: NSFileManager?
     
     
     override func viewDidLoad() {
@@ -33,15 +35,18 @@ class FavoritesTableViewController: UITableViewController {
         
         self.queue = NSOperationQueue()
         
+        self.tableView.emptyDataSetDelegate = self
+        self.tableView.emptyDataSetSource = self        
+        
         // uitableview refresh control setup
         if self.refreshControl == nil {
             self.refreshControl = UIRefreshControl()
-            self.refreshControl?.attributedTitle = NSAttributedString(string: "برای به روز رسانی به پایین بکشید")
+            self.refreshControl?.attributedTitle = NSAttributedString(string: "برای به روز رسانی به پایین بکشید", attributes: [NSFontAttributeName: UIFont(name: "IRANSansMobile-UltraLight", size: 12)!])
         }
         self.refreshControl?.addTarget(self, action: #selector(self.refreshTableView(_:)), forControlEvents: .ValueChanged)
         self.tableView.tableFooterView = UIView()
         
-        self.title = "آرشیو"
+        self.title = "کتابخانه من"
         
     }
 
@@ -90,9 +95,30 @@ class FavoritesTableViewController: UITableViewController {
         
         if row! < self.purchased.count {
             self.selectedIndex = indexPath
-            NSOperationQueue.mainQueue().addOperationWithBlock({
-                self.performSegueWithIdentifier("EntranceShowVCSegue", sender: self)
-            })
+            
+            var canShow = true
+            let username = UserDefaultsSingleton.sharedInstance.getUsername()!
+            if self.selectedIndex != nil {
+                if let counter = SnapshotCounterHandler.getByUsernameAndProductId(username: username, productUniqueId: self.purchased[self.selectedIndex!.row].uniqueId, productType: self.purchased[self.selectedIndex!.row].type) {
+                    if let blockTime = counter.blockTo {
+                        if blockTime.compare(NSDate()) == .OrderedDescending {
+                            canShow = false
+                            
+                            let date = FormatterSingleton.sharedInstance.IRDateFormatter.stringFromDate(blockTime)
+                            AlertClass.showAlertMessageWithParams(viewController: self, messageType: "ActionResult", messageSubType: "BlockedByScreenshotTime", params: [date], type: "error", completion: nil)
+                            
+                        }
+                    }
+                }
+            } else {
+                canShow = false
+            }
+
+            if canShow {
+                NSOperationQueue.mainQueue().addOperationWithBlock({
+                    self.performSegueWithIdentifier("EntranceShowVCSegue", sender: self)
+                })
+            }
         }
     }
 
@@ -106,9 +132,31 @@ class FavoritesTableViewController: UITableViewController {
         
         if row! < self.purchased.count {
             self.selectedIndex = indexPath
-            NSOperationQueue.mainQueue().addOperationWithBlock({
-                self.performSegueWithIdentifier("EntranceShowVCSegue", sender: self)
-            })
+
+            var canShow = true
+            let username = UserDefaultsSingleton.sharedInstance.getUsername()!
+            if self.selectedIndex != nil {
+                if let counter = SnapshotCounterHandler.getByUsernameAndProductId(username: username, productUniqueId: self.purchased[self.selectedIndex!.row].uniqueId, productType: self.purchased[self.selectedIndex!.row].type) {
+                    if let blockTime = counter.blockTo {
+                        if blockTime.compare(NSDate()) == .OrderedDescending {
+                            canShow = false
+                            
+                            let date = FormatterSingleton.sharedInstance.IRDateFormatter.stringFromDate(blockTime)
+                            AlertClass.showAlertMessageWithParams(viewController: self, messageType: "ActionResult", messageSubType: "BlockedByScreenshotTime", params: [date], type: "error", completion: nil)
+                            
+                        }
+                    }
+                }
+            } else {
+                canShow = false
+            }
+            
+            if canShow {
+                NSOperationQueue.mainQueue().addOperationWithBlock({
+                    self.performSegueWithIdentifier("EntranceShowVCSegue", sender: self)
+                })
+            }
+        
         }
     }
     
@@ -120,7 +168,7 @@ class FavoritesTableViewController: UITableViewController {
     @IBAction func deleteButtonPressed(sender: UIButton) {
         // create alert controller
         
-        AlertClass.showAlertMessageCustom(viewController: self, title: "آیا مطمینید؟", message: "تنها اطلاعات کنکور حذف خواهد شد و مجددا قابل بارگذاری است", yesButtonTitle: "بله", noButtonTitle: "خیر") {
+        AlertClass.showAlertMessageCustom(viewController: self, title: "آیا مطمینید؟", message: "تنها اطلاعات آزمون حذف خواهد شد و مجددا قابل بارگذاری است", yesButtonTitle: "بله", noButtonTitle: "خیر", completion: {
         
             let indexPathStr = sender.assicatedObject.componentsSeparatedByString(":")
             let section = Int(indexPathStr[0])
@@ -144,7 +192,7 @@ class FavoritesTableViewController: UITableViewController {
                     self.tableView.reloadData()
                 })
             }
-        }
+        }, noCompletion: nil)
     }
     
     @IBAction func editButtonPressed(sender: UIBarButtonItem) {
@@ -153,7 +201,7 @@ class FavoritesTableViewController: UITableViewController {
             self.navigationItem.rightBarButtonItem?.enabled = false
             self.showType = "Edit"
             
-            self.title = "ویرایش"
+            self.title = "ویرایش کتابخانه"
             self.navigationItem.leftBarButtonItem?.title = "انجام شد"
             
             NSOperationQueue.mainQueue().addOperationWithBlock({ 
@@ -164,7 +212,7 @@ class FavoritesTableViewController: UITableViewController {
             self.navigationItem.rightBarButtonItem?.enabled = true
             self.showType = "Normal"
             
-            self.title = "آرشیو"
+            self.title = "کتابخانه من"
             self.navigationItem.leftBarButtonItem?.title = "ویرایش"
 
             self.loadData()
@@ -178,6 +226,7 @@ class FavoritesTableViewController: UITableViewController {
     private func syncWithServer() {
         NSOperationQueue.mainQueue().addOperationWithBlock { 
             self.loading = AlertClass.showLoadingMessage(viewController: self)
+            UIApplication.sharedApplication().networkActivityIndicatorVisible = true
         }
         
         PurchasedRestAPIClass.getPurchasedList({ (data, error) in
@@ -268,6 +317,8 @@ class FavoritesTableViewController: UITableViewController {
                                 }
                             }
                             
+                            self.downloadImages(purchasedId)
+                            
                             NSOperationQueue.mainQueue().addOperationWithBlock({
                                 self.loadData()
                                 self.tableView.reloadData()
@@ -295,7 +346,8 @@ class FavoritesTableViewController: UITableViewController {
                                             }
                                         }
                                     }
-                                    NSOperationQueue.mainQueue().addOperationWithBlock({ 
+                                    NSOperationQueue.mainQueue().addOperationWithBlock({
+                                        self.loadData()
                                         self.tableView.reloadData()
                                     })
                                     break
@@ -339,6 +391,63 @@ class FavoritesTableViewController: UITableViewController {
             }
         }
     }
+    
+    private func downloadImages(ids: [Int]) {
+        self.filemgr = NSFileManager.defaultManager()
+        let dirPaths = NSSearchPathForDirectoriesInDomains(.DocumentDirectory, .UserDomainMask, true)
+        
+        let docsDir = dirPaths[0] as NSString
+        let newDir = docsDir.stringByAppendingPathComponent("images")
+        
+        let username: String = UserDefaultsSingleton.sharedInstance.getUsername()!
+        let purchased = PurchasedModelHandler.getAllPurchasedIn(username: username, ids: ids)
+        for p in purchased {
+            if p.productType == "Entrance" {
+                if let entrance = EntranceModelHandler.getByUsernameAndId(id: p.productUniqueId, username: username) {
+                    downloadEsetImage(esetId: entrance.setId, rootDirectory: newDir)
+                }
+            }
+        }
+    }
+    
+    private func downloadEsetImage(esetId esetId: Int, rootDirectory: String) {
+        
+        MediaRestAPIClass.downloadEsetImageLocal(esetId, completion: {
+            fullPath, data, error in
+            
+            if error != .Success {
+                if error == HTTPErrorType.Refresh {
+                    self.downloadEsetImage(esetId: esetId, rootDirectory: rootDirectory)
+                } else {
+                    //                    print("error in downloaing image from \(fullPath!)")
+                }
+            } else {
+                if let myData = data {
+                    let esetDir = (rootDirectory as NSString).stringByAppendingPathComponent("eset")
+                    
+                    do {
+                        if self.filemgr?.fileExistsAtPath(esetDir) == false {
+                            try self.filemgr?.createDirectoryAtPath(esetDir, withIntermediateDirectories: true, attributes: nil)
+                        }
+                        
+                        let filePath = (esetDir as NSString).stringByAppendingPathComponent(String(esetId))
+                        
+                        if self.filemgr?.fileExistsAtPath(filePath) == true {
+                            try self.filemgr?.removeItemAtPath(filePath)
+                        }
+                        self.filemgr?.createFileAtPath(filePath, contents: myData, attributes: nil)
+                        
+                        
+                    } catch {
+                        
+                    }
+                }
+            }
+            }, failure: { (error) in
+        })
+        
+    }
+    
     
     private func deletePurchaseData(uniqueId uniqueId: String) {
         let filemgr = NSFileManager.defaultManager()
@@ -392,13 +501,14 @@ class FavoritesTableViewController: UITableViewController {
                 }
             }
             self.purchased = localPurchased
-            
-            
-            NSOperationQueue.mainQueue().addOperationWithBlock({
-                self.refreshControl?.endRefreshing()
-                self.tableView.reloadData()
-            })
+        } else {
+            self.DownloadedCount.removeAll()
+            self.purchased.removeAll()
         }
+        NSOperationQueue.mainQueue().addOperationWithBlock({
+            self.refreshControl?.endRefreshing()
+            self.tableView.reloadData()
+        })
     }
     
     private func updateUserPurchaseData(productId productId: String, productType: String) {
@@ -537,6 +647,12 @@ class FavoritesTableViewController: UITableViewController {
                     }
                 }
             }
+        } else {
+            NSOperationQueue.mainQueue().addOperationWithBlock {
+                AlertClass.showTopMessage(viewController: self, messageType: "ActionResult", messageSubType: "DownloadFailed", type: "error", completion: nil)
+                self.tableView.reloadRowsAtIndexPaths([indexPath], withRowAnimation: UITableViewRowAnimation.Automatic)
+            }
+
         }
     }
 
@@ -549,7 +665,9 @@ class FavoritesTableViewController: UITableViewController {
                 downloader.initialize(entranceUniqueId: productId, viewController: self, vcType: "F", username: username, indexPath: indexPath)
                 
                 NSOperationQueue.mainQueue().addOperationWithBlock({ 
-                    if downloader.fillImagesArray() == true {
+                    downloader.fillImagesArray({ (result) in
+                    if result == true {
+                    
                         let filemgr = NSFileManager.defaultManager()
                         let dirPaths = NSSearchPathForDirectoriesInDomains(.DocumentDirectory, .UserDomainMask, true)
                         
@@ -572,7 +690,8 @@ class FavoritesTableViewController: UITableViewController {
                                 downloader.downloadPackageImages(saveDirectory: newDir)
                             }
                         }
-                    }
+                    } 
+                    })
                 })
             })
             self.queue.addOperation(operation)
@@ -647,6 +766,7 @@ class FavoritesTableViewController: UITableViewController {
                     if purchasedData.isDownloaded == false {
                         // get downloader state
                         if let cell = self.tableView.dequeueReusableCellWithIdentifier("ENTRANCE_NOT_DOWNLOADED", forIndexPath: indexPath) as? FavoriteEntranceNotDownloadedTableViewCell {
+                            
                             cell.configureCell(entrance: item.object as! EntranceStructure, purchased: purchasedData, indexPath: indexPath)
                             
                             if DownloaderSingleton.sharedInstance.getDownloaderState(uniqueId: item.uniqueId) == DownloaderSingleton.DownloaderState.Started {
@@ -702,12 +822,12 @@ class FavoritesTableViewController: UITableViewController {
                     if purchasedData.isDownloaded == false {
                         return 170.0
                     } else if purchasedData.isDownloaded == true {
-                        return 210.0
+                        return 225.0
                     }
                 }
             }
         } else if self.showType == "Edit" {
-            return 140.0
+            return 145.0
         }
         return 0.0
     }
@@ -715,6 +835,32 @@ class FavoritesTableViewController: UITableViewController {
     override func tableView(tableView: UITableView, didSelectRowAtIndexPath indexPath: NSIndexPath) {
         print("\(indexPath)")
     }
+    
+    // MARK: - DZN
+    func titleForEmptyDataSet(scrollView: UIScrollView!) -> NSAttributedString! {
+        let title = "شما هنوز محصولی را خریداری نکرده اید. می توانید از طریق خانه و یا محصولات نسبت به خرید اقدام نمایید."
+        let attributes = [NSFontAttributeName: UIFont(name: "IRANSansMobile", size: 14)!,
+                          NSForegroundColorAttributeName: UIColor.grayColor()]
+        
+        return NSAttributedString(string: title, attributes: attributes)
+    }
+    
+    func imageForEmptyDataSet(scrollView: UIScrollView!) -> UIImage! {
+        let image = UIImage(named: "book-shelf")
+        return image
+    }
+    
+    func emptyDataSetShouldAllowTouch(scrollView: UIScrollView!) -> Bool {
+        return false
+    }
+    
+    func emptyDataSetShouldDisplay(scrollView: UIScrollView!) -> Bool {
+        if self.showType == "Show" {
+            return true
+        }
+        return false
+    }
+    
     
     // MARK: - Navigation
     

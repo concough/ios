@@ -18,10 +18,11 @@ class BasketCheckoutTableViewController: UIViewController, UITableViewDelegate, 
     @IBOutlet weak var localTableView: UITableView!
     
     internal var loading: MBProgressHUD?
+    internal var filemgr: NSFileManager?
     
     private lazy var refreshConrtol: UIRefreshControl = {
         var refreshControl = UIRefreshControl()
-        refreshControl.attributedTitle = NSAttributedString(string: "برای به روز رسانی به پایین بکشید")
+        refreshControl.attributedTitle = NSAttributedString(string: "برای به روز رسانی به پایین بکشید", attributes: [NSFontAttributeName: UIFont(name: "IRANSansMobile-UltraLight", size: 12)!])
         refreshControl.addTarget(self, action: #selector(self.refreshTableView(_:)), forControlEvents: .ValueChanged)
         return refreshControl
     }()
@@ -42,8 +43,6 @@ class BasketCheckoutTableViewController: UIViewController, UITableViewDelegate, 
         self.localTableView.emptyDataSetDelegate = self
         self.localTableView.tableFooterView = UIView()
         
-        // uitableview refresh control setup
-        self.localTableView.addSubview(self.refreshConrtol)
         self.updateTotalCost()
         
         //self.navigationItem.rightBarButtonItem = UIBarButtonItem(title: "ویرایش", style: .Plain, target: self, action: nil)
@@ -58,6 +57,22 @@ class BasketCheckoutTableViewController: UIViewController, UITableViewDelegate, 
         self.navigationItem.rightBarButtonItem = UIBarButtonItem(barButtonSystemItem: .Refresh, target: self, action: #selector(self.refreshButtonPressed(_:)))
         self.navigationItem.rightBarButtonItem?.tintColor = UIColor(netHex: BLUE_COLOR_HEX, alpha: 1.0)
         
+        NSNotificationCenter.defaultCenter().addObserver(
+            self,
+            selector: #selector(BasketCheckoutTableViewController.displayLaunchDetails),
+            name: UIApplicationDidBecomeActiveNotification,
+            object: nil)
+        
+    }
+    
+    override func viewDidAppear(animated: Bool) {
+        super.viewDidAppear(animated)
+        
+        // uitableview refresh control setup
+        self.localTableView.addSubview(self.refreshConrtol)
+        
+        self.displayLaunchDetails()
+        // TODO: verify request
     }
 
     override func didReceiveMemoryWarning() {
@@ -66,16 +81,34 @@ class BasketCheckoutTableViewController: UIViewController, UITableViewDelegate, 
     }
 
     // Actions
-    @IBAction func refreshButtonPressed(sender: UIBarButtonItem) {
-        BasketSingleton.sharedInstance.loadBasketItems(viewController: self) { (count) in
-            // basket items loaded
-            print("basket items loaded: \(count)")
+    func displayLaunchDetails() {
+        if let appDelegate = UIApplication.sharedApplication().delegate as? AppDelegate {
             
-            NSOperationQueue.mainQueue().addOperationWithBlock({ 
-                self.localTableView.reloadData()
-            })
+            if var path = appDelegate.path {
+                appDelegate.path = nil
+                
+                if path.trim() != "" {
+                    if path.trim()!.hasPrefix("/") {
+                        path = path.trim()!.substringFromIndex(path.startIndex.advancedBy(1))
+                        let components = path.trim()?.componentsSeparatedByString("/")
+                        
+                        if components![0] == "pay" {
+                            if components![1] == "success" {
+                                self.verifyCheckout()
+                            } else if components![1] == "error" {
+                                AlertClass.showAlertMessage(viewController: self, messageType: "BasketResult", messageSubType: "CheckoutError", type: "error", completion: nil)
+                            }
+                        }
+                    }
+                }
+            } else {
+                self.verifyCheckout()
+            }
         }
-        
+    }
+    
+    @IBAction func refreshButtonPressed(sender: UIBarButtonItem) {
+        self.refreshingBasket()
     }
     
     @IBAction func deleteButtonPressed(sender: UIButton) {
@@ -97,46 +130,134 @@ class BasketCheckoutTableViewController: UIViewController, UITableViewDelegate, 
                     }
                 })
                 
+                }, failure: {
+                    NSOperationQueue.mainQueue().addOperationWithBlock({
+                        self.localTableView.reloadData()
+                    })
             })
         }
     }
     
-    @IBAction func checkoutButtonPressed(sender: UIButton) {
-        BasketSingleton.sharedInstance.checkout(viewController: self) { (count, purchased) in
-            if let localPurchased = purchased {
-                AlertClass.showAlertMessage(viewController: self, messageType: "ActionResult", messageSubType: "PurchasedSuccess", type: "", completion: { 
-                    self.tabBarController?.tabBar.items?[2].badgeValue = "\(localPurchased.count)"
-                })
-//                AlertClass.showSimpleErrorMessage(viewController: self, messageType: "ActionResult", messageSubType: "PurchasedSuccess", completion: {
-//                    self.tabBarController?.tabBar.items?[2].badgeValue = "\(localPurchased.count)"
-//                })
-            }
-            
-            NSOperationQueue.mainQueue().addOperationWithBlock({ 
-                self.localTableView.reloadData()
 
-                self.updateTotalCost()
-                if count == 0 {
-                    self.payButton.hidden = true
-                }
-            })
-        }
+    @IBAction func checkoutButtonPressed(sender: UIButton) {
+        BasketSingleton.sharedInstance.checkout(viewController: self, completion: {(count, purchased) in
+            self.checkoutCompleted(count, purchased: purchased)
+
+        }, redirectCompletion: { (url, authority) in
+            if let nsurl = NSURL(string: url) {
+                UIApplication.sharedApplication().openURL(nsurl)
+            }
+        })
+        
     }
     
     // Functions
+    private func checkoutCompleted(count: Int, purchased: [Int: (Int, Int, NSDate)]?) {
+        if let localPurchased = purchased {
+            AlertClass.showAlertMessage(viewController: self, messageType: "ActionResult", messageSubType: "PurchasedSuccess", type: "success", completion: {
+                self.tabBarController?.tabBar.items?[2].badgeValue = "\(localPurchased.count)"
+            })
+            
+            var purchasedTemp: [Int] = []
+            for p in localPurchased {
+                purchasedTemp.append(p.1.0)
+            }
+            self.downloadImages(purchasedTemp)
+            //                AlertClass.showSimpleErrorMessage(viewController: self, messageType: "ActionResult", messageSubType: "PurchasedSuccess", completion: {
+            //                    self.tabBarController?.tabBar.items?[2].badgeValue = "\(localPurchased.count)"
+            //                })
+        }
+        
+        NSOperationQueue.mainQueue().addOperationWithBlock({
+            self.localTableView.reloadData()
+            
+            self.updateTotalCost()
+            if count == 0 {
+                self.payButton.hidden = true
+            }
+        })
+
+    }
+    
+    private func verifyCheckout() {
+        BasketSingleton.sharedInstance.verifyCheckout(viewController: self) { (count, purchased) in
+            self.checkoutCompleted(count, purchased: purchased)
+        }
+    }
+    
     @objc private func refreshTableView(refreshControl: UIRefreshControl) {
+        self.refreshConrtol.endRefreshing()
         self.refreshingBasket()
     }
 
+    private func downloadImages(ids: [Int]) {
+        self.filemgr = NSFileManager.defaultManager()
+        let dirPaths = NSSearchPathForDirectoriesInDomains(.DocumentDirectory, .UserDomainMask, true)
+        
+        let docsDir = dirPaths[0] as NSString
+        let newDir = docsDir.stringByAppendingPathComponent("images")
+        
+        let username: String = UserDefaultsSingleton.sharedInstance.getUsername()!
+        let purchased = PurchasedModelHandler.getAllPurchasedIn(username: username, ids: ids)
+        for p in purchased {
+            if p.productType == "Entrance" {
+                if let entrance = EntranceModelHandler.getByUsernameAndId(id: p.productUniqueId, username: username) {
+                    downloadEsetImage(esetId: entrance.setId, rootDirectory: newDir)
+                }
+            }
+        }
+    }
+    
+    private func downloadEsetImage(esetId esetId: Int, rootDirectory: String) {
+        
+        MediaRestAPIClass.downloadEsetImageLocal(esetId, completion: {
+            fullPath, data, error in
+            
+            if error != .Success {
+                if error == HTTPErrorType.Refresh {
+                    self.downloadEsetImage(esetId: esetId, rootDirectory: rootDirectory)
+                } else {
+//                    print("error in downloaing image from \(fullPath!)")
+                }
+            } else {
+                if let myData = data {
+                    let esetDir = (rootDirectory as NSString).stringByAppendingPathComponent("eset")
+                    
+                    do {
+                        if self.filemgr?.fileExistsAtPath(esetDir) == false {
+                            try self.filemgr?.createDirectoryAtPath(esetDir, withIntermediateDirectories: true, attributes: nil)
+                        }
+                        
+                        let filePath = (esetDir as NSString).stringByAppendingPathComponent(String(esetId))
+                        
+                        if self.filemgr?.fileExistsAtPath(filePath) == true {
+                            try self.filemgr?.removeItemAtPath(filePath)
+                        }
+                        self.filemgr?.createFileAtPath(filePath, contents: myData, attributes: nil)
+                        
+                        
+                    } catch {
+                        
+                    }
+                }
+            }
+            }, failure: { (error) in
+        })
+        
+    }
+    
     private func refreshingBasket() {
         BasketSingleton.sharedInstance.loadBasketItems(viewController: self) { (count) in
             NSOperationQueue.mainQueue().addOperationWithBlock({
-                self.refreshConrtol.endRefreshing()
                 self.localTableView.reloadData()
                 
+                self.updateTotalCost()
                 if count == 0 {
                     self.payButton.hidden = true
+                } else {
+                    self.payButton.hidden = false
                 }
+                
             })
         }
     }
@@ -175,13 +296,13 @@ class BasketCheckoutTableViewController: UIViewController, UITableViewDelegate, 
     }
     
     func tableView(tableView: UITableView, heightForRowAtIndexPath indexPath: NSIndexPath) -> CGFloat {
-        return 145.0
+        return 160.0
     }
     
     // MARK: - DZN
     func titleForEmptyDataSet(scrollView: UIScrollView!) -> NSAttributedString! {
         let title = "سبد کالای شما خالیست"
-        let attributes = [NSFontAttributeName: UIFont(name: "IRANYekanMobile-Bold", size: 16)!,
+        let attributes = [NSFontAttributeName: UIFont(name: "IRANSansMobile", size: 16)!,
                           NSForegroundColorAttributeName: UIColor.darkGrayColor()]
         
         return NSAttributedString(string: title, attributes: attributes)

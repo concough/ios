@@ -17,6 +17,8 @@ class AEDAdvanceTableViewCell: UITableViewCell {
     @IBOutlet weak var publishedDateLabel: UILabel!
     @IBOutlet weak var orgTypeLabel: UILabel!
     @IBOutlet weak var esetImageView: UIImageView!
+    @IBOutlet weak var addToBasketButton: UIButton!
+    @IBOutlet weak var buyedDoubleTickImage: UIImageView!
     
     override func awakeFromNib() {
         super.awakeFromNib()
@@ -32,27 +34,78 @@ class AEDAdvanceTableViewCell: UITableViewCell {
         self.esetImageView.image = UIImage(named: "NoImage")
     }
     
-    internal func configureCell(indexPath indexPath: NSIndexPath, esetId: Int,  entrance: ArchiveEntranceStructure) {
-        self.orgTypeLabel.text = "\(entrance.organization!) "
+    internal func configureCell(indexPath indexPath: NSIndexPath, esetId: Int,  entrance: ArchiveEntranceStructure, state: Bool, buyed: Bool) {
+//        self.orgTypeLabel.text = "\(entrance.organization!) "
         self.orgYearLabel.text = FormatterSingleton.sharedInstance.NumberFormatter.stringFromNumber(entrance.year!)!
         
         self.buyCountLabel.text = FormatterSingleton.sharedInstance.NumberFormatter.stringFromNumber(entrance.buyCount!)! + " خرید"
         self.publishedDateLabel.text = FormatterSingleton.sharedInstance.IRDateFormatter.stringFromDate(entrance.lastPablished!)
         
-        if let extraData = entrance.extraData {
-            var s = ""
-            for (key, item) in extraData {
-                s += "\(key): \(item.stringValue)" + " - "
-            }
-            
-            if s.characters.count > 3 {
-                s = s.substringToIndex(s.endIndex.advancedBy(-3))
-            }
-            self.extraDataLabel.text = s
-        }
-        
-        self.downloadImage(esetId: esetId, indexPath: indexPath)
+//        if let extraData = entrance.extraData {
+//            var s = ""
+//            for (key, item) in extraData {
+//                s += "\(key): \(item.stringValue)" + " - "
+//            }
+//            
+//            if s.characters.count > 3 {
+//                s = s.substringToIndex(s.endIndex.advancedBy(-3))
+//            }
+//            self.extraDataLabel.text = s
+//        }
+        self.extraDataLabel.text = "\(entrance.organization!)"
+        self.changeButtonState(state: state, buyed: buyed)
+        //self.downloadImage(esetId: esetId, indexPath: indexPath)
     }
+    
+    private func changeButtonState(state state: Bool, buyed: Bool) {
+        if buyed == false {
+            self.addToBasketButton.hidden = false
+            self.buyedDoubleTickImage.hidden = true
+            
+            self.changeBuyButtonState(state: state)
+        } else {
+            self.addToBasketButton.hidden = true
+            self.buyedDoubleTickImage.hidden = false
+            
+//            self.addToBasketButton.setTitleColor(UIColor(netHex: GREEN_COLOR_HEX, alpha: 1.0), forState: .Normal)
+//            self.addToBasketButton.setTitle("مشاهده آزمون", forState: .Normal)
+//            self.addToBasketButton.layer.cornerRadius = 5.0
+//            self.addToBasketButton.layer.masksToBounds = true
+//            self.addToBasketButton.layer.borderWidth = 1.0
+//            self.addToBasketButton.layer.borderColor = self.addToBasketButton.titleColorForState(.Normal)?.CGColor
+        }
+    }
+    
+    internal func disableBuyButton() {
+        self.addToBasketButton.enabled = false
+        self.addToBasketButton.setTitleColor(UIColor(netHex: GRAY_COLOR_HEX_1, alpha: 1.0), forState: .Normal)
+//        self.addToBasketButton.setTitle("منتظر بمانید ...", forState: .Normal)
+        self.addToBasketButton.setTitle("●●●", forState: .Normal)
+        self.addToBasketButton.layer.cornerRadius = 5.0
+        self.addToBasketButton.layer.masksToBounds = true
+        self.addToBasketButton.layer.borderWidth = 1.0
+        self.addToBasketButton.layer.borderColor = self.addToBasketButton.titleColorForState(.Normal)?.CGColor        
+    }
+    
+    internal func changeBuyButtonState(state state: Bool) {
+        self.addToBasketButton.enabled = true
+        if state == false {
+            self.addToBasketButton.setTitleColor(UIColor(netHex: BLUE_COLOR_HEX, alpha: 1.0), forState: .Normal)
+            self.addToBasketButton.setTitle("+ سبد خرید", forState: .Normal)
+            self.addToBasketButton.layer.cornerRadius = 5.0
+            self.addToBasketButton.layer.masksToBounds = true
+            self.addToBasketButton.layer.borderWidth = 1.0
+            self.addToBasketButton.layer.borderColor = self.addToBasketButton.titleColorForState(.Normal)?.CGColor
+        } else if state == true {
+            self.addToBasketButton.setTitleColor(UIColor(netHex: RED_COLOR_HEX, alpha: 1.0), forState: .Normal)
+            self.addToBasketButton.setTitle("- سبد خرید", forState: .Normal)
+            self.addToBasketButton.layer.cornerRadius = 5.0
+            self.addToBasketButton.layer.masksToBounds = true
+            self.addToBasketButton.layer.borderWidth = 1.0
+            self.addToBasketButton.layer.borderColor = self.addToBasketButton.titleColorForState(.Normal)?.CGColor
+        }
+    }
+    
 
     private func downloadImage(esetId esetId: Int, indexPath: NSIndexPath) {
         if let esetUrl = MediaRestAPIClass.makeEsetImageUri(esetId) {

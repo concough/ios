@@ -46,13 +46,14 @@ class AuthRestAPIClass {
         
     }
     
-    class func preSignup(username username: String, completion: (data: JSON?, error: HTTPErrorType?) -> (), failure: (error: NetworkErrorType?) -> ()) {
+    class func preSignup(username username: String, send_type: String, completion: (data: JSON?, error: HTTPErrorType?) -> (), failure: (error: NetworkErrorType?) -> ()) {
         
         guard let fullPath = UrlMakerSingleton.sharedInstance.preSignupUrl() else {
             return
         }
         
-        let parameters: [String: String] = ["username": username]
+        let parameters: [String: String] = ["username": username,
+                                            "type": send_type]
         let headers: [String: String] = ["Content-Type": "application/json",
                                          "Accept": "application/json"]
         
@@ -146,13 +147,14 @@ class AuthRestAPIClass {
         }
     }
     
-    class func forgotPassword(username username: String, completion: (data: JSON?, error: HTTPErrorType?) -> (), failure: (error: NetworkErrorType?) -> ()) {
+    class func forgotPassword(username username: String, send_type: String, completion: (data: JSON?, error: HTTPErrorType?) -> (), failure: (error: NetworkErrorType?) -> ()) {
         
         guard let fullPath = UrlMakerSingleton.sharedInstance.forgotPassword() else {
             return
         }
         
-        let parameters: [String: String] = ["username": username]
+        let parameters: [String: String] = ["username": username,
+                                            "type": send_type]
         let headers: [String: String] = ["Content-Type": "application/json",
                                          "Accept": "application/json"]
         

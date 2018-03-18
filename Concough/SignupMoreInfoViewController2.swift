@@ -73,7 +73,7 @@ class SignupMoreInfoViewController2: UIViewController, UINavigationControllerDel
         }
         
         let data = self.Years[row]
-        let attributes = NSDictionary(object: UIFont(name: "IRANYekanMobile-Bold", size: 16)! , forKey: NSFontAttributeName) as! [String: AnyObject]
+        let attributes = NSDictionary(object: UIFont(name: "IRANSansMobile", size: 16)! , forKey: NSFontAttributeName) as! [String: AnyObject]
         let title = NSAttributedString(string: FormatterSingleton.sharedInstance.NumberFormatter.stringFromNumber(data)!, attributes: attributes)
         label.attributedText = title
         label.textAlignment = .Center

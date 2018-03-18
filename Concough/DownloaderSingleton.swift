@@ -22,6 +22,12 @@ class DownloaderSingleton {
         self.downloaders = [:]
     }
     
+    internal var AllDownloadersId: [String: (type: String, object: AnyObject, state: DownloaderState)] {
+        get {
+            return self.downloaders
+        }
+    }
+    
     internal func getMeDownloader(type type: String, uniqueId: String) -> AnyObject? {
         if type == "Entrance" {
             if self.downloaders.keys.contains(uniqueId) == true {

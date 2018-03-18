@@ -12,44 +12,72 @@ import MBProgressHUD
 class SignUpViewController: UIViewController, UITextFieldDelegate {
     
     private var signupStruct: SignupStructure!
-    private var isUsernameValid: Bool = false
+    private var isUsernameValid: Bool = false {
+        didSet {
+            if isUsernameValid {
+                SignupButton.enabled = true
+                smsInformation.hidden = false
+                self.SignupButton.backgroundColor = UIColor(netHex: BLUE_COLOR_HEX, alpha: 1.0)
+            } else {
+                SignupButton.enabled = false
+                smsInformation.hidden = true
+                self.SignupButton.backgroundColor = UIColor.lightGrayColor()
+            }
+        }
+    }
+    private var send_type: String = "sms" {
+        didSet {
+            if send_type == "call" {
+                self.SignupButton.setTitle("ارسال کد از طریق تماس", forState: .Normal)
+            } else if send_type == "sms" {
+                self.SignupButton.setTitle("ارسال کد فعالسازی", forState: .Normal)
+            } else {
+                self.SignupButton.setTitle("فردا سعی نمایید ..", forState: .Normal)
+            }
+        }
+    }
+    
+    
     private var isEmailValid: Bool = false
     private var mainUsernameText: String!
     
     private var activeTextField: UITextField?
     private var loading: MBProgressHUD?
     
-    @IBOutlet weak var emailTextField: UITextField!
-    @IBOutlet weak var passwordTextField: UITextField!
     @IBOutlet weak var usernameTextField: UITextField!
     @IBOutlet weak var SignupButton: UIButton!
     @IBOutlet weak var loginButton: UIButton!
+    @IBOutlet weak var returnButton: UIButton!
     @IBOutlet weak var scrollView: UIScrollView!
     
-    @IBOutlet weak var emailMsgStackView: UIStackView!
-    @IBOutlet weak var emailMsgLabel: UILabel!
     @IBOutlet weak var usernameMsgLabel: UILabel!
+    @IBOutlet weak var smsInformation: UILabel!
     @IBOutlet weak var usernameMsgRefreshControl: UIActivityIndicatorView!
     
     override func viewDidLoad() {
         super.viewDidLoad()
 
         self.signupStruct = SignupStructure()
+        self.SignupButton.backgroundColor = UIColor.lightGrayColor()
+        self.SignupButton.enabled = false
+        self.smsInformation.hidden = true
         
         // customize views
         self.SignupButton.layer.cornerRadius = 5
         self.loginButton.layer.cornerRadius = 3
         self.loginButton.layer.borderWidth = 1.0
         self.loginButton.layer.borderColor = self.loginButton.titleLabel?.textColor.CGColor
+
+        self.returnButton.layer.cornerRadius = 3
+        self.returnButton.layer.borderWidth = 1.0
+        self.returnButton.layer.borderColor = self.returnButton.titleLabel?.textColor.CGColor
         
         self.mainUsernameText = self.usernameMsgLabel.text
         self.usernameMsgRefreshControl.stopAnimating()
-        self.emailMsgStackView.hidden = true
         
         // make text fields properties
-        self.emailTextField.delegate = self
-        self.passwordTextField.delegate = self
         self.usernameTextField.delegate = self
+        self.usernameTextField.addTarget(self, action: #selector(self.textFieldDidChange(_:)), forControlEvents: .EditingChanged)
         
         // Set Notifications
         NSNotificationCenter.defaultCenter().addObserver(self, selector: #selector(SignUpViewController.keyboardWillHideNotification(_:)), name: UIKeyboardWillHideNotification, object: nil)
@@ -79,7 +107,21 @@ class SignUpViewController: UIViewController, UITextFieldDelegate {
         super.touchesBegan(touches, withEvent: event)
     }
     
+    @IBAction func textFieldDidChange(textField: UITextField) {
+        if textField.text?.trim()?.characters.count > 0 {
+            textField.textAlignment = .Left
+            textField.semanticContentAttribute = .ForceLeftToRight
+        } else {
+            textField.textAlignment = .Center
+            textField.semanticContentAttribute = .ForceRightToLeft
+        }
+    }
+    
     // MARK - Actions
+    @IBAction func returnButtonPressed(sender: UIButton) {
+        self.dismissViewControllerAnimated(true, completion: nil)
+    }    
+    
     @IBAction func signupButtonPressed(sender: UIButton) {
 //        if let email = self.emailTextField.text where email != "", let pass = self.passwordTextField.text where pass != "", let username = self.usernameTextField.text where username != "" {
 //           
@@ -97,14 +139,20 @@ class SignUpViewController: UIViewController, UITextFieldDelegate {
 //        }
         if var username = self.usernameTextField.text where username != "" {
             
-            if self.isUsernameValid {
-                if username.hasPrefix("0") {
-                    username = username.substringFromIndex(username.startIndex.advancedBy(1))
+            if username.isValidPhoneNumber {
+                if self.isUsernameValid {
+                    if username.hasPrefix("0") {
+                        username = username.substringFromIndex(username.startIndex.advancedBy(1))
+                    }
+                    username = "98" + username
+                    
+                    self.signupStruct.username = username
+                    self.makePreSignup(username: username)
                 }
-                username = "98" + username
-                
-                self.signupStruct.username = username
-                self.makePreSignup(username: username)
+            } else {
+                NSOperationQueue.mainQueue().addOperationWithBlock({
+                    AlertClass.showAlertMessage(viewController: self, messageType: "Form", messageSubType: "PhoneVerifyWrong", type: "warning", completion: nil)
+                })
             }
         } else {
             NSOperationQueue.mainQueue().addOperationWithBlock({
@@ -119,7 +167,7 @@ class SignUpViewController: UIViewController, UITextFieldDelegate {
             self.loading = AlertClass.showLoadingMessage(viewController: self)
         }
         
-        AuthRestAPIClass.preSignup(username: username, completion: { (data, error) in
+        AuthRestAPIClass.preSignup(username: username, send_type: self.send_type, completion: { (data, error) in
             
             NSOperationQueue.mainQueue().addOperationWithBlock({
                 AlertClass.hideLoaingMessage(progressHUD: self.loading)
@@ -149,9 +197,27 @@ class SignUpViewController: UIViewController, UITextFieldDelegate {
                                     case "ExistUsername":
                                         self.usernameMsgLabel.text = "این شماره همراه قبلا انتخاب شده است"
                                         self.usernameMsgLabel.textColor = UIColor(netHex: RED_COLOR_HEX, alpha: 1.0)
-                                        AlertClass.showSimpleErrorMessage(viewController: self, messageType: "AuthProfile", messageSubType: errorType, completion: nil)
+                                        
+                                        AlertClass.showAlertMessage(viewController: self, messageType: "AuthProfile", messageSubType: errorType, type: "error", completion: nil)
+//                                        AlertClass.showSimpleErrorMessage(viewController: self, messageType: "AuthProfile", messageSubType: errorType, completion: nil)
+                                case "SMSSendError": fallthrough
+                                case "CallSendError":
+                                    AlertClass.showAlertMessage(viewController: self, messageType: "AuthProfile", messageSubType: errorType, type: "error", completion: nil)
+                                case "ExceedToday":
+                                    AlertClass.showAlertMessage(viewController: self, messageType: "AuthProfile", messageSubType: errorType, type: "error", completion: {
+                                        
+                                        self.send_type = "call"
+                                    })
+                                case "ExceedCallToday":
+                                    AlertClass.showAlertMessage(viewController: self, messageType: "AuthProfile", messageSubType: errorType, type: "error", completion: {
+                                        
+                                        self.send_type = ""
+                                        self.SignupButton.enabled = false
+                                        self.SignupButton.backgroundColor = UIColor.lightGrayColor()
+                                    })
                                     default:
-                                        AlertClass.showSimpleErrorMessage(viewController: self, messageType: "ErrorResult", messageSubType: errorType, completion: nil)
+                                        AlertClass.showAlertMessage(viewController: self, messageType: "ErrorResult", messageSubType: errorType, type: "error", completion: nil)
+//                                        AlertClass.showSimpleErrorMessage(viewController: self, messageType: "ErrorResult", messageSubType: errorType, completion: nil)
                                 }
                             }
                         default: break
@@ -216,7 +282,8 @@ class SignUpViewController: UIViewController, UITextFieldDelegate {
                                 default:
                                     self.usernameMsgLabel.text = self.mainUsernameText
                                     self.usernameMsgLabel.textColor = UIColor(netHex: GRAY_COLOR_HEX_1, alpha: 1.0)
-                                    AlertClass.showSimpleErrorMessage(viewController: self, messageType: "ErrorResult", messageSubType: errorType, completion: nil)
+                                    AlertClass.showAlertMessage(viewController: self, messageType: "ErrorResult", messageSubType: errorType, type: "error", completion: nil)
+//                                    AlertClass.showSimpleErrorMessage(viewController: self, messageType: "ErrorResult", messageSubType: errorType, completion: nil)
                                 }
                             }
                         default:
@@ -225,6 +292,7 @@ class SignUpViewController: UIViewController, UITextFieldDelegate {
                     }
                 }
             } else {
+                self.isUsernameValid = false
                 // show alert
                 self.usernameMsgLabel.text = self.mainUsernameText
                 self.usernameMsgLabel.textColor = UIColor(netHex: GRAY_COLOR_HEX_1, alpha: 1.0)
@@ -233,6 +301,7 @@ class SignUpViewController: UIViewController, UITextFieldDelegate {
                 })
             }
         }, failure: { (error) in
+            self.isUsernameValid = false
             if let err = error {
                 switch err {
                 case .NoInternetAccess:
@@ -263,17 +332,13 @@ class SignUpViewController: UIViewController, UITextFieldDelegate {
         
     }
     
-    func textFieldDidEndEditing(textField: UITextField) {
-        self.activeTextField = nil
-        
-        if textField == self.usernameTextField {
+    @IBAction func textFieldChanged(sender: UITextField) {
             // chack for valid username with server
             self.usernameMsgLabel.text = self.mainUsernameText
             self.usernameMsgLabel.textColor = UIColor(netHex: GRAY_COLOR_HEX_1, alpha: 1.0)
             
-            if var username = textField.text where username != "" {
+            if var username = self.usernameTextField.text where username != "" {
                 if username.isValidPhoneNumber {
-                    self.emailMsgStackView.hidden = false
                     self.usernameMsgRefreshControl.startAnimating()
                     
                     if username.hasPrefix("0") {
@@ -284,40 +349,47 @@ class SignUpViewController: UIViewController, UITextFieldDelegate {
                     
                     self.checkUsername(username: username)
                 } else {
+                    self.isUsernameValid = false
                     //print("invalid username")
+                    self.usernameMsgRefreshControl.stopAnimating()
                     self.usernameMsgLabel.text = "شماره همراه وارد شده صحیح نمی باشد"
                     self.usernameMsgLabel.textColor = UIColor(netHex: RED_COLOR_HEX, alpha: 1.0)
                 }
-            }
-            
-//        } else if textField == self.emailTextField {
-//            if let email = self.emailTextField.text?.stringByTrimmingCharactersInSet(NSCharacterSet.whitespaceAndNewlineCharacterSet()) {
-//                
-//                if email.isValidEmail {
-//                    self.isEmailValid = true
-//                    self.emailMsgLabel.text = ""
-//                    self.emailMsgStackView.hidden = true
-//                } else {
-//                    self.isEmailValid = false
-//                    self.emailMsgLabel.text = "ایمیل معتبر وارد نمایید"
-//                    self.emailMsgLabel.textColor = UIColor(netHex: RED_COLOR_HEX, alpha: 1.0)
-//                    self.emailMsgStackView.hidden = false
-//                }
-//            }
-        } else if textField == self.passwordTextField {
-            // validate password
+            } else {
+                self.usernameMsgRefreshControl.stopAnimating()
+                self.isUsernameValid = false
+                
         }
+            
+            //        } else if textField == self.emailTextField {
+            //            if let email = self.emailTextField.text?.stringByTrimmingCharactersInSet(NSCharacterSet.whitespaceAndNewlineCharacterSet()) {
+            //
+            //                if email.isValidEmail {
+            //                    self.isEmailValid = true
+            //                    self.emailMsgLabel.text = ""
+            //                    self.emailMsgStackView.hidden = true
+            //                } else {
+            //                    self.isEmailValid = false
+            //                    self.emailMsgLabel.text = "ایمیل معتبر وارد نمایید"
+            //                    self.emailMsgLabel.textColor = UIColor(netHex: RED_COLOR_HEX, alpha: 1.0)
+            //                    self.emailMsgStackView.hidden = false
+            //                }
+            //            }
+        
+    }
+    
+    func textFieldDidEndEditing(textField: UITextField) {
+        self.activeTextField = nil
+        
     }
     
     func textFieldShouldReturn(textField: UITextField) -> Bool {
         textField.resignFirstResponder()
         
         if textField == self.usernameTextField {
-            self.emailTextField.becomeFirstResponder()
+            self.usernameTextField.becomeFirstResponder()
             
             
-        } else if textField == self.emailTextField {
-            self.passwordTextField.becomeFirstResponder()
         }
         return true
     }

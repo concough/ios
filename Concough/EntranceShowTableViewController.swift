@@ -45,6 +45,27 @@ class EntranceShowTableViewController: UITableViewController, EHHorizontalSelect
         super.viewDidLoad()
 
         self.navigationItem.rightBarButtonItem = UIBarButtonItem(image: UIImage(named: "Info"), style: .Plain, target: self, action: #selector(self.infoButtonPressed(_:)))
+
+        UIApplication.sharedApplication().idleTimerDisabled = true
+        
+        NSNotificationCenter.defaultCenter().addObserverForName(UIApplicationUserDidTakeScreenshotNotification, object: nil, queue: NSOperationQueue.mainQueue()) { (notification) in
+            
+            let time = FormatterSingleton.sharedInstance.UTCShortDateFormatter.stringFromDate(NSDate())
+            
+            let username = UserDefaultsSingleton.sharedInstance.getUsername()!
+            let result = SnapshotCounterHandler.countUpAndCheck(username: username, productUniqueId: self.entranceUniqueId, productType: "Entrance", time: time)
+            if result.0 {
+                if result.1 {
+                    AlertClass.showAlertMessage(viewController: self, messageType: "ActionResult", messageSubType: "BlockedByScreenshot", type: "error", completion: nil)
+                    self.navigationController?.popViewControllerAnimated(true)
+
+                } else {
+                    AlertClass.showAlertMessage(viewController: self, messageType: "ActionResult", messageSubType: "ScreenshotTaken", type: "warning", completion: nil)
+                }
+            } else {
+                AlertClass.showAlertMessage(viewController: self, messageType: "ActionResult", messageSubType: "ScreenshotTaken", type: "warning", completion: nil)
+            }
+        }
         
         self.initializeHorizontalView()
         
@@ -89,6 +110,11 @@ class EntranceShowTableViewController: UITableViewController, EHHorizontalSelect
         // Dispose of any resources that can be recreated.
     }
 
+    override func viewWillDisappear(animated: Bool) {
+        UIApplication.sharedApplication().idleTimerDisabled = false
+        self.menuView?.hide()
+    }
+    
     // BTNavigationDropdownMenu
     private func configureMenu() {
         if self.bookletsString.count > 0 {
@@ -97,8 +123,8 @@ class EntranceShowTableViewController: UITableViewController, EHHorizontalSelect
             
             // View Customizations
             self.menuView?.cellSeparatorColor = UIColor(netHex: GRAY_COLOR_HEX_1, alpha: 0.3)
-            self.menuView?.cellTextLabelFont = UIFont(name: "IRANYekanMobile-Bold", size: 12)
-            self.menuView?.navigationBarTitleFont = UIFont(name: "IRANYekanMobile-Bold", size: 13)
+            self.menuView?.cellTextLabelFont = UIFont(name: "IRANSansMobile", size: 13)
+            self.menuView?.navigationBarTitleFont = UIFont(name: "IRANSansMobile-Medium", size: 14)
             self.menuView?.cellTextLabelAlignment = NSTextAlignment.Center
             self.menuView?.arrowTintColor = UIColor(netHex: BLUE_COLOR_HEX, alpha: 1.0)
             self.menuView?.arrowTintColor = UIColor.blackColor()
@@ -140,8 +166,8 @@ class EntranceShowTableViewController: UITableViewController, EHHorizontalSelect
         //self.hSelView?.tintColor = self.hSelView?.textColor
         
         
-        self.hSelView?.font = UIFont(name: "IRANYekanMobile-Bold", size: 12)
-        self.hSelView?.fontMedium = UIFont(name: "IRANYekanMobile-Bold", size: 14)
+        self.hSelView?.font = UIFont(name: "IRANSansMobile-Medium", size: 13)
+        self.hSelView?.fontMedium = UIFont(name: "IRANSansMobile-Bold", size: 13)
         
         self.hSelView?.semanticContentAttribute = UISemanticContentAttribute.ForceRightToLeft
         self.hSelView?.cellGap = 25.0
@@ -190,6 +216,7 @@ class EntranceShowTableViewController: UITableViewController, EHHorizontalSelect
             self.navigationItem.title = "سوالات نشان شده (" + FormatterSingleton.sharedInstance.NumberFormatter.stringFromNumber(self.starred.count)! + ")"
             
             self.showType = "Starred"
+            self.menuView?.hide()
         } else if self.showType == "Starred" {
             self.navigationItem.titleView = self.menuView
             self.showType = "Show"
@@ -199,12 +226,12 @@ class EntranceShowTableViewController: UITableViewController, EHHorizontalSelect
         EntranceOpenedCountModelHandler.update(entranceUniqueId: self.entranceUniqueId, type: self.showType)
 
         // Create Log
-        let eData = JSON(["uniqueId": self.entranceUniqueId])
-        if self.showType == "Show" {
-            self.createLog(logType: LogTypeEnum.EntranceShowNormal.rawValue, extraData: eData)
-        } else if self.showType == "Starred" {
-            self.createLog(logType: LogTypeEnum.EntranceShowStarred.rawValue, extraData: eData)
-        }
+//        let eData = JSON(["uniqueId": self.entranceUniqueId])
+//        if self.showType == "Show" {
+//            self.createLog(logType: LogTypeEnum.EntranceShowNormal.rawValue, extraData: eData)
+//        } else if self.showType == "Starred" {
+//            self.createLog(logType: LogTypeEnum.EntranceShowStarred.rawValue, extraData: eData)
+//        }
         
         NSOperationQueue.mainQueue().addOperationWithBlock {
             self.tableView.reloadData()
@@ -551,7 +578,7 @@ class EntranceShowTableViewController: UITableViewController, EHHorizontalSelect
             if let controller = segue.destinationViewController as? EntranceShowInfoViewController {
                 controller.popoverPresentationController?.delegate = self
                 controller.popoverPresentationController?.barButtonItem = self.navigationItem.rightBarButtonItem
-                controller.preferredContentSize = CGSize(width: self.view.layer.bounds.width, height: 180)
+                controller.preferredContentSize = CGSize(width: self.view.layer.bounds.width, height: 185)
                 
             }
         }

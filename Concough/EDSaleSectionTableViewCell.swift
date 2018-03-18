@@ -37,7 +37,13 @@ class EDSaleSectionTableViewCell: UITableViewCell {
     }
     
     internal func configureCell(saleData saleData: EntranceSaleStructure?, statData: EntranceStatStructure?, buttonState: Bool, basketItemCount: Int? = nil) {
-        self.costLabel.text = FormatterSingleton.sharedInstance.NumberFormatter.stringFromNumber(saleData!.cost!)! + " تومان"
+        
+        if (saleData!.cost! != 0) {
+            self.costLabel.text = FormatterSingleton.sharedInstance.NumberFormatter.stringFromNumber(saleData!.cost!)! + " تومان"
+        } else {
+            self.costLabel.text = "رایگان"
+            self.costLabel.textColor = UIColor(netHex: RED_COLOR_HEX, alpha: 1.0)
+        }
         
         if let stat = statData {
             self.purchaseCount.text = FormatterSingleton.sharedInstance.NumberFormatter.stringFromNumber(stat.purchased!)! + " خرید"
@@ -53,7 +59,19 @@ class EDSaleSectionTableViewCell: UITableViewCell {
         self.showBasketInfo(state: buttonState, salesCount: basketItemCount)
     }
     
-    private func changeButtonState(state state: Bool) {
+    internal func disableBuyButton() {
+        self.buyButton.enabled = false
+        self.buyButton.setTitleColor(UIColor(netHex: GRAY_COLOR_HEX_1, alpha: 1.0), forState: .Normal)
+//        self.buyButton.setTitle("منتظر بمانید ...", forState: .Normal)
+        self.buyButton.setTitle("●●●", forState: .Normal)        
+        self.buyButton.layer.cornerRadius = 5.0
+        self.buyButton.layer.masksToBounds = true
+        self.buyButton.layer.borderWidth = 1.0
+        self.buyButton.layer.borderColor = self.buyButton.titleColorForState(.Normal)?.CGColor
+    }
+
+    internal func changeButtonState(state state: Bool) {
+        self.buyButton.enabled = true
         if state == false {
             self.buyButton.setTitleColor(UIColor(netHex: BLUE_COLOR_HEX, alpha: 1.0), forState: .Normal)
             self.buyButton.setTitle("+ سبد خرید", forState: .Normal)

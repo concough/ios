@@ -37,23 +37,31 @@ class BasketEntranceTableViewCell: UITableViewCell {
     }
 
     internal func configureCell(entrance entrance: EntranceStructure, cost: Int, indexPath: NSIndexPath) {
-        self.titleLabel.text = "کنکور \(entrance.entranceTypeTitle!) \(entrance.entranceOrgTitle!) \(FormatterSingleton.sharedInstance.NumberFormatter.stringFromNumber(entrance.entranceYear!)!)"
+        self.titleLabel.text = "آزمون \(entrance.entranceTypeTitle!) \(FormatterSingleton.sharedInstance.NumberFormatter.stringFromNumber(entrance.entranceYear!)!)"
         //self.subTitleLabel.text = "مجموعه مهندسی کامپیوتر و الکترونیک ایخ هطر هسطر هشرط هشسط هشس هسط هشس طهشسرش هشسط (مجموعه فنی و مهندسی)"
         self.subTitleLabel.text = "\(entrance.entranceSetTitle!) (\(entrance.entranceGroupTitle!))"
-        self.subTitleLabel.sizeToFit()
-        self.costLabel.text = FormatterSingleton.sharedInstance.NumberFormatter.stringFromNumber(cost)! + " تومان"
+//        self.subTitleLabel.semanticContentAttribute = .ForceRightToLeft
+//        self.subTitleLabel.sizeToFit()
         
-        if let extraData = entrance.entranceExtraData {
-            var s = ""
-            for (key, item) in extraData {
-                s += "\(key): \(item.stringValue)" + " - "
-            }
-            
-            if s.characters.count > 3 {
-                s = s.substringToIndex(s.endIndex.advancedBy(-3))
-            }
-            self.extraLabel.text = s
+        if (cost != 0) {
+            self.costLabel.text = FormatterSingleton.sharedInstance.NumberFormatter.stringFromNumber(cost)! + " تومان"
+        } else {
+            self.costLabel.text = "رایگان"
         }
+        
+//        if let extraData = entrance.entranceExtraData {
+//            var s = ""
+//            for (key, item) in extraData {
+//                s += "\(key): \(item.stringValue)" + " - "
+//            }
+//            
+//            if s.characters.count > 3 {
+//                s = s.substringToIndex(s.endIndex.advancedBy(-3))
+//            }
+//            self.extraLabel.text = s
+//        }
+        self.extraLabel.text = "\(entrance.entranceOrgTitle!)"
+        
         self.downloadImage(esetId: entrance.entranceSetId!, indexPath: indexPath)
     }
 

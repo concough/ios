@@ -44,7 +44,7 @@ class ArchiveBasicTableViewCell: UITableViewCell {
             count = FormatterSingleton.sharedInstance.NumberFormatter.stringFromNumber(c)
         }
         
-        self.configureCell(indexPath: indexPath, setId: set.id!, title: set.title!, subTitle: "\(count!) کنکور")
+        self.configureCell(indexPath: indexPath, setId: set.id!, title: set.title!, subTitle: "\(count!) آزمون")
     }
     
     private func downloadImage(esetId esetId: Int, indexPath: NSIndexPath) {

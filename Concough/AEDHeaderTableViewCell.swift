@@ -43,8 +43,12 @@ class AEDHeaderTableViewCell: UITableViewCell {
         let count = FormatterSingleton.sharedInstance.NumberFormatter.stringFromNumber(entranceCount)!
         
         self.entranceSetLabel.text = esetTitle
-        self.entranceCountLabel.text = "\(count) کنکور منتشر شده"
-        self.entranceSetCodeLabel.text = "کد: " + FormatterSingleton.sharedInstance.NumberFormatter.stringFromNumber(entranceSetCode)!
+        self.entranceCountLabel.text = "\(count) آزمون منتشر شده"
+        if (entranceSetCode == 0) {
+            self.entranceSetCodeLabel.text = "کد: ندارد"
+        } else {
+            self.entranceSetCodeLabel.text = "کد: " + FormatterSingleton.sharedInstance.NumberFormatter.stringFromNumber(entranceSetCode)!
+        }
         
         self.downloadImage(esetId: esetId, indexPath: indexPath)
     }

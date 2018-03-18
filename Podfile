@@ -10,7 +10,7 @@ target 'Concough' do
     pod 'SwiftKeychainWrapper', '~> 2.0'
     pod 'BTNavigationDropdownMenu'
     #pod 'CarbonKit'
-    pod 'EHHorizontalSelectionView'
+    pod 'EHHorizontalSelectionView', '~> 1.0.4'
     pod 'DZNEmptyDataSet'
     pod 'BBBadgeBarButtonItem'
     #pod 'RealmSwift', '~> 1.1.0'
@@ -19,6 +19,9 @@ target 'Concough' do
     pod 'MBProgressHUD'
     pod 'FCAlertView'
     pod 'SimpleAlert', '~> 1.3.1'
+    pod 'ReachabilitySwift', '~> 2.4'
+    pod 'CocoaSecurity'
+    pod 'NSUserDefaults+SevenSecurityLayers'
 end
 
 #

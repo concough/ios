@@ -22,6 +22,7 @@ class EntranceShowQuestionTableViewCell: UITableViewCell {
     @IBOutlet weak var questionImageView3: UIImageView!
     @IBOutlet weak var questionImageConstraint2: NSLayoutConstraint?
     @IBOutlet weak var questionImageConstraint3: NSLayoutConstraint?
+    @IBOutlet weak var showAnswerImage: UIImageView!
     
     private var viewController: UIViewController!
     private var viewControllerType: String!
@@ -81,8 +82,17 @@ class EntranceShowQuestionTableViewCell: UITableViewCell {
     
     internal func configureCell(viewController viewController: UIViewController, vcType: String, question: Int, questionId: String, answer: Int, starred: Bool, images: [NSData], showAnswer: Bool) {
         self.questionNumberLabel.text = FormatterSingleton.sharedInstance.NumberFormatter.stringFromNumber(question)!
-        self.answerLabel.text = "گزینه " + FormatterSingleton.sharedInstance.NumberFormatter.stringFromNumber(answer)! + " درست است"
+        self.answerLabel.text = "گزینه " + questionAnswerToString(answer) + " درست است"
         self.answerLabel.hidden = !showAnswer
+        
+        if (showAnswer) {
+            self.showAnswer.setTitleColor(UIColor(netHex: GRAY_COLOR_HEX_1, alpha: 0.3), forState: .Normal)
+            self.showAnswerImage.tintImageColor(UIColor(netHex: GRAY_COLOR_HEX_1, alpha: 0.3))
+        } else {
+            self.showAnswer.setTitleColor(UIColor(netHex: BLUE_COLOR_HEX, alpha: 1.0), forState: .Normal)
+            self.showAnswerImage.tintImageColor(UIColor(netHex: BLUE_COLOR_HEX, alpha: 1.0))
+            
+        }
         
         self.viewController = viewController
         self.viewControllerType = vcType
@@ -99,6 +109,8 @@ class EntranceShowQuestionTableViewCell: UITableViewCell {
     
     @IBAction func answerShowClicked(sender: UIButton) {
         self.answerLabel.hidden = false
+        self.showAnswer.setTitleColor(UIColor(netHex: GRAY_COLOR_HEX_1, alpha: 0.3), forState: .Normal)
+        self.showAnswerImage.tintImageColor(UIColor(netHex: GRAY_COLOR_HEX_1, alpha: 0.3))
         
         if let vc = self.viewController as? EntranceShowTableViewController {
             vc.addAnsweredQuestionId(questionId: self.questionId)
@@ -117,11 +129,12 @@ class EntranceShowQuestionTableViewCell: UITableViewCell {
     }
     
     internal func changeStarState(state state: Bool) {
+
         if state == true {
-            self.starButton.setImage(UIImage(named: "StarFilled"), forState: .Normal)
+            self.starButton.setImage(UIImage(named: "BookmarkRibbonFilled"), forState: .Normal)
             self.starButton.tintColor = UIColor(netHex: RED_COLOR_HEX_2, alpha: 1.0)
         } else {
-            self.starButton.setImage(UIImage(named: "AddtoFavorites"), forState: .Normal)
+            self.starButton.setImage(UIImage(named: "BookmarkRibbon"), forState: .Normal)
             self.starButton.tintColor = UIColor.darkGrayColor()
         }
     }

@@ -16,14 +16,26 @@ class RealmSingleton {
     
     private init() {
         
-        let config = Realm.Configuration()
+        var config = Realm.Configuration(schemaVersion: 2, migrationBlock: { (migration, oldSchemaVersion) in
+            if (oldSchemaVersion < 1) {
+                migration.enumerate(DeviceInformationModel.className(), { (oldObject, newObject) in
+                    newObject!["isMe"] = true
+                })
+            }
+            
+            if (oldSchemaVersion < 2) {
+                migration.enumerate(EntranceModel.className(), { (oldObject, newObject) in
+                    newObject!["pUniqueId"] = "\(oldObject!["username"])-\(oldObject!["uniqueId"])"
+                })
+            }
+        })
+        let key = SECRET_KEY.dataUsingEncoding(NSASCIIStringEncoding)?.subdataWithRange(NSRange(location: 0, length: 64))
+        config.encryptionKey = key
         
-        print("\(config.fileURL)")
         self.realm = try! Realm(configuration: config)
         
         // to Background App Refresh
         let folderPath = self.realm.configuration.fileURL!.URLByDeletingLastPathComponent!.path
-        print("Realm Path: \(folderPath!)")
         try! NSFileManager.defaultManager().setAttributes([NSFileAttributeKey.init(string: NSFileProtectionKey) as String: NSFileProtectionNone], ofItemAtPath: folderPath!)
     }
     
@@ -35,6 +47,8 @@ class RealmSingleton {
     }
     
     // Methods
+    func touch() {}
+    
     internal func deleteDefaultRealm() {
         let realmUrl = self.realm.configuration.fileURL!
         let realmURLS = [

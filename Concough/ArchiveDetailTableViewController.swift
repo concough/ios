@@ -21,6 +21,7 @@ class ArchiveDetailTableViewController: UITableViewController, DZNEmptyDataSetSo
     private var entrances: [ArchiveEntranceStructure] = []
     private var queue: NSOperationQueue!
     private var selectedIndex = -1
+    private var username: String!
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -32,16 +33,10 @@ class ArchiveDetailTableViewController: UITableViewController, DZNEmptyDataSetSo
         // self.navigationItem.rightBarButtonItem = self.editButtonItem()
         
         self.title = self.esetDetail.entranceTypeTitle
+        self.username = UserDefaultsSingleton.sharedInstance.getUsername()!
         
         self.tableView.emptyDataSetDelegate = self
         self.tableView.emptyDataSetSource = self
-        
-        // uitableview refresh control setup
-        if self.refreshControl == nil {
-            self.refreshControl = UIRefreshControl()
-            self.refreshControl?.attributedTitle = NSAttributedString(string: "برای به روز رسانی به پایین بکشید")
-        }
-        self.refreshControl?.addTarget(self, action: #selector(self.refreshTableView(_:)), forControlEvents: .ValueChanged)
 
         // configure queue and add operation of loading entrances to it
         self.queue = NSOperationQueue()
@@ -55,9 +50,28 @@ class ArchiveDetailTableViewController: UITableViewController, DZNEmptyDataSetSo
         super.didReceiveMemoryWarning()
         // Dispose of any resources that can be recreated.
     }
+    
 
     override func viewDidAppear(animated: Bool) {
         self.setupBarButton()
+        // uitableview refresh control setup
+        if self.refreshControl == nil {
+            self.refreshControl = UIRefreshControl()
+            self.refreshControl?.attributedTitle = NSAttributedString(string: "برای به روز رسانی به پایین بکشید", attributes: [NSFontAttributeName: UIFont(name: "IRANSansMobile-UltraLight", size: 12)!])
+        }
+        self.refreshControl?.addTarget(self, action: #selector(self.refreshTableView(_:)), forControlEvents: .ValueChanged)
+
+        if #available(iOS 10.0, *) {
+            self.tableView.refreshControl = refreshControl
+        } else {
+            self.tableView.addSubview(refreshControl!)
+        }
+        
+        NSOperationQueue.mainQueue().addOperationWithBlock {
+            self.tableView.reloadData()
+        }
+        
+        
     }
     
     // MARK: -Actions
@@ -79,13 +93,17 @@ class ArchiveDetailTableViewController: UITableViewController, DZNEmptyDataSetSo
             self.rightBarButtonItem.badgeValue = FormatterSingleton.sharedInstance.NumberFormatter.stringFromNumber(BasketSingleton.sharedInstance.SalesCount)!
             self.rightBarButtonItem.badgeBGColor = UIColor(netHex: RED_COLOR_HEX_2, alpha: 0.8)
             self.rightBarButtonItem.badgeTextColor = UIColor.whiteColor()
-            self.rightBarButtonItem.badgeFont = UIFont(name: "IRANYekanMobile-Bold", size: 12)
-            self.rightBarButtonItem.shouldHideBadgeAtZero = true
+            self.rightBarButtonItem.badgeFont = UIFont(name: "IRANSansMobile-Medium", size: 12)
+//            self.rightBarButtonItem.shouldHideBadgeAtZero = true
             self.rightBarButtonItem.shouldAnimateBadge = true
             self.rightBarButtonItem.badgeOriginX = 15.0
             self.rightBarButtonItem.badgeOriginY = -5.0
+            self.rightBarButtonItem.badgePadding = 2.0
             
             self.navigationItem.rightBarButtonItem = self.rightBarButtonItem
+        } else {
+            self.rightBarButtonItem = nil
+            self.navigationItem.rightBarButtonItem = nil
         }
         
     }
@@ -98,16 +116,27 @@ class ArchiveDetailTableViewController: UITableViewController, DZNEmptyDataSetSo
         queue.addOperation(operation)
     }
     
+    private func updateBasketBadge(count count: Int) {
+        if self.rightBarButtonItem == nil {
+            self.setupBarButton()
+        }
+        
+        if self.rightBarButtonItem != nil {
+            self.rightBarButtonItem.badgeValue = FormatterSingleton.sharedInstance.NumberFormatter.stringFromNumber(count)
+        }
+    }
+    
+    
     private func getEntrances() {
         NSOperationQueue.mainQueue().addOperationWithBlock { 
             UIApplication.sharedApplication().networkActivityIndicatorVisible = true
             self.loading = AlertClass.showLoadingMessage(viewController: self)
-            self.refreshControl?.endRefreshing()
         }
         
         if let setId = self.esetDetail.entranceEset?.id {
             ArchiveRestAPIClass.getEntrances(entranceSetId: setId, completion: { (data, error) in
                 NSOperationQueue.mainQueue().addOperationWithBlock {
+                    self.refreshControl?.endRefreshing()
                     UIApplication.sharedApplication().networkActivityIndicatorVisible = false
                     AlertClass.hideLoaingMessage(progressHUD: self.loading)
                 }
@@ -137,6 +166,8 @@ class ArchiveDetailTableViewController: UITableViewController, DZNEmptyDataSetSo
                                     let last_published_str = item["last_published"].stringValue
                                     let unique_id = item["unique_key"].stringValue
                                     let extra_data = JSON(data: item["extra_data"].stringValue.dataUsingEncoding(NSUTF8StringEncoding)!)
+                                    let duration = item["duration"].intValue
+                                    let booklets_count = item["booklets_count"].intValue
                                     
                                     let buy_count = item["stats"][0]["purchased"].intValue
                                     
@@ -147,12 +178,14 @@ class ArchiveDetailTableViewController: UITableViewController, DZNEmptyDataSetSo
                                     entrance.buyCount = buy_count
                                     entrance.lastPablished = FormatterSingleton.sharedInstance.UTCDateFormatter.dateFromString(last_published_str)
                                     entrance.uniqueId = unique_id
+                                    entrance.bookletCount = booklets_count
+                                    entrance.entranceDuration = duration
                                     
                                     localArray.append(entrance)
                                 }
                                 
                                 self.entrances = localArray
-                                NSOperationQueue.mainQueue().addOperationWithBlock({ 
+                                NSOperationQueue.mainQueue().addOperationWithBlock({
                                     self.tableView.reloadData()
                                 })
                                 
@@ -179,6 +212,7 @@ class ArchiveDetailTableViewController: UITableViewController, DZNEmptyDataSetSo
                 }
             }, failure:  { (error) in
                 NSOperationQueue.mainQueue().addOperationWithBlock {
+                    self.refreshControl?.endRefreshing()
                     UIApplication.sharedApplication().networkActivityIndicatorVisible = false
                     AlertClass.hideLoaingMessage(progressHUD: self.loading)
                 }
@@ -209,6 +243,83 @@ class ArchiveDetailTableViewController: UITableViewController, DZNEmptyDataSetSo
         }
     }
     
+    @IBAction func addToBasketPressed(sender: UIButton) {
+        let index = sender.tag
+        let entranceRow = self.entrances[index]
+        let uniqueId: String = entranceRow.uniqueId!
+        
+        let entranceStruct = EntranceStructure(entranceTypeTitle: self.esetDetail.entranceTypeTitle!, entranceOrgTitle: entranceRow.organization!, entranceGroupTitle: self.esetDetail.entranceGroupTitle!, entranceSetTitle: self.esetDetail.entranceEset!.title!, entranceSetId: self.esetDetail.entranceEset!.id!, entranceExtraData: entranceRow.extraData, entranceBookletCounts: entranceRow.bookletCount!, entranceYear: entranceRow.year!, entranceDuration: entranceRow.entranceDuration!, entranceUniqueId: entranceRow.uniqueId!, entranceLastPublished: entranceRow.lastPablished!)
+        
+        if let cell = self.tableView.cellForRowAtIndexPath(NSIndexPath(forRow: index, inSection: 1)) as? AEDAdvanceTableViewCell {
+            cell.disableBuyButton()
+        }
+
+        if BasketSingleton.sharedInstance.BasketId == nil {
+            BasketSingleton.sharedInstance.createBasket(viewController: self, completion: {
+                if let id = BasketSingleton.sharedInstance.findSaleByTargetId(targetId: uniqueId, type: "Entrance") {
+                    // sale object exist --> remove it
+                    BasketSingleton.sharedInstance.removeSaleById(viewController: self, saleId: id, completion: { (count) in
+                        self.updateBasketBadge(count: count)
+                        
+                        self.changeBuyButtonStateForIndex(index)
+                        }, failure: {
+                            self.changeBuyButtonStateForIndex(index)
+                    
+                    })
+                } else {
+                    BasketSingleton.sharedInstance.addSale(viewController: self, target: entranceStruct as Any, type: "Entrance", completion: { (count) in
+                        self.updateBasketBadge(count: count)
+                        
+                        self.changeBuyButtonStateForIndex(index)
+                        }, failure: {
+                            self.changeBuyButtonStateForIndex(index)
+                    })
+                }
+                
+                }, failure: {
+                    self.changeBuyButtonStateForIndex(index)
+            })
+        } else {
+            if let id = BasketSingleton.sharedInstance.findSaleByTargetId(targetId: uniqueId, type: "Entrance") {
+                // sale object exist --> remove it
+                BasketSingleton.sharedInstance.removeSaleById(viewController: self, saleId: id, completion: { (count) in
+                    print ("sale count: \(count)")
+                    self.updateBasketBadge(count: count)
+                    
+                    self.changeBuyButtonStateForIndex(index)
+                    }, failure: {
+                        self.changeBuyButtonStateForIndex(index)
+                
+                })
+            } else {
+                BasketSingleton.sharedInstance.addSale(viewController: self, target: entranceStruct as Any, type: "Entrance", completion: { (count) in
+                    print("sales count: \(count)")
+                    self.updateBasketBadge(count: count)
+                    
+                        self.changeBuyButtonStateForIndex(index)
+                    }, failure: {
+                        self.changeBuyButtonStateForIndex(index)
+                
+                })
+            }
+        }
+        
+    }
+    
+    private func changeBuyButtonStateForIndex(index: Int) {
+        if let cell = self.tableView.cellForRowAtIndexPath(NSIndexPath(forRow: index, inSection: 1)) as? AEDAdvanceTableViewCell {
+            
+            var saled = false
+            if let index = BasketSingleton.sharedInstance.findSaleByTargetId(targetId: self.entrances[index].uniqueId!, type: "Entrance") {
+                if index >= 0 {
+                    saled = true
+                }
+            }
+            cell.changeBuyButtonState(state: saled)
+        }
+    }
+    
+    
     // MARK: - Table view data source
     override func numberOfSectionsInTableView(tableView: UITableView) -> Int {
         return 2
@@ -236,9 +347,9 @@ class ArchiveDetailTableViewController: UITableViewController, DZNEmptyDataSetSo
     override func tableView(tableView: UITableView, heightForRowAtIndexPath indexPath: NSIndexPath) -> CGFloat {
         switch indexPath.section {
         case 0:
-            return 100.0
+            return 120.0
         case 1:
-            return 80.0
+            return 85.0
         default:
             break
         }
@@ -258,7 +369,24 @@ class ArchiveDetailTableViewController: UITableViewController, DZNEmptyDataSetSo
             }
         case 1:
             if let cell = self.tableView.dequeueReusableCellWithIdentifier("ADVANCE_SECTION", forIndexPath: indexPath) as? AEDAdvanceTableViewCell {
-                cell.configureCell(indexPath: indexPath, esetId: (self.esetDetail.entranceEset?.id)!, entrance: self.entrances[indexPath.row])
+                
+                var saled = false
+                var buyed = false
+                
+                if EntranceModelHandler.existById(id: self.entrances[indexPath.row].uniqueId!, username: self.username) {
+                    buyed = true
+                }
+                
+                if let index = BasketSingleton.sharedInstance.findSaleByTargetId(targetId: self.entrances[indexPath.row].uniqueId!, type: "Entrance") {
+                    if index >= 0 {
+                        saled = true
+                    }
+                }
+                
+                cell.configureCell(indexPath: indexPath, esetId: (self.esetDetail.entranceEset?.id)!, entrance: self.entrances[indexPath.row], state: saled, buyed: buyed)
+                
+                cell.addToBasketButton.tag = indexPath.row
+                cell.addToBasketButton.addTarget(self, action: #selector(self.addToBasketPressed(_:)), forControlEvents: .TouchUpInside)
                 return cell
             }
             /*
@@ -301,7 +429,7 @@ class ArchiveDetailTableViewController: UITableViewController, DZNEmptyDataSetSo
     // MARK: - DZN
     func titleForEmptyDataSet(scrollView: UIScrollView!) -> NSAttributedString! {
         let title = "داده ای موجود نیست"
-        let attributes = [NSFontAttributeName: UIFont(name: "IRANYekanMobile-Bold", size: 16)!,
+        let attributes = [NSFontAttributeName: UIFont(name: "IRANSansMobile", size: 16)!,
                           NSForegroundColorAttributeName: UIColor.darkGrayColor()]
         
         return NSAttributedString(string: title, attributes: attributes)
@@ -313,6 +441,10 @@ class ArchiveDetailTableViewController: UITableViewController, DZNEmptyDataSetSo
     }
     
     func emptyDataSetShouldAllowTouch(scrollView: UIScrollView!) -> Bool {
+        return true
+    }
+    
+    func emptyDataSetShouldAllowScroll(scrollView: UIScrollView!) -> Bool {
         return true
     }
     
@@ -342,11 +474,11 @@ class ArchiveDetailTableViewController: UITableViewController, DZNEmptyDataSetSo
                 
                 vc.entranceUniqueId = uniqueId
                 
-                self.navigationItem.backBarButtonItem = UIBarButtonItem(title: "آرشیو", style: .Plain, target: self, action: nil)
+                self.navigationItem.backBarButtonItem = UIBarButtonItem(title: "محصولات", style: .Plain, target: self, action: nil)
                 
             }
         } else if segue.identifier == "BasketCheckoutVCSegue" {
-            self.navigationItem.backBarButtonItem = UIBarButtonItem(title: "آرشیو", style: .Plain, target: self, action: nil)
+            self.navigationItem.backBarButtonItem = UIBarButtonItem(title: "محصولات", style: .Plain, target: self, action: nil)
             
         }
     }

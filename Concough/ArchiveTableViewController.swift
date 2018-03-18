@@ -23,7 +23,8 @@ class ArchiveTableViewController: UITableViewController, EHHorizontalSelectionVi
     private var queue: NSOperationQueue!
     private var rightBarButtonItem: BBBadgeBarButtonItem!
     private var loading: MBProgressHUD?
-    
+    private var isRotating = false
+   
     private var typeTitle: String?
     private var selectedTableIndex: Int = -1
     private var selectedEntranceTypeIndex: Int = -1
@@ -35,8 +36,8 @@ class ArchiveTableViewController: UITableViewController, EHHorizontalSelectionVi
     private var groups: [String: Int]! = [:]
     private var sets: [ArchiveEsetStructure]! = []
     
-    private var groupsRepo: [Int: [String: Int]] = [:]
-    private var setsRepo: [String: [ArchiveEsetStructure]] = [:]
+    //private var groupsRepo: [Int: [String: Int]] = [:]
+    //private var setsRepo: [String: [ArchiveEsetStructure]] = [:]
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -46,7 +47,7 @@ class ArchiveTableViewController: UITableViewController, EHHorizontalSelectionVi
 
         // Uncomment the following line to display an Edit button in the navigation bar for this view controller.
         // self.navigationItem.rightBarButtonItem = self.editButtonItem()
-
+        
         // Initialization
         self.queue = NSOperationQueue()
         self.queue.maxConcurrentOperationCount = 1
@@ -56,22 +57,43 @@ class ArchiveTableViewController: UITableViewController, EHHorizontalSelectionVi
         
         self.tableView.emptyDataSetSource = self
         self.tableView.emptyDataSetDelegate = self
-        
+
         if self.refreshControl == nil {
             self.refreshControl = UIRefreshControl()
-            self.refreshControl?.attributedTitle = NSAttributedString(string: "برای به روز رسانی به پایین بکشید", attributes: [NSFontAttributeName: UIFont(name: "IRANYekanMobile-Light", size: 12)!])
+            self.refreshControl?.attributedTitle = NSAttributedString(string: "برای به روز رسانی به پایین بکشید", attributes: [NSFontAttributeName: UIFont(name: "IRANSansMobile-UltraLight", size: 12)!])
         }
         self.refreshControl?.addTarget(self, action: #selector(self.refreshTableView(_:)), forControlEvents: .ValueChanged)
+
+        if #available(iOS 10.0, *) {
+            self.tableView.refreshControl = refreshControl
+        } else {
+            self.tableView.addSubview(refreshControl!)
+        }
+        self.refreshControl?.endRefreshing()
         
         // create operation and call it
-        let operation = NSBlockOperation(block: { 
+        let operation = NSBlockOperation(block: {
             self.getEntranceTypes()
         })
         self.queue.addOperation(operation)
+        
+    }
+    
+    override func viewWillAppear(animated: Bool) {
+        super.viewWillAppear(animated)
+
     }
     
     override func viewDidAppear(animated: Bool) {
+        super.viewDidAppear(animated)
         self.setupBarButton()
+        
+        let b = UIButton(frame: CGRectMake(0, 0, 25, 25))
+        b.setImage(UIImage(named: "Recurring"), forState: .Normal)
+        
+        b.addTarget(self, action: #selector(self.refreshButtonPressed(_:)), forControlEvents: .TouchUpInside)
+        
+        self.navigationItem.leftBarButtonItem = UIBarButtonItem(customView: b)
     }
     
     override func didReceiveMemoryWarning() {
@@ -103,8 +125,8 @@ class ArchiveTableViewController: UITableViewController, EHHorizontalSelectionVi
             
             // View Customizations
             self.menuView?.cellSeparatorColor = UIColor(netHex: GRAY_COLOR_HEX_1, alpha: 0.3)
-            self.menuView?.cellTextLabelFont = UIFont(name: "IRANYekanMobile-Bold", size: 14)
-            self.menuView?.navigationBarTitleFont = UIFont(name: "IRANYekanMobile-Bold", size: 16)
+            self.menuView?.cellTextLabelFont = UIFont(name: "IRANSansMobile", size: 14)
+            self.menuView?.navigationBarTitleFont = UIFont(name: "IRANSansMobile-Medium", size: 16)
             self.menuView?.cellTextLabelAlignment = NSTextAlignment.Center
             self.menuView?.arrowTintColor = UIColor(netHex: BLUE_COLOR_HEX, alpha: 1.0)
             self.menuView?.arrowTintColor = UIColor.blackColor()
@@ -140,8 +162,8 @@ class ArchiveTableViewController: UITableViewController, EHHorizontalSelectionVi
         self.hSelView?.textColor = UIColor(netHex: BLUE_COLOR_HEX, alpha: 1.0)
         self.hSelView?.tintColor = UIColor(netHex: BLUE_COLOR_HEX, alpha: 1.0)
         
-        self.hSelView?.font = UIFont(name: "IRANYekanMobile-Bold", size: 14)
-        self.hSelView?.fontMedium = UIFont(name: "IRANYekanMobile-Bold", size: 16)
+        self.hSelView?.font = UIFont(name: "IRANSansMobile", size: 14)!
+        self.hSelView?.fontMedium = UIFont(name: "IRANSansMobile-Medium", size: 14)!
         
         self.hSelView?.semanticContentAttribute = UISemanticContentAttribute.ForceRightToLeft
         self.hSelView?.cellGap = 25.0
@@ -166,21 +188,58 @@ class ArchiveTableViewController: UITableViewController, EHHorizontalSelectionVi
     
     // MARK: -Actions
     @IBAction func refreshButtonPressed(sender: UIBarButtonItem) {
-        self.selectedEntranceTypeIndex = -1
-        self.selectedEntranceGroupIndex = -1
-        self.selectedTableIndex = -1
+        print(isRotating)
+        if !isRotating {
+            let layer = (self.navigationItem.leftBarButtonItem!.customView as? UIButton)?.imageView?.layer
+            
+            // create a spin animation
+            let spinAnimation = CABasicAnimation()
+            // starts from 0
+            spinAnimation.fromValue = 0
+            // goes to 360 ( 2 * π )
+            spinAnimation.toValue = M_PI*2
+            // define how long it will take to complete a 360
+            spinAnimation.duration = 0.8
+            // make it spin infinitely
+            spinAnimation.repeatCount = 5
+            // do not remove when completed
+            spinAnimation.removedOnCompletion = false
+            // specify the fill mode
+            spinAnimation.fillMode = kCAFillModeForwards
+            // and the animation acceleration
+            spinAnimation.timingFunction = CAMediaTimingFunction(name: kCAMediaTimingFunctionLinear)
+            // add the animation to the button layer
+            layer?.addAnimation(spinAnimation, forKey: "transform.rotation.z")
+            
+            self.isRotating = true
+            
+            self.selectedEntranceTypeIndex = -1
+            self.selectedEntranceGroupIndex = -1
+            self.selectedTableIndex = -1
+            
+            self.menuView?.hide()
+            
+            self.types.removeAll()
+            self.typesString.removeAll()
+            self.groups.removeAll()
+            self.groupsString.removeAll()
+            self.sets.removeAll()
+            //self.setsRepo.removeAll()
+            
+            let operation = NSBlockOperation(block: {
+                self.getEntranceTypes()
+            })
+            self.queue.addOperation(operation)
+
+        }
+    }
+    
+    private func removeRefreshAnimation() {
+        // remove the animation
+        let layer = (self.navigationItem.leftBarButtonItem!.customView as? UIButton)?.imageView?.layer
+        layer?.removeAllAnimations()
+        self.isRotating = false
         
-        self.types.removeAll()
-        self.typesString.removeAll()
-        self.groups.removeAll()
-        self.groupsString.removeAll()
-        self.sets.removeAll()
-        self.setsRepo.removeAll()
-        
-        let operation = NSBlockOperation(block: {
-            self.getEntranceTypes()
-        })
-        self.queue.addOperation(operation)
     }
     
     @IBAction func basketButtonPressed(sender: AnyObject) {
@@ -199,30 +258,34 @@ class ArchiveTableViewController: UITableViewController, EHHorizontalSelectionVi
             
             self.rightBarButtonItem = BBBadgeBarButtonItem(customUIButton: b)
             self.rightBarButtonItem.badgeValue = FormatterSingleton.sharedInstance.NumberFormatter.stringFromNumber(BasketSingleton.sharedInstance.SalesCount)!
+            self.rightBarButtonItem.badgePadding = 2.0
             self.rightBarButtonItem.badgeBGColor = UIColor(netHex: RED_COLOR_HEX_2, alpha: 0.8)
             self.rightBarButtonItem.badgeTextColor = UIColor.whiteColor()
-            self.rightBarButtonItem.badgeFont = UIFont(name: "IRANYekanMobile-Bold", size: 12)
+            self.rightBarButtonItem.badgeFont = UIFont(name: "IRANSansMobile-Medium", size: 11)
             self.rightBarButtonItem.shouldHideBadgeAtZero = true
             self.rightBarButtonItem.shouldAnimateBadge = true
             self.rightBarButtonItem.badgeOriginX = 15.0
             self.rightBarButtonItem.badgeOriginY = -5.0
             
             self.navigationItem.rightBarButtonItem = self.rightBarButtonItem
+        } else {
+            self.rightBarButtonItem = nil
+            self.navigationItem.rightBarButtonItem = nil
         }
         
     }
     
     private func getEntranceTypes() {
-        NSOperationQueue.mainQueue().addOperationWithBlock { 
-            self.refreshControl?.endRefreshing()
-            self.loading = AlertClass.showLoadingMessage(viewController: self)
-        }
+//        NSOperationQueue.mainQueue().addOperationWithBlock { 
+//            self.loading = AlertClass.showLoadingMessage(viewController: self)
+//        }
         
         ArchiveRestAPIClass.getEntranceTypes({ (data, error) in
             NSOperationQueue.mainQueue().addOperationWithBlock({ 
-                AlertClass.hideLoaingMessage(progressHUD: self.loading)
+                        self.refreshControl?.endRefreshing()
+//                AlertClass.hideLoaingMessage(progressHUD: self.loading)
             })
-            
+            self.removeRefreshAnimation()
             if error != HTTPErrorType.Success {
                 if error == HTTPErrorType.Refresh {
                     let operation = NSBlockOperation(block: {
@@ -279,9 +342,11 @@ class ArchiveTableViewController: UITableViewController, EHHorizontalSelectionVi
             
         }) { (error) in
             NSOperationQueue.mainQueue().addOperationWithBlock({
-                AlertClass.hideLoaingMessage(progressHUD: self.loading)
+            self.refreshControl?.endRefreshing()
+//                AlertClass.hideLoaingMessage(progressHUD: self.loading)
             })
-            
+            self.removeRefreshAnimation()
+
             if let err = error {
                 switch err {
                 case .NoInternetAccess:
@@ -307,37 +372,39 @@ class ArchiveTableViewController: UITableViewController, EHHorizontalSelectionVi
     }
     
     private func getEntranceGroups(entranceTypeId etypeId: Int) {
-        NSOperationQueue.mainQueue().addOperationWithBlock {
-            self.refreshControl?.endRefreshing()
-        }
+//        NSOperationQueue.mainQueue().addOperationWithBlock {
+//            self.refreshControl?.endRefreshing()
+//        }
         
-        if self.groupsRepo.keys.contains(etypeId) == true {
-            self.groups = self.groupsRepo[etypeId]
-            self.groupsString = self.groups.keys.reverse()
-            
-            // update horizontal Menu
-            NSOperationQueue.mainQueue().addOperationWithBlock({
-                self.hSelView?.reloadData()
-                
-                if self.groups.count > 0 {
-                    self.hSelView?.selectIndex(UInt(self.groupsString.count - 1))
-                    // get first item sets from server
-                    //self.getEntranceSets(entranceGroupId: self.groups[self.groupsString.last!]!)
-                }
-            })
-            
-            print("groups repo fetched: etype=\(etypeId)")
-            return
-        }
+//        if self.groupsRepo.keys.contains(etypeId) == true {
+//            self.groups = self.groupsRepo[etypeId]
+//            self.groupsString = self.groups.keys.reverse()
+//            
+//            // update horizontal Menu
+//            NSOperationQueue.mainQueue().addOperationWithBlock({
+//                self.hSelView?.reloadData()
+//                
+//                if self.groups.count > 0 {
+//                    self.hSelView?.selectIndex(UInt(self.groupsString.count - 1))
+//                    // get first item sets from server
+//                    //self.getEntranceSets(entranceGroupId: self.groups[self.groupsString.last!]!)
+//                }
+//            })
+//            
+//            print("groups repo fetched: etype=\(etypeId)")
+//            return
+//        }
         
-        NSOperationQueue.mainQueue().addOperationWithBlock { 
-            self.loading = AlertClass.showLoadingMessage(viewController: self)
-        }
+//        NSOperationQueue.mainQueue().addOperationWithBlock { 
+//            self.loading = AlertClass.showLoadingMessage(viewController: self)
+//        }
         
         ArchiveRestAPIClass.getEntranceGroups(entranceTypeId: etypeId, completion: { (data, error) in
-            NSOperationQueue.mainQueue().addOperationWithBlock({ 
-                AlertClass.hideLoaingMessage(progressHUD: self.loading)
+            NSOperationQueue.mainQueue().addOperationWithBlock({
+                self.refreshControl?.endRefreshing()
+                //                AlertClass.hideLoaingMessage(progressHUD: self.loading)
             })
+            self.removeRefreshAnimation()
             
             if error != HTTPErrorType.Success {
                 if error == HTTPErrorType.Refresh {
@@ -370,7 +437,7 @@ class ArchiveTableViewController: UITableViewController, EHHorizontalSelectionVi
                             self.groupsString = localGroupsString.reverse()
                             
                             // make repo
-                            self.groupsRepo.updateValue(localGroups, forKey: etypeId)
+                            // self.groupsRepo.updateValue(localGroups, forKey: etypeId)
                             
                             // update horizontal Menu
                             NSOperationQueue.mainQueue().addOperationWithBlock({
@@ -408,9 +475,11 @@ class ArchiveTableViewController: UITableViewController, EHHorizontalSelectionVi
             }
         }) { (error) in
             NSOperationQueue.mainQueue().addOperationWithBlock({
-                AlertClass.hideLoaingMessage(progressHUD: self.loading)
+                self.refreshControl?.endRefreshing()
+                //                AlertClass.hideLoaingMessage(progressHUD: self.loading)
             })
-            
+            self.removeRefreshAnimation()
+
             if let err = error {
                 switch err {
                 case .NoInternetAccess:
@@ -438,20 +507,20 @@ class ArchiveTableViewController: UITableViewController, EHHorizontalSelectionVi
     }
     
     private func getEntranceSets(entranceGroupId groupId: Int) {
-        NSOperationQueue.mainQueue().addOperationWithBlock {
-            self.refreshControl?.endRefreshing()
-        }
+//        NSOperationQueue.mainQueue().addOperationWithBlock {
+//            self.refreshControl?.endRefreshing()
+//        }
 
-        if self.setsRepo.keys.contains("\(self.selectedEntranceTypeIndex):\(groupId)") {
-            self.sets = self.setsRepo["\(self.selectedEntranceTypeIndex):\(groupId)"]
-            
-            NSOperationQueue.mainQueue().addOperationWithBlock({
-                self.tableView.reloadData()
-            })
-            
-            print("sets repo fetched: group=\(self.selectedEntranceTypeIndex):\(groupId)")
-            return
-        }
+//        if self.setsRepo.keys.contains("\(self.selectedEntranceTypeIndex):\(groupId)") {
+//            self.sets = self.setsRepo["\(self.selectedEntranceTypeIndex):\(groupId)"]
+//            
+//            NSOperationQueue.mainQueue().addOperationWithBlock({
+//                self.tableView.reloadData()
+//            })
+//            
+//            print("sets repo fetched: group=\(self.selectedEntranceTypeIndex):\(groupId)")
+//            return
+//        }
 
         NSOperationQueue.mainQueue().addOperationWithBlock { 
             self.loading = AlertClass.showLoadingMessage(viewController: self)
@@ -460,6 +529,7 @@ class ArchiveTableViewController: UITableViewController, EHHorizontalSelectionVi
         ArchiveRestAPIClass.getEntranceSets(entranceGroupId: groupId, completion: { (data, error) in
             NSOperationQueue.mainQueue().addOperationWithBlock({ 
                 AlertClass.hideLoaingMessage(progressHUD: self.loading)
+                self.refreshControl?.endRefreshing()
             })
             
             if error != HTTPErrorType.Success {
@@ -499,7 +569,7 @@ class ArchiveTableViewController: UITableViewController, EHHorizontalSelectionVi
                                 localSets.append(archiveSet)
                             }
                             self.sets = localSets
-                            self.setsRepo.updateValue(self.sets, forKey: "\(self.selectedEntranceTypeIndex):\(groupId)")
+//                            self.setsRepo.updateValue(self.sets, forKey: "\(self.selectedEntranceTypeIndex):\(groupId)")
                             
                             NSOperationQueue.mainQueue().addOperationWithBlock({ 
                                 self.tableView.reloadData()
@@ -528,6 +598,8 @@ class ArchiveTableViewController: UITableViewController, EHHorizontalSelectionVi
         }) { (error) in
             NSOperationQueue.mainQueue().addOperationWithBlock({
                 AlertClass.hideLoaingMessage(progressHUD: self.loading)
+                self.refreshControl?.endRefreshing()
+
             })
             
             if let err = error {
@@ -577,7 +649,7 @@ class ArchiveTableViewController: UITableViewController, EHHorizontalSelectionVi
     }
     
     override func tableView(tableView: UITableView, heightForRowAtIndexPath indexPath: NSIndexPath) -> CGFloat {
-        return 56.0;
+        return 60.0;
     }
     
     override func tableView(tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
@@ -612,7 +684,7 @@ class ArchiveTableViewController: UITableViewController, EHHorizontalSelectionVi
     // MARK: - DZN
     func titleForEmptyDataSet(scrollView: UIScrollView!) -> NSAttributedString! {
         let title = "داده ای موجود نیست"
-        let attributes = [NSFontAttributeName: UIFont(name: "IRANYekanMobile-Bold", size: 16)!,
+        let attributes = [NSFontAttributeName: UIFont(name: "IRANSansMobile", size: 16)!,
                           NSForegroundColorAttributeName: UIColor.darkGrayColor()]
         
         return NSAttributedString(string: title, attributes: attributes)
@@ -624,6 +696,10 @@ class ArchiveTableViewController: UITableViewController, EHHorizontalSelectionVi
     }
     
     func emptyDataSetShouldAllowTouch(scrollView: UIScrollView!) -> Bool {
+        return true
+    }
+    
+    func emptyDataSetShouldAllowScroll(scrollView: UIScrollView!) -> Bool {
         return true
     }
     
@@ -659,7 +735,7 @@ class ArchiveTableViewController: UITableViewController, EHHorizontalSelectionVi
                 }
             }
         } else if segue.identifier == "BasketCheckoutVCSegue" {
-            self.navigationItem.backBarButtonItem = UIBarButtonItem(title: "آرشیو", style: .Plain, target: self, action: nil)
+            self.navigationItem.backBarButtonItem = UIBarButtonItem(title: "محصولات", style: .Plain, target: self, action: nil)
             
         }
     }

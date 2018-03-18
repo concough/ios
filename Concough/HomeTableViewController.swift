@@ -37,13 +37,6 @@ class HomeTableViewController: UITableViewController, DZNEmptyDataSetDelegate, D
         self.tableView.emptyDataSetSource = self
         self.tableView.tableFooterView = UIView()
         
-        // uitableview refresh control setup
-        if self.refreshControl == nil {
-            self.refreshControl = UIRefreshControl()
-            self.refreshControl?.attributedTitle = NSAttributedString(string: "برای به روز رسانی به پایین بکشید", attributes: [NSFontAttributeName: UIFont(name: "IRANYekanMobile-Light", size: 12)!])
-        }
-        self.refreshControl?.addTarget(self, action: #selector(HomeTableViewController.refreshTableView(_:)), forControlEvents: .ValueChanged)
-        
         loadFeeds(next: nil)
     }
 
@@ -53,9 +46,19 @@ class HomeTableViewController: UITableViewController, DZNEmptyDataSetDelegate, D
     
     override func viewDidAppear(animated: Bool) {
         self.setupBarButton()
+        
+        // uitableview refresh control setup
+        if self.refreshControl == nil {
+            self.refreshControl = UIRefreshControl()
+            self.refreshControl?.attributedTitle = NSAttributedString(string: "برای به روز رسانی به پایین بکشید", attributes: [NSFontAttributeName: UIFont(name: "IRANSansMobile-UltraLight", size: 12)!])
+        }
+        self.refreshControl?.addTarget(self, action: #selector(HomeTableViewController.refreshTableView(_:)), forControlEvents: .ValueChanged)
+    
     }
     
     func refreshTableView(refreshControl_: UIRefreshControl) {
+        //self.refreshControl?.endRefreshing()
+
         let operation = NSBlockOperation() {
             self.loadFeeds(next: nil)
         }
@@ -82,8 +85,6 @@ class HomeTableViewController: UITableViewController, DZNEmptyDataSetDelegate, D
 
     
     override func tableView(tableView: UITableView, cellForRowAtIndexPath indexPath: NSIndexPath) -> UITableViewCell {
-        NSLog("drawing tableview cell index: \(indexPath.row)")
-        
         let activity = activityList[indexPath.row] as ConcoughActivity
         
         switch activity.activityType {
@@ -92,6 +93,7 @@ class HomeTableViewController: UITableViewController, DZNEmptyDataSetDelegate, D
 
                 if let cell = self.tableView.dequeueReusableCellWithIdentifier(activity.activityType, forIndexPath: indexPath) as? EntranceCreateTableViewCell {
                     
+                    cell.tag = indexPath.row
                     cell.cellConfigure(indexPath, target: target)
                     return cell
                 }
@@ -102,6 +104,7 @@ class HomeTableViewController: UITableViewController, DZNEmptyDataSetDelegate, D
 
                 if let cell = self.tableView.dequeueReusableCellWithIdentifier(activity.activityType, forIndexPath: indexPath) as? EntranceUpdateTableViewCell {
                     
+                    cell.tag = indexPath.row
                     cell.cellConfigure(indexPath, target: target)
                     return cell
                 }
@@ -122,23 +125,38 @@ class HomeTableViewController: UITableViewController, DZNEmptyDataSetDelegate, D
         //}
 
         switch activity.activityType {
-            case "ENTRANCE_CREATE": return 250.0
-            case "ENTRANCE_UPDATE": return 130.0
+            case "ENTRANCE_CREATE": return 270.0
+            case "ENTRANCE_UPDATE": return 150.0
         default: return 0.0
         }
     }
 
     override func tableView(tableView: UITableView, willDisplayCell cell: UITableViewCell, forRowAtIndexPath indexPath: NSIndexPath) {
         
-        print("HomeTableViewController --> willDisplayCell index: \(indexPath.row)")
+//        print("HomeTableViewController --> willDisplayCell index: \(indexPath.row)")
         let lastSectionIndex = tableView.numberOfSections - 1
-        let lastRowIndex = tableView.numberOfRowsInSection(lastSectionIndex) - 1
+        let lastRowIndex = tableView.numberOfRowsInSection(lastSectionIndex) - 5
+        
+        let activity = activityList[indexPath.row] as ConcoughActivity
+        
+        switch activity.activityType {
+        case "ENTRANCE_CREATE":
+            if let cell1 = cell as? EntranceCreateTableViewCell {
+                cell1.downloadEsetImage(activity.target["entrance_set"]["id"].intValue, indexPath: indexPath)
+            }
+        case "ENTRANCE_UPDATE":
+            if let cell1 = cell as? EntranceUpdateTableViewCell {
+                cell1.downloadEsetImage(activity.target["entrance_set"]["id"].intValue, indexPath: indexPath)
+            }
+        default:
+            break
+        }
         
         if ((indexPath.section == lastSectionIndex) && (indexPath.row == lastRowIndex)) {
             // must load more
             if self.moreFeedExist == true {
                 // get last item of activity feed
-                let activity = self.activityList[lastRowIndex]
+                let activity = self.activityList[lastRowIndex + 4]
                 let last_time = activity.createdStr
                 //print("\(indexPath) - \(last_time)")
                 
@@ -148,10 +166,29 @@ class HomeTableViewController: UITableViewController, DZNEmptyDataSetDelegate, D
         }
     }
     
+    override func tableView(tableView: UITableView, didEndDisplayingCell cell: UITableViewCell, forRowAtIndexPath indexPath: NSIndexPath) {
+
+//        let activity = activityList[indexPath.row] as ConcoughActivity
+//        
+//        switch activity.activityType {
+//        case "ENTRANCE_CREATE":
+//            if let cell1 = cell as? EntranceCreateTableViewCell {
+//                cell1.downloadEsetImage(activity.target["entrance_set"]["id"].intValue, indexPath: indexPath)
+//            }
+//        case "ENTRANCE_UPDATE":
+//            if let cell1 = cell as? EntranceUpdateTableViewCell {
+//                cell1.downloadEsetImage(activity.target["entrance_set"]["id"].intValue, indexPath: indexPath)
+//            }
+//        default:
+//            break
+//        }
+    
+    }
+    
     override func tableView(tableView: UITableView, didSelectRowAtIndexPath indexPath: NSIndexPath) {
         if indexPath.row < self.activityList.count {
             
-            let activity = self.activityList[indexPath.row]
+            let activity = self.activityList[indexPath.row] as ConcoughActivity
             if activity.activityType == "ENTRANCE_CREATE" {
                 
                 self.selectedActivityIndex = indexPath.row
@@ -185,13 +222,17 @@ class HomeTableViewController: UITableViewController, DZNEmptyDataSetDelegate, D
             self.rightBarButtonItem.badgeValue = FormatterSingleton.sharedInstance.NumberFormatter.stringFromNumber(BasketSingleton.sharedInstance.SalesCount)!
             self.rightBarButtonItem.badgeBGColor = UIColor(netHex: RED_COLOR_HEX_2, alpha: 0.8)
             self.rightBarButtonItem.badgeTextColor = UIColor.whiteColor()
-            self.rightBarButtonItem.badgeFont = UIFont(name: "IRANYekanMobile-Bold", size: 12)
+            self.rightBarButtonItem.badgeFont = UIFont(name: "IRANSansMobile-Medium", size: 12)
             self.rightBarButtonItem.shouldHideBadgeAtZero = true
             self.rightBarButtonItem.shouldAnimateBadge = true
             self.rightBarButtonItem.badgeOriginX = 15.0
             self.rightBarButtonItem.badgeOriginY = -5.0
+            self.rightBarButtonItem.badgePadding = 2.0
             
             self.navigationItem.rightBarButtonItem = self.rightBarButtonItem
+        } else {
+            self.rightBarButtonItem = nil
+            self.navigationItem.rightBarButtonItem = nil
         }
         
     }
@@ -209,8 +250,8 @@ class HomeTableViewController: UITableViewController, DZNEmptyDataSetDelegate, D
             refresh, data, error in
                         
             NSOperationQueue.mainQueue().addOperationWithBlock {
-                AlertClass.hideLoaingMessage(progressHUD: self.loading)
                 self.refreshControl?.endRefreshing()
+                AlertClass.hideLoaingMessage(progressHUD: self.loading)
                 UIApplication.sharedApplication().networkActivityIndicatorVisible = false
             }
             print("--> \(error)")
@@ -285,7 +326,7 @@ class HomeTableViewController: UITableViewController, DZNEmptyDataSetDelegate, D
     // MARK: - DZN
     func titleForEmptyDataSet(scrollView: UIScrollView!) -> NSAttributedString! {
         let title = "داده ای موجود نیست"
-        let attributes = [NSFontAttributeName: UIFont(name: "IRANYekanMobile-Bold", size: 16)!,
+        let attributes = [NSFontAttributeName: UIFont(name: "IRANSansMobile", size: 16)!,
                           NSForegroundColorAttributeName: UIColor.darkGrayColor()]
         
         return NSAttributedString(string: title, attributes: attributes)
@@ -297,6 +338,10 @@ class HomeTableViewController: UITableViewController, DZNEmptyDataSetDelegate, D
     }
     
     func emptyDataSetShouldAllowTouch(scrollView: UIScrollView!) -> Bool {
+        return true
+    }
+    
+    func emptyDataSetShouldAllowScroll(scrollView: UIScrollView!) -> Bool {
         return true
     }
     

@@ -11,8 +11,10 @@ import UIKit
 class SettingsHeaderTableViewCell: UITableViewCell {
 
     @IBOutlet weak var fullNameLabel: UILabel!
+    @IBOutlet weak var usernameLabel: UILabel!
     @IBOutlet weak var lastChangedlabel: UILabel!
     @IBOutlet weak var profileImageView: UIImageView!
+    @IBOutlet weak var editButton: UIButton!
     
     override func awakeFromNib() {
         super.awakeFromNib()
@@ -30,8 +32,16 @@ class SettingsHeaderTableViewCell: UITableViewCell {
         self.profileImageView.layer.borderWidth = 0.8
     }
     
-    internal func configureCell(fullname fullname: String, lastChanged: NSDate) {
+    internal func configureCell(fullname fullname: String, username: String, lastChanged: NSDate, isEditing: Bool) {
         self.fullNameLabel.text = fullname
         self.lastChangedlabel.text = "آخرین بروز رسانی: " + FormatterSingleton.sharedInstance.IRDateFormatter.stringFromDate(lastChanged)
+     
+        self.usernameLabel.text = "(\(username))"
+        
+        if isEditing {
+            editButton.setTitle("اتمام ویرایش", forState: .Normal)
+        } else {
+            editButton.setTitle("ویرایش اطلاعات", forState: .Normal)
+        }
     }
 }

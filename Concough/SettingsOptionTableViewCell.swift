@@ -29,13 +29,13 @@ class SettingsOptionTableViewCell: UITableViewCell {
         
         if type == "option" {
             self.optionButton.setTitleColor(UIColor(netHex: BLUE_COLOR_HEX, alpha: 1.0), forState: .Normal)
-            self.bottomLineView.hidden = true
+//            self.bottomLineView.hidden = true
             self.optionButton.enabled = false
             self.selectionStyle = .None
         } else if type == "normal" {
             self.optionButton.setTitleColor(UIColor.blackColor(), forState: .Normal)
             self.optionButton.enabled = false
-            self.bottomLineView.hidden = false
+//            self.bottomLineView.hidden = false
             self.selectionStyle = .Default
         }
         
