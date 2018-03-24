@@ -12,6 +12,7 @@ class AEDAdvanceTableViewCell: UITableViewCell {
     private let localName: String = "ArchiveVC"
 
     @IBOutlet weak var orgYearLabel: UILabel!
+    @IBOutlet weak var orgMonthLabel: UILabel!
     @IBOutlet weak var extraDataLabel: UILabel!
     @IBOutlet weak var buyCountLabel: UILabel!
     @IBOutlet weak var publishedDateLabel: UILabel!
@@ -31,12 +32,23 @@ class AEDAdvanceTableViewCell: UITableViewCell {
     }
     
     override func prepareForReuse() {
+        self.orgMonthLabel.hidden = true
         self.esetImageView.image = UIImage(named: "NoImage")
     }
     
     internal func configureCell(indexPath indexPath: NSIndexPath, esetId: Int,  entrance: ArchiveEntranceStructure, state: Bool, buyed: Bool) {
 //        self.orgTypeLabel.text = "\(entrance.organization!) "
         self.orgYearLabel.text = FormatterSingleton.sharedInstance.NumberFormatter.stringFromNumber(entrance.year!)!
+        
+        if let m = entrance.month {
+            if m > 0 {
+                self.orgMonthLabel.text = monthToString(m)
+                self.orgMonthLabel.hidden = false
+            } else {
+                self.orgMonthLabel.hidden = true
+                self.orgMonthLabel.text = ""
+            }
+        }
         
         self.buyCountLabel.text = FormatterSingleton.sharedInstance.NumberFormatter.stringFromNumber(entrance.buyCount!)! + " خرید"
         self.publishedDateLabel.text = FormatterSingleton.sharedInstance.IRDateFormatter.stringFromDate(entrance.lastPablished!)
@@ -130,10 +142,9 @@ class AEDAdvanceTableViewCell: UITableViewCell {
                             self.downloadImage(esetId: esetId, indexPath: indexPath)
                             
                         } else {
-                            // print the error for now
                             self.esetImageView?.image = UIImage()
                             self.setNeedsLayout()
-                            print("error in downloaing image from \(fullPath!)")
+//                            print("error in downloaing image from \(fullPath!)")
                         }
                     } else {
                         if let myData = data {

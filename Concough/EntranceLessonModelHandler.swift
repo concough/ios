@@ -28,7 +28,7 @@ class EntranceLessonModelHandler {
             })
             return lesson
         } catch(let error as NSError) {
-            print("\(error)")
+//            print("\(error)")
         }
         return nil
     }

@@ -38,7 +38,7 @@ class EntranceUpdateTableViewCell: UITableViewCell {
          entranceImage.layer.cornerRadius = entranceImage.layer.frame.width / 2.0
          entranceImage.layer.masksToBounds = true
          */
-        self.entranceYearUILabel.layer.borderColor = self.entranceYearUILabel.textColor.CGColor
+        self.entranceYearUILabel.layer.borderColor = UIColor(netHex: BLUE_COLOR_HEX, alpha: 1.0).CGColor
         self.entranceYearUILabel.layer.borderWidth = 1.0
         self.entranceYearUILabel.layer.cornerRadius = 5.0
         
@@ -73,6 +73,18 @@ class EntranceUpdateTableViewCell: UITableViewCell {
             let date:NSDate = FormatterSingleton.sharedInstance.UTCDateFormatter.dateFromString(publishedStr)!
             self.entranceUpdateTimeUILabel.text = "\(FormatterSingleton.sharedInstance.IRDateFormatter.stringFromDate(date))"            
         }
+        
+        let myAttribute = [NSFontAttributeName: UIFont(name: "IRANSansMobile", size: 12)!,
+                           NSForegroundColorAttributeName: UIColor(netHex: BLUE_COLOR_HEX, alpha: 0.7)]
+        let str1 = NSAttributedString(string: " \(monthToString(target["month"].intValue))", attributes: myAttribute)
+        
+        let str2 = NSAttributedString(string: " \(FormatterSingleton.sharedInstance.NumberFormatter.stringFromNumber(target["year"].numberValue)!)  ")
+        
+        let strFinal = NSMutableAttributedString(string: "")
+        strFinal.appendAttributedString(str1)
+        strFinal.appendAttributedString(str2)
+        
+        self.entranceYearUILabel.attributedText = strFinal
         
 //        if let extra_data = target["extra_data"].stringValue.dataUsingEncoding(NSUTF8StringEncoding) {
 //            let extraData = JSON(data: extra_data)
@@ -114,11 +126,10 @@ class EntranceUpdateTableViewCell: UITableViewCell {
                     //MediaRequestRepositorySingleton.sharedInstance.remove(key: "\(self.localName):\(indexPath.section):\(indexPath.row):\(esetUrl)")
                     
                     if error != .Success {
-                        // print the error for now
                         if error == HTTPErrorType.Refresh {
                             self.downloadEsetImage(imageID, indexPath: indexPath)
                         }
-                        print("error in downloaing image from \(fullPath!)")
+//                        print("error in downloaing image from \(fullPath!)")
                         
                     } else {
                         if let myData = data {

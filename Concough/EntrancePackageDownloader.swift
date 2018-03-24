@@ -41,13 +41,7 @@ class EntrancePackageDownloader: Manager.SessionDelegate {
         let bundle = "Entrance:\(self.entranceUniqueId)"
 
         let config: NSURLSessionConfiguration = NSURLSessionConfiguration.backgroundSessionConfigurationWithIdentifier(bundle)
-//        config.discretionary = true
-//        config.sessionSendsLaunchEvents = true
         var manager = Alamofire.Manager(configuration: config)
-//        manager.backgroundCompletionHandler = {
-//            print("=========================1111")
-//            
-//        }
         return manager
     }()
     
@@ -205,11 +199,10 @@ class EntrancePackageDownloader: Manager.SessionDelegate {
     internal func downloadOneImage(saveDirectory saveDirectory: String, imageId: String, questionId: String) {
         MediaRestAPIClass.downloadEntranceQuestionImage(manager: self.backgroundManager, uniqueId: self.entranceUniqueId, imageId: imageId, completion: { (fullUrl, data, error) in
             if error != .Success {
-                // print the error for now
                 if error == HTTPErrorType.Refresh {
                     self.downloadOneImage(saveDirectory: saveDirectory, imageId: imageId, questionId: questionId)
                 }
-                print("error in downloaing image from \(fullUrl!)")
+//                print("error in downloaing image from \(fullUrl!)")
                 
             } else {
                 if let myData = data {
@@ -304,7 +297,6 @@ class EntrancePackageDownloader: Manager.SessionDelegate {
     internal func downloadMultiImage(saveDirectory saveDirectory: String, ids: [String: String]) {
         MediaRestAPIClass.downloadEntranceQuestionBulkImages(manager: self.backgroundManager, uniqueId: self.entranceUniqueId, questionsId: Array(ids.keys), completion: { (fullUrl, data, error) in
             if error != .Success {
-                // print the error for now
                 if error == HTTPErrorType.Refresh {
                     self.downloadMultiImage(saveDirectory: saveDirectory, ids: ids)
                 } else {
@@ -458,16 +450,9 @@ class EntrancePackageDownloader: Manager.SessionDelegate {
                     if let status = localData["status"].string {
                         switch status {
                         case "OK":
-                            //print(localData["package"].stringValue)
                             let packageStr = localData["package"].stringValue
-                            //print(packageStr)
-                            
-                            //let p = try! localData["package"].rawData()
-                            
-                            //packageStr = ""
                             let decodedData = NSData(base64EncodedString: packageStr, options: NSDataBase64DecodingOptions.init(rawValue: 0))
                             
-                            //let package = packageStr.dataUsingEncoding(NSUTF8StringEncoding)
                             let username = UserDefaultsSingleton.sharedInstance.getUsername()!
                             do {
                                 let hash_str = username + ":" + SECRET_KEY
@@ -475,10 +460,6 @@ class EntrancePackageDownloader: Manager.SessionDelegate {
                                 
                             
                                 let originalText = try RNCryptor.decryptData(decodedData!, password: hash_key)
-                                //print(originalText)
-                                
-                                // update EntrancePurchase Realm Record --> set isDownloaded = true
-                                //let valid = PurchasedModelHandler.setIsDownloadedTrue(productType: "Entrance", productId: self.entranceUniqueId, username: username)
                                 
                                 let content = JSON(data: originalText)
                                 let initData = content["init"]
@@ -495,7 +476,7 @@ class EntrancePackageDownloader: Manager.SessionDelegate {
                                 }
                                 
                             } catch(let error as NSError) {
-                                print("\(error)")
+//                                print("\(error)")
                             }
                             
                         case "Error":

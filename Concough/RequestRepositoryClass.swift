@@ -22,7 +22,6 @@ class RequestRepositoryClass {
         let result: Bool = synchronizedResult(self.lock) {
             if !self.repo.keys.contains(key) {
                 self.repo.updateValue(value, forKey: key)
-                //print("RequestRepositoryClass --> add(\(key))")
                 return true
             }
             return false
@@ -35,7 +34,6 @@ class RequestRepositoryClass {
         let result: Bool = synchronizedResult(self.lock) {
             if self.repo.keys.contains(key) {
                 self.repo.removeValueForKey(key)
-                //print("RequestRepositoryClass --> remove(\(key))")
                 return true
             }
             
@@ -48,7 +46,6 @@ class RequestRepositoryClass {
     func cancel(key key: String) -> Bool {
         let result: Bool = synchronizedResult(self.lock) {
             if let value = self.repo[key] {
-                //print("RequestRepositoryClass --> cancel(\(key))")
                 value.cancel()
                 return true
             }

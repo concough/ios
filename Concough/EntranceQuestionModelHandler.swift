@@ -26,7 +26,7 @@ class EntranceQuestionModelHandler {
             })
             return question
         } catch(let error as NSError) {
-            print("\(error)")
+//            print("\(error)")
         }
         return nil
     }
@@ -37,7 +37,7 @@ class EntranceQuestionModelHandler {
                 RealmSingleton.sharedInstance.DefaultRealm.delete(list)
             })
         } catch (let error as NSError) {
-            print("\(error)")
+//            print("\(error)")
             return false
         }
         return true
@@ -50,7 +50,7 @@ class EntranceQuestionModelHandler {
                     question.isDownloaded = true
                 })
             } catch (let error as NSError) {
-                print("\(error)")
+//                print("\(error)")
             }
         }
     }

@@ -133,7 +133,6 @@ class HomeTableViewController: UITableViewController, DZNEmptyDataSetDelegate, D
 
     override func tableView(tableView: UITableView, willDisplayCell cell: UITableViewCell, forRowAtIndexPath indexPath: NSIndexPath) {
         
-//        print("HomeTableViewController --> willDisplayCell index: \(indexPath.row)")
         let lastSectionIndex = tableView.numberOfSections - 1
         let lastRowIndex = tableView.numberOfRowsInSection(lastSectionIndex) - 5
         
@@ -158,9 +157,7 @@ class HomeTableViewController: UITableViewController, DZNEmptyDataSetDelegate, D
                 // get last item of activity feed
                 let activity = self.activityList[lastRowIndex + 4]
                 let last_time = activity.createdStr
-                //print("\(indexPath) - \(last_time)")
-                
-                //print("HomeTableViewController --> willDisplayCell cause loadFeeds")
+
                 loadFeeds(next: last_time)
             }
         }
@@ -254,7 +251,6 @@ class HomeTableViewController: UITableViewController, DZNEmptyDataSetDelegate, D
                 AlertClass.hideLoaingMessage(progressHUD: self.loading)
                 UIApplication.sharedApplication().networkActivityIndicatorVisible = false
             }
-            print("--> \(error)")
             
             if let err = error {
                 switch err {
@@ -295,7 +291,7 @@ class HomeTableViewController: UITableViewController, DZNEmptyDataSetDelegate, D
                     self.queue.addOperation(operation)
                     
                 default:
-                    print("HomeTableViewController --> loadFeeds: error = \(err)")
+                    break
                 }
             }
         }, failure: { (error) in
@@ -367,7 +363,6 @@ class HomeTableViewController: UITableViewController, DZNEmptyDataSetDelegate, D
     
     // MARK: - Unwind Segue Handlers
     @IBAction func unwindArchiveViewController(segue: UIStoryboardSegue) {
-        print("Unwind: ArchiveViewController")
     }
 
 }

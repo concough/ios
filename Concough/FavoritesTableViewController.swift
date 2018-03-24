@@ -258,6 +258,20 @@ class FavoritesTableViewController: UITableViewController, DZNEmptyDataSetDelega
                                 
                                 if PurchasedModelHandler.getByUsernameAndId(id: id, username: username) != nil {
                                     PurchasedModelHandler.updateDownloadTimes(username: username, id: id, newDownloadTimes: downloaded)
+                                    
+                                    let target = record["target"]
+                                    let targetType = target["product_type"].stringValue
+                                    
+                                    if targetType == "Entrance" {
+                                        let uniqueId = target["unique_key"].stringValue
+                                        let month = target["month"].intValue
+
+                                        if let item = EntranceModelHandler.getByUsernameAndId(id: uniqueId, username: username) {
+                                            if item.month != month {
+                                                EntranceModelHandler.correctMonthOfEntrance(id: uniqueId, username: username, month: month)
+                                            }
+                                        }
+                                    }
                                 } else {
                                     // does not exist
                                     let target = record["target"]
@@ -277,13 +291,14 @@ class FavoritesTableViewController: UITableViewController, DZNEmptyDataSetDelega
                                             let bookletsCount = target["booklets_count"].intValue
                                             let duration = target["duration"].intValue
                                             let year = target["year"].intValue
+                                            let month = target["month"].intValue
                                             let extraData = JSON(data: target["extra_data"].stringValue.dataUsingEncoding(NSUTF8StringEncoding)!)
                                             
                                             let lastPablishedStr = target["last_published"].stringValue
                                             let lastPublished = FormatterSingleton.sharedInstance.UTCDateFormatter.dateFromString(lastPablishedStr)
                                             
                                             if EntranceModelHandler.getByUsernameAndId(id: uniqueId, username: username) == nil {
-                                                let entrance = EntranceStructure(entranceTypeTitle: type, entranceOrgTitle: org, entranceGroupTitle: group, entranceSetTitle: setName, entranceSetId: setId, entranceExtraData: extraData, entranceBookletCounts: bookletsCount, entranceYear: year, entranceDuration: duration, entranceUniqueId: uniqueId, entranceLastPublished: lastPublished)
+                                                let entrance = EntranceStructure(entranceTypeTitle: type, entranceOrgTitle: org, entranceGroupTitle: group, entranceSetTitle: setName, entranceSetId: setId, entranceExtraData: extraData, entranceBookletCounts: bookletsCount, entranceYear: year, entranceMonth: month, entranceDuration: duration, entranceUniqueId: uniqueId, entranceLastPublished: lastPublished)
                                                 
                                                 EntranceModelHandler.add(entrance: entrance, username: username)
                                                 
@@ -293,12 +308,10 @@ class FavoritesTableViewController: UITableViewController, DZNEmptyDataSetDelega
                                 }
                                 
                                 purchasedId.append(id)
-                                //print ("---> \(purchasedId)")
                             }
                             
                             // delete all that does not exist
                             let deletedItems = PurchasedModelHandler.getAllPurchasedNotIn(username: username, ids: purchasedId)
-                            //print ("---> \(deletedItems)")
 
                             if deletedItems.count > 0 {
                                 for item in deletedItems {
@@ -483,7 +496,7 @@ class FavoritesTableViewController: UITableViewController, DZNEmptyDataSetDelega
                     if let entrance = EntranceModelHandler.getByUsernameAndId(id: item.productUniqueId, username: username) {
                         let extraData = JSON(data: entrance.extraData.dataUsingEncoding(NSUTF8StringEncoding)!)
                         
-                        let entranceS = EntranceStructure(entranceTypeTitle: entrance.type, entranceOrgTitle: entrance.organization, entranceGroupTitle: entrance.group, entranceSetTitle: entrance.set, entranceSetId: entrance.setId, entranceExtraData: extraData, entranceBookletCounts: entrance.bookletsCount, entranceYear: entrance.year, entranceDuration: entrance.duration, entranceUniqueId: entrance.uniqueId, entranceLastPublished: entrance.lastPublished)
+                        let entranceS = EntranceStructure(entranceTypeTitle: entrance.type, entranceOrgTitle: entrance.organization, entranceGroupTitle: entrance.group, entranceSetTitle: entrance.set, entranceSetId: entrance.setId, entranceExtraData: extraData, entranceBookletCounts: entrance.bookletsCount, entranceYear: entrance.year, entranceMonth: entrance.month, entranceDuration: entrance.duration, entranceUniqueId: entrance.uniqueId, entranceLastPublished: entrance.lastPublished)
                         
                         // load starred questions if exist
                         let starCount = EntranceQuestionStarredModelHandler.countByEntranceId(entranceUniqueId: item.productUniqueId)
@@ -532,7 +545,6 @@ class FavoritesTableViewController: UITableViewController, DZNEmptyDataSetDelega
                     if let status = localData["status"].string {
                         switch status {
                         case "OK":
-                            // print("\(localData)")
                             let purchase = localData["purchase"]
                             // get purchase record
                             if purchase["purchase_record"] != nil {
@@ -833,7 +845,6 @@ class FavoritesTableViewController: UITableViewController, DZNEmptyDataSetDelega
     }
     
     override func tableView(tableView: UITableView, didSelectRowAtIndexPath indexPath: NSIndexPath) {
-        print("\(indexPath)")
     }
     
     // MARK: - DZN
@@ -855,7 +866,7 @@ class FavoritesTableViewController: UITableViewController, DZNEmptyDataSetDelega
     }
     
     func emptyDataSetShouldDisplay(scrollView: UIScrollView!) -> Bool {
-        if self.showType == "Show" {
+        if self.showType == "Normal" {
             return true
         }
         return false

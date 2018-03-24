@@ -107,6 +107,7 @@ class BasketSingleton {
                                         entrance.entranceTypeTitle = target["entrance_type"]["title"].stringValue
                                         entrance.entranceUniqueId = target["unique_key"].stringValue
                                         entrance.entranceYear = target["year"].intValue
+                                        entrance.entranceMonth = target["month"].intValue
                                         
                                         localCost += cost
                                         localSales.append((id: sale_id, created: created, cost: cost, target: entrance, type: "Entrance"))

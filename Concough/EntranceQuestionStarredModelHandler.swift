@@ -26,7 +26,7 @@ class EntranceQuestionStarredModelHandler {
                 })
                 return true
             } catch(let error as NSError) {
-                print("\(error)")
+//                print("\(error)")
             }
             
         }
@@ -45,7 +45,7 @@ class EntranceQuestionStarredModelHandler {
                 })
                 return true
             } catch(let error as NSError) {
-                print("\(error)")
+//                print("\(error)")
             }
         }
         return false
@@ -68,7 +68,7 @@ class EntranceQuestionStarredModelHandler {
                 RealmSingleton.sharedInstance.DefaultRealm.delete(items)
             })
         } catch (let error as NSError) {
-            print("\(error)")
+//            print("\(error)")
             return false
         }
         

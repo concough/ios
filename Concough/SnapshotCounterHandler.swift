@@ -25,7 +25,7 @@ class SnapshotCounterHandler {
             })
             return true
         } catch(let  exc as NSError) {
-            print(exc)
+//            print(exc)
         }
         
         return false

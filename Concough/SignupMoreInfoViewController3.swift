@@ -61,44 +61,6 @@ class SignupMoreInfoViewController3: UIViewController, UINavigationControllerDel
         }
     }
     
-    // MARK: - Actions
-//    @IBAction func gradeButtonPressed(sender: UIButton) {
-//        let alert = SimpleAlert.Controller(title: "متقاضی آزمون؟", message: "لطفا یکی از گزینه های زیر را انتخاب نمایید", style: .ActionSheet)
-//        alert.configContentView = { sview in
-//            if let v = sview as? SimpleAlert.ContentView {
-//                v.titleLabel.font = UIFont(name: "IRANYekanMobile-Bold", size: 14)!
-//                v.messageLabel.font = UIFont(name: "IRANYekanMobile", size: 12)!
-//                v.messageLabel.textColor = UIColor.darkGrayColor()
-//            }
-//        }
-//        
-//        alert.configContainerCornerRadius = {
-//            return 10.0
-//        }
-//            
-//        for value in GradeTypeEnum.allValues {
-//            let action = SimpleAlert.Action(title: value.toString(), style: .Default, handler: { (action) in
-//                let index = alert.actions.indexOf(action)
-//                print(index)
-//                self.selectedGrade = GradeTypeEnum.allValues[index!]
-//                
-//                //                NSOperationQueue.mainQueue().addOperationWithBlock({
-//                self.gradeButton.setTitle(value.toString(), forState: .Normal)
-//                //                })
-//                
-//            })
-//            
-//            alert.addAction(action)
-//            action.button.setTitleColor(UIColor(netHex: BLUE_COLOR_HEX, alpha: 1.0), forState: .Normal)
-//            action.button.titleLabel?.font = UIFont(name: "IRANYekanMobile-Bold", size: 14)!
-//        }
-//        
-//        
-//        NSOperationQueue.mainQueue().addOperationWithBlock {
-//            self.presentViewController(alert, animated: true, completion: nil)
-//        }
-//    }
-    
     @IBAction func nextButtonPressed(sender: AnyObject) {
         // main action here
         self.postProfile()
@@ -124,7 +86,6 @@ class SignupMoreInfoViewController3: UIViewController, UINavigationControllerDel
                 }
             } else {
                 if let localData = data {
-                    print(localData)
                     if let status = localData["status"].string {
                         switch status {
                         case "OK":
@@ -198,21 +159,10 @@ class SignupMoreInfoViewController3: UIViewController, UINavigationControllerDel
             return 10.0
         }
         
-        //        for value in GradeTypeEnum.allValues {
-        //            let action = SimpleAlert.Action(title: value.toString(), style: .Default, handler: { (action) in
-        //
-        //                self.changeGrade(title: value.rawValue)
-        //            })
-        //
-        //            alert.addAction(action)
-        //            action.button.setTitleColor(UIColor(netHex: BLUE_COLOR_HEX, alpha: 1.0), forState: .Normal)
-        //            action.button.titleLabel?.font = UIFont(name: "IRANSansMobile-Bold", size: 14)!
-        //        }
         for val in values {
             let action = SimpleAlert.Action(title: val.0, style: .Default, handler: { (action) in
                 
                 let index = alert.actions.indexOf(action)
-                print(index)
                 self.selectedGrade = val.1
                 self.selectedGradeString = val.0
 

@@ -158,7 +158,6 @@ class SignupMoreInfoViewController1: UIViewController, UITextFieldDelegate {
     
     // MARK: - Actions
     @IBAction func nextButtonPressed(sender: UIBarButtonItem) {
-        //print("next button pressed")
         if let firstname = self.firstnameTextField.text?.trim() where firstname != "", let lastname = self.lastnameTextField.text?.trim() where lastname != "" {
             
             self.infoStruct.firstname = firstname
@@ -169,7 +168,6 @@ class SignupMoreInfoViewController1: UIViewController, UITextFieldDelegate {
         }
         else {
             AlertClass.showTopMessage(viewController: self, messageType: "Form", messageSubType: "EmptyFields", type: "error", completion: nil)
-//            AlertClass.showSimpleErrorMessage(viewController: self, messageType: "Form", messageSubType: "EmptyFields", completion: nil)
         }
     }
     

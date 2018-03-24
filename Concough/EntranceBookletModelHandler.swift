@@ -25,7 +25,7 @@ class EntranceBookletModelHandler {
             })
             return booklet
         } catch(let error as NSError) {
-            print("\(error)")
+//            print("\(error)")
         }
         return nil
     }

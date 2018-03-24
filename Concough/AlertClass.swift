@@ -254,49 +254,7 @@ class AlertClass {
      
         return (title, message, showMessage)
     }
-    
-//    class func showSimpleErrorMessage(viewController viewController: UIViewController, messageType: String, messageSubType: String, completion: (() -> ())?) {
-//        
-//        var showMessage: Bool = true
-//        var title: String = ""
-//        var message: String = ""
-//        
-//        (title, message, showMessage) = AlertClass.convertMessage(messageType: messageType, messageSubType: messageSubType)
-//        
-//        if showMessage {
-//            NSOperationQueue.mainQueue().addOperationWithBlock({
-//                let titleFont = [NSFontAttributeName: UIFont(name: "IRANSansMobile-Bold", size: 16.0)!]
-//                let messageFont = [NSFontAttributeName: UIFont(name: "IRANSansMobile-Light", size: 12.0)!]
-//                
-//                let titleAttrString = NSMutableAttributedString(string: title, attributes: titleFont as [String: AnyObject])
-//                let messageAttrString = NSMutableAttributedString(string: message, attributes: messageFont as [String: AnyObject])
-//                
-//                let alertController = UIAlertController(title: title, message: message, preferredStyle: .Alert)
-//                alertController.setValue(titleAttrString, forKey: "attributedTitle")
-//                alertController.setValue(messageAttrString, forKey: "attributedMessage")
-//                
-//                let action = UIAlertAction(title: "متوجه شدم", style: .Default, handler: { (action) in
-//                    if let completeHandler = completion {
-//                        completeHandler()
-//                    }
-//                })
-//                
-//                let actionFont = [NSFontAttributeName: UIFont(name: "IRANSansMobile-Bold", size: 12.0)!]
-//                let actionAttrString = NSMutableAttributedString(string: "متوجه شدم", attributes: actionFont as [String: AnyObject])
-//                
-//                let a = action.valueForKey("__representer")
-//                print("--> \(a)")
-//                if let label = action.valueForKey("__representer")?.valueForKey("label") as? UILabel {
-//                    label.attributedText = actionAttrString
-//                }
-//                
-//                alertController.addAction(action)
-//                viewController.presentViewController(alertController, animated: true) {
-//                }
-//            })
-//        }
-//    }
-    
+        
     class func showTopMessage(viewController viewController: UIViewController, messageType: String, messageSubType: String, type: String, completion: (() -> ())?) {
         
         let (_, message, showMessage) = AlertClass.convertMessage(messageType: messageType, messageSubType: messageSubType)

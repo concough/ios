@@ -87,7 +87,7 @@ class ArchiveAdvanceTableViewCell: UITableViewCell {
                             // print the error for now
                             //                        self.entranceSetImageView?.image = UIImage()
                             //                        self.setNeedsLayout()
-                            print("error in downloaing image from \(fullPath!)")
+//                            print("error in downloaing image from \(fullPath!)")
                         }
                     } else {
                         if let myData = data {

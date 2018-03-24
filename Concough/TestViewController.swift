@@ -18,15 +18,12 @@ class TestViewController: UIViewController {
         // Do any additional setup after loading the view.
         let mainQueue: NSOperationQueue = NSOperationQueue.mainQueue()
         NSNotificationCenter.defaultCenter().addObserverForName(UIApplicationUserDidTakeScreenshotNotification, object: nil, queue: mainQueue) { (notification) in
-            NSLog("Captured Screen")
         }
     }
     
     override func touchesCancelled(touches: Set<UITouch>, withEvent event: UIEvent?) {
         super.touchesCancelled(touches, withEvent: event)
         
-        NSLog("Touches cancelled")
-        print("Touched Cancelled")
     }
     
     @IBAction func testOauthToken(sender: UIButton) {

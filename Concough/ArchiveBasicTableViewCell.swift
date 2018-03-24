@@ -75,7 +75,7 @@ class ArchiveBasicTableViewCell: UITableViewCell {
                         } else {
                             self.imageView?.image = UIImage()
                             self.setNeedsLayout()
-                            print("error in downloaing image from \(fullPath!)")
+//                            print("error in downloaing image from \(fullPath!)")
                         }
                     } else {
                         if let myData = data {

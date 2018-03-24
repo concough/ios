@@ -28,7 +28,7 @@ class PurchasedModelHandler {
             })
             return true
         } catch(let error as NSError) {
-            print("\(error)")
+//            print("\(error)")
         }
         return false
     }
@@ -42,7 +42,7 @@ class PurchasedModelHandler {
                     RealmSingleton.sharedInstance.DefaultRealm.delete(purchased!)
                 })
             } catch (let error as NSError) {
-                print("\(error)")
+//                print("\(error)")
                 return false
             }
         }
@@ -59,7 +59,7 @@ class PurchasedModelHandler {
                 })
                 return true
             } catch (let error as NSError) {
-                print("\(error)")
+//                print("\(error)")
             }
         }
         return false
@@ -73,7 +73,7 @@ class PurchasedModelHandler {
                 })
                 return true
             } catch (let error as NSError) {
-                print("\(error)")
+//                print("\(error)")
             }
         }
         return false
@@ -96,7 +96,7 @@ class PurchasedModelHandler {
                     item.downloadTimes = newDownloadTimes
                 })
             } catch (let error as NSError) {
-                print("\(error)")
+//                print("\(error)")
             }
         }
     }
@@ -111,7 +111,7 @@ class PurchasedModelHandler {
                 })
                 return true
             } catch (let error as NSError) {
-                print("\(error)")
+//                print("\(error)")
             }
         }
         return false

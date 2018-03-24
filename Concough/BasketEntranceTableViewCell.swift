@@ -37,7 +37,11 @@ class BasketEntranceTableViewCell: UITableViewCell {
     }
 
     internal func configureCell(entrance entrance: EntranceStructure, cost: Int, indexPath: NSIndexPath) {
-        self.titleLabel.text = "آزمون \(entrance.entranceTypeTitle!) \(FormatterSingleton.sharedInstance.NumberFormatter.stringFromNumber(entrance.entranceYear!)!)"
+        if entrance.entranceMonth > 0 {
+            self.titleLabel.text = "آزمون \(entrance.entranceTypeTitle!) \(monthToString(entrance.entranceMonth!)) \(FormatterSingleton.sharedInstance.NumberFormatter.stringFromNumber(entrance.entranceYear!)!)"
+        } else {
+            self.titleLabel.text = "آزمون \(entrance.entranceTypeTitle!) \(FormatterSingleton.sharedInstance.NumberFormatter.stringFromNumber(entrance.entranceYear!)!)"
+        }
         //self.subTitleLabel.text = "مجموعه مهندسی کامپیوتر و الکترونیک ایخ هطر هسطر هشرط هشسط هشس هسط هشس طهشسرش هشسط (مجموعه فنی و مهندسی)"
         self.subTitleLabel.text = "\(entrance.entranceSetTitle!) (\(entrance.entranceGroupTitle!))"
 //        self.subTitleLabel.semanticContentAttribute = .ForceRightToLeft
@@ -87,10 +91,9 @@ class BasketEntranceTableViewCell: UITableViewCell {
                         if error == HTTPErrorType.Refresh {
                             self.downloadImage(esetId: esetId, indexPath: indexPath)
                         } else {
-                            // print the error for now
                             self.entranceImage?.image = UIImage()
                             self.setNeedsLayout()
-                            print("error in downloaing image from \(fullPath!)")
+//                            print("error in downloaing image from \(fullPath!)")
                         }
                     } else {
                         if let myData = data {

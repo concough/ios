@@ -380,7 +380,6 @@ class SubmitSignupCodeViewController: UIViewController, UITextFieldDelegate {
                                 switch status {
                                 case "OK":
                                     self.view.endEditing(true)
-                                    //print("Code Approved successfully")
                                     // make login request
                                     self.signupStruct.password = code
                                     self.makeLoginRequest()
@@ -647,7 +646,6 @@ class SubmitSignupCodeViewController: UIViewController, UITextFieldDelegate {
     
     // MARK: - Unwind Segues
     @IBAction func unwindResendForgotPasswordPressed(segue: UIStoryboardSegue) {
-        //print("Reset Password Unwind Segue")
     }    
     
     // MARK: - Navigation

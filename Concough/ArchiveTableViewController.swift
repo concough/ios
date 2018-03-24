@@ -188,7 +188,6 @@ class ArchiveTableViewController: UITableViewController, EHHorizontalSelectionVi
     
     // MARK: -Actions
     @IBAction func refreshButtonPressed(sender: UIBarButtonItem) {
-        print(isRotating)
         if !isRotating {
             let layer = (self.navigationItem.leftBarButtonItem!.customView as? UIButton)?.imageView?.layer
             
@@ -372,32 +371,6 @@ class ArchiveTableViewController: UITableViewController, EHHorizontalSelectionVi
     }
     
     private func getEntranceGroups(entranceTypeId etypeId: Int) {
-//        NSOperationQueue.mainQueue().addOperationWithBlock {
-//            self.refreshControl?.endRefreshing()
-//        }
-        
-//        if self.groupsRepo.keys.contains(etypeId) == true {
-//            self.groups = self.groupsRepo[etypeId]
-//            self.groupsString = self.groups.keys.reverse()
-//            
-//            // update horizontal Menu
-//            NSOperationQueue.mainQueue().addOperationWithBlock({
-//                self.hSelView?.reloadData()
-//                
-//                if self.groups.count > 0 {
-//                    self.hSelView?.selectIndex(UInt(self.groupsString.count - 1))
-//                    // get first item sets from server
-//                    //self.getEntranceSets(entranceGroupId: self.groups[self.groupsString.last!]!)
-//                }
-//            })
-//            
-//            print("groups repo fetched: etype=\(etypeId)")
-//            return
-//        }
-        
-//        NSOperationQueue.mainQueue().addOperationWithBlock { 
-//            self.loading = AlertClass.showLoadingMessage(viewController: self)
-//        }
         
         ArchiveRestAPIClass.getEntranceGroups(entranceTypeId: etypeId, completion: { (data, error) in
             NSOperationQueue.mainQueue().addOperationWithBlock({
@@ -489,38 +462,17 @@ class ArchiveTableViewController: UITableViewController, EHHorizontalSelectionVi
                         AlertClass.showTopMessage(viewController: self, messageType: "NetworkError", messageSubType: err.rawValue, type: "error", completion: nil)
                     })
                     
-//                    AlertClass.showSimpleErrorMessage(viewController: self, messageType: "NetworkError", messageSubType: err.rawValue, completion: {
-//                        let operation = NSBlockOperation(block: {
-//                            self.getEntranceGroups(entranceTypeId: etypeId)
-//                        })
-//                        self.queue.addOperation(operation)
-//                    })
                 default:
                     NSOperationQueue.mainQueue().addOperationWithBlock({
                         AlertClass.showTopMessage(viewController: self, messageType: "NetworkError", messageSubType: err.rawValue, type: "", completion: nil)
                     })
                     
-//                    AlertClass.showSimpleErrorMessage(viewController: self, messageType: "NetworkError", messageSubType: err.rawValue, completion: nil)
                 }
             }
         }
     }
     
     private func getEntranceSets(entranceGroupId groupId: Int) {
-//        NSOperationQueue.mainQueue().addOperationWithBlock {
-//            self.refreshControl?.endRefreshing()
-//        }
-
-//        if self.setsRepo.keys.contains("\(self.selectedEntranceTypeIndex):\(groupId)") {
-//            self.sets = self.setsRepo["\(self.selectedEntranceTypeIndex):\(groupId)"]
-//            
-//            NSOperationQueue.mainQueue().addOperationWithBlock({
-//                self.tableView.reloadData()
-//            })
-//            
-//            print("sets repo fetched: group=\(self.selectedEntranceTypeIndex):\(groupId)")
-//            return
-//        }
 
         NSOperationQueue.mainQueue().addOperationWithBlock { 
             self.loading = AlertClass.showLoadingMessage(viewController: self)
@@ -728,7 +680,6 @@ class ArchiveTableViewController: UITableViewController, EHHorizontalSelectionVi
                     esetDetail.entranceGroupTitle = self.groupsString[Int(self.hSelView.selectedIndex())]
                     esetDetail.entranceTypeTitle = self.typeTitle
                     
-                    print(esetDetail)
                     vc.esetDetail = esetDetail
                     
                     self.navigationItem.backBarButtonItem = UIBarButtonItem(title: "بازگشت", style: .Plain, target: self, action: nil)

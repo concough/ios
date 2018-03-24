@@ -179,7 +179,6 @@ class SignUpViewController: UIViewController, UITextFieldDelegate {
                     if let status = localData["status"].string {
                         switch status {
                         case "OK":
-                            //print("preSignup successful.")
                             // ok --> navigate to other window
                             if let id = localData["id"].int {
                                 self.signupStruct.preSignupId = id
@@ -265,7 +264,6 @@ class SignUpViewController: UIViewController, UITextFieldDelegate {
                     if let status = localData["status"].string {
                         switch status {
                         case "OK":
-                            //print("Signup OK received")
                             self.isUsernameValid = true
                             self.usernameMsgLabel.text = "شماره همراه وارد شده آزاد است"
                             self.usernameMsgLabel.textColor = UIColor(netHex: GREEN_COLOR_HEX, alpha: 1.0)
@@ -350,7 +348,6 @@ class SignUpViewController: UIViewController, UITextFieldDelegate {
                     self.checkUsername(username: username)
                 } else {
                     self.isUsernameValid = false
-                    //print("invalid username")
                     self.usernameMsgRefreshControl.stopAnimating()
                     self.usernameMsgLabel.text = "شماره همراه وارد شده صحیح نمی باشد"
                     self.usernameMsgLabel.textColor = UIColor(netHex: RED_COLOR_HEX, alpha: 1.0)
@@ -360,22 +357,7 @@ class SignUpViewController: UIViewController, UITextFieldDelegate {
                 self.isUsernameValid = false
                 
         }
-            
-            //        } else if textField == self.emailTextField {
-            //            if let email = self.emailTextField.text?.stringByTrimmingCharactersInSet(NSCharacterSet.whitespaceAndNewlineCharacterSet()) {
-            //
-            //                if email.isValidEmail {
-            //                    self.isEmailValid = true
-            //                    self.emailMsgLabel.text = ""
-            //                    self.emailMsgStackView.hidden = true
-            //                } else {
-            //                    self.isEmailValid = false
-            //                    self.emailMsgLabel.text = "ایمیل معتبر وارد نمایید"
-            //                    self.emailMsgLabel.textColor = UIColor(netHex: RED_COLOR_HEX, alpha: 1.0)
-            //                    self.emailMsgStackView.hidden = false
-            //                }
-            //            }
-        
+                    
     }
     
     func textFieldDidEndEditing(textField: UITextField) {

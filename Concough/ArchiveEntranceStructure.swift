@@ -12,6 +12,7 @@ import SwiftyJSON
 struct ArchiveEntranceStructure {
     var organization: String?
     var year: Int?
+    var month: Int?
     var extraData: JSON?
     var buyCount: Int?
     var lastPablished: NSDate?

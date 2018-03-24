@@ -199,7 +199,6 @@ class ResetPasswordViewController: UIViewController, UITextFieldDelegate {
                     } else if TokenHandlerSingleton.sharedInstance.isAuthenticated() {
                         TokenHandlerSingleton.sharedInstance.assureAuthorized(true, completion: { (authenticated, error) in
                             if authenticated {
-                                print("StartupViewController: Authenticated")
                                 if UserDefaultsSingleton.sharedInstance.hasProfile() {
                                     NSOperationQueue.mainQueue().addOperationWithBlock {
                                         self.performSegueWithIdentifier("HomeVCSegue", sender: self)
@@ -209,7 +208,6 @@ class ResetPasswordViewController: UIViewController, UITextFieldDelegate {
                                     self.getLockedStatus()
                                 }
                             } else {
-                                print("StartupViewController: Not Authenticated")
                                 NSOperationQueue.mainQueue().addOperationWithBlock {
                                     self.performSegueWithIdentifier("LogInVCSegue", sender: self)
                                 }
@@ -490,6 +488,21 @@ class ResetPasswordViewController: UIViewController, UITextFieldDelegate {
                                 
                                 if PurchasedModelHandler.getByUsernameAndId(id: id, username: username) != nil {
                                     PurchasedModelHandler.updateDownloadTimes(username: username, id: id, newDownloadTimes: downloaded)
+                                    
+                                    let target = record["target"]
+                                    let targetType = target["product_type"].stringValue
+                                    
+                                    if targetType == "Entrance" {
+                                        let uniqueId = target["unique_key"].stringValue
+                                        let month = target["month"].intValue
+                                        
+                                        if let item = EntranceModelHandler.getByUsernameAndId(id: uniqueId, username: username) {
+                                            if item.month != month {
+                                                EntranceModelHandler.correctMonthOfEntrance(id: uniqueId, username: username, month: month)
+                                            }
+                                        }
+                                    }
+                                    
                                 } else {
                                     // does not exist
                                     let target = record["target"]
@@ -509,13 +522,14 @@ class ResetPasswordViewController: UIViewController, UITextFieldDelegate {
                                             let bookletsCount = target["booklets_count"].intValue
                                             let duration = target["duration"].intValue
                                             let year = target["year"].intValue
+                                            let month = target["month"].intValue
                                             let extraData = JSON(data: target["extra_data"].stringValue.dataUsingEncoding(NSUTF8StringEncoding)!)
                                             
                                             let lastPablishedStr = target["last_published"].stringValue
                                             let lastPublished = FormatterSingleton.sharedInstance.UTCDateFormatter.dateFromString(lastPablishedStr)
                                             
                                             if EntranceModelHandler.getByUsernameAndId(id: uniqueId, username: username) == nil {
-                                                let entrance = EntranceStructure(entranceTypeTitle: type, entranceOrgTitle: org, entranceGroupTitle: group, entranceSetTitle: setName, entranceSetId: setId, entranceExtraData: extraData, entranceBookletCounts: bookletsCount, entranceYear: year, entranceDuration: duration, entranceUniqueId: uniqueId, entranceLastPublished: lastPublished)
+                                                let entrance = EntranceStructure(entranceTypeTitle: type, entranceOrgTitle: org, entranceGroupTitle: group, entranceSetTitle: setName, entranceSetId: setId, entranceExtraData: extraData, entranceBookletCounts: bookletsCount, entranceYear: year, entranceMonth: month, entranceDuration: duration, entranceUniqueId: uniqueId, entranceLastPublished: lastPublished)
                                                 
                                                 EntranceModelHandler.add(entrance: entrance, username: username)
                                                 
@@ -525,12 +539,10 @@ class ResetPasswordViewController: UIViewController, UITextFieldDelegate {
                                 }
                                 
                                 purchasedId.append(id)
-                                //print ("---> \(purchasedId)")
                             }
                             
                             // delete all that does not exist
                             let deletedItems = PurchasedModelHandler.getAllPurchasedNotIn(username: username, ids: purchasedId)
-                            //print ("---> \(deletedItems)")
                             
                             if deletedItems.count > 0 {
                                 for item in deletedItems {

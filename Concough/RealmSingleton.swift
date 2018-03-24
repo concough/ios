@@ -16,7 +16,7 @@ class RealmSingleton {
     
     private init() {
         
-        var config = Realm.Configuration(schemaVersion: 2, migrationBlock: { (migration, oldSchemaVersion) in
+        var config = Realm.Configuration(schemaVersion: 3, migrationBlock: { (migration, oldSchemaVersion) in
             if (oldSchemaVersion < 1) {
                 migration.enumerate(DeviceInformationModel.className(), { (oldObject, newObject) in
                     newObject!["isMe"] = true
@@ -26,6 +26,12 @@ class RealmSingleton {
             if (oldSchemaVersion < 2) {
                 migration.enumerate(EntranceModel.className(), { (oldObject, newObject) in
                     newObject!["pUniqueId"] = "\(oldObject!["username"])-\(oldObject!["uniqueId"])"
+                })
+            }
+            
+            if (oldSchemaVersion < 3) {
+                migration.enumerate(EntranceModel.className(), { (oldObject, newObject) in
+                    newObject!["month"] = 0
                 })
             }
         })

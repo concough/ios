@@ -105,7 +105,6 @@ class SettingsTableViewController: UITableViewController, ContactsProtocol {
                 }
             } else {
                 if let localData = data {
-                    print(localData)
                     if let status = localData["status"].string {
                         switch status {
                         case "OK":
@@ -249,7 +248,6 @@ class SettingsTableViewController: UITableViewController, ContactsProtocol {
                 }
             } else {
                 if let localData = data {
-                    print(localData)
                     if let status = localData["status"].string {
                         switch status {
                         case "OK":
@@ -490,7 +488,6 @@ class SettingsTableViewController: UITableViewController, ContactsProtocol {
                 }
             } else {
                 if let localData = data {
-                    print(localData)
                     if let status = localData["status"].string {
                         switch status {
                         case "OK":
@@ -499,7 +496,6 @@ class SettingsTableViewController: UITableViewController, ContactsProtocol {
                                 modified = FormatterSingleton.sharedInstance.UTCDateFormatter.dateFromString(m)!
                             }
                             
-                            print("--> \(modified)")
                             // update user defaults
                             UserDefaultsSingleton.sharedInstance.updateGrade(grade: title, gradeString: titleString, modified: modified)
                             

@@ -123,7 +123,7 @@ class EntrancePackageHandler {
                             RealmSingleton.sharedInstance.DefaultRealm.delete(lesson.questions)
                         })
                     } catch(let error as NSError) {
-                        print("\(error)")
+//                        print("\(error)")
                     }
                 }
                 
@@ -132,7 +132,7 @@ class EntrancePackageHandler {
                         RealmSingleton.sharedInstance.DefaultRealm.delete(lessons)
                     })
                 } catch(let error as NSError) {
-                    print("\(error)")
+//                    print("\(error)")
                 }
             }
             
@@ -141,7 +141,7 @@ class EntrancePackageHandler {
                     RealmSingleton.sharedInstance.DefaultRealm.delete(booklets)
                 })
             } catch(let error as NSError) {
-                print("\(error)")
+//                print("\(error)")
             }
         }        
     }

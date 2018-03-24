@@ -22,7 +22,7 @@ class DeviceInformationModelHandler {
                 })
                 return true
             } catch (let error as NSError) {
-                print("\(error)")
+//                print("\(error)")
             }
         } else {
             let device = DeviceInformationModel()
@@ -38,7 +38,7 @@ class DeviceInformationModelHandler {
                 })
                 return true
             } catch(let error as NSError) {
-                print("\(error)")
+//                print("\(error)")
             }
             
         }
@@ -61,7 +61,7 @@ class DeviceInformationModelHandler {
                 })
                 return true
             } catch (let error as NSError) {
-                print("\(error)")
+//                print("\(error)")
             }
         }
         return false

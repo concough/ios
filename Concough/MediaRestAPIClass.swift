@@ -30,7 +30,6 @@ class MediaRestAPIClass {
                     let headers = TokenHandlerSingleton.sharedInstance.getHeader()
                     
                     let request = Alamofire.request(.GET ,fullPath, parameters: nil, encoding: .URL, headers: headers).responseData() { response in
-                        //print("download index:\(imageId)")
                         
                         switch response.result {
                         case .Success:
@@ -87,7 +86,6 @@ class MediaRestAPIClass {
                     let headers = TokenHandlerSingleton.sharedInstance.getHeader()
                     
                     let request = Alamofire.request(.GET ,fullPath, parameters: nil, encoding: .URL, headers: headers).responseData() { response in
-                        //print("download index:\(imageId)")
                         
                         switch response.result {
                         case .Success:
@@ -140,7 +138,6 @@ class MediaRestAPIClass {
                     let headers = TokenHandlerSingleton.sharedInstance.getHeader()
                     
                     manager.request(.GET ,fullPath, parameters: nil, encoding: .URL, headers: headers).responseData() { response in
-                        //print("download index:\(imageId)")
                         
                         switch response.result {
                         case .Success:
@@ -202,7 +199,6 @@ class MediaRestAPIClass {
                     parameters.updateValue(query, forKey: "ids")
                     
                     Alamofire.request(.GET ,fullPath, parameters: parameters, encoding: .URLEncodedInURL, headers: headers).responseData() { response in
-                        //print("download index:\(imageId)")
                         
                         switch response.result {
                         case .Success:

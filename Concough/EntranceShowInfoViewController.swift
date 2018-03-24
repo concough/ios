@@ -31,7 +31,11 @@ class EntranceShowInfoViewController: UIViewController {
     }
 
     internal func configureController(entrance entrance: EntranceStructure, starredCount: Int, switchState: Bool, showType: String) {
-        self.titleLabel.text = "آزمون \(entrance.entranceTypeTitle!) \(FormatterSingleton.sharedInstance.NumberFormatter.stringFromNumber(entrance.entranceYear!)!)"
+        if entrance.entranceMonth > 0 {
+            self.titleLabel.text = "آزمون \(entrance.entranceTypeTitle!) \(monthToString(entrance.entranceMonth!)) \(FormatterSingleton.sharedInstance.NumberFormatter.stringFromNumber(entrance.entranceYear!)!)"
+        } else {
+            self.titleLabel.text = "آزمون \(entrance.entranceTypeTitle!) \(FormatterSingleton.sharedInstance.NumberFormatter.stringFromNumber(entrance.entranceYear!)!)"
+        }
         self.subTitleLabel.text = "\(entrance.entranceSetTitle!) (\(entrance.entranceGroupTitle!))"
         
 //        if let extraData = entrance.entranceExtraData {
@@ -97,12 +101,11 @@ class EntranceShowInfoViewController: UIViewController {
                     MediaRequestRepositorySingleton.sharedInstance.remove(key: "\(self.localName):\(indexPath.section):\(indexPath.row):\(esetUrl)")
                     
                     if error != .Success {
-                        // print the error for now
                         if error == HTTPErrorType.Refresh {
                             self.downloadImage(esetId: esetId, indexPath: indexPath)
                         } else {
                             self.entranceImageView?.image = UIImage()
-                            print("error in downloaing image from \(fullPath!)")
+//                            print("error in downloaing image from \(fullPath!)")
                         }
                         
                     } else {

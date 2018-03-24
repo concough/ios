@@ -53,8 +53,6 @@ class JwtTokenAdapter {
         
         Alamofire.request(.POST, fullPath, parameters: parameters, encoding: .JSON, headers: headers).responseJSON {
             response in
-
-            print(response)
             
             switch (response.result) {
             case .Success:

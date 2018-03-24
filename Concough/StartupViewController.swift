@@ -52,7 +52,6 @@ class StartupViewController: UIViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        print("did load")
         
         //self.transView.backgroundColor = UIColor.whiteColor()
         self.unauthenticatedView.hidden = true
@@ -98,23 +97,13 @@ class StartupViewController: UIViewController {
     }
     
     func applicationDidBecomeActive(notification: NSNotification) {
-        print("from foreground")
-        print(self.loggedIn)
-//        LocalNotificationsSingleton.sharedInstance.touch()
-//        TokenHandlerSingleton.sharedInstance.touch()
-//        UserDefaultsSingleton.sharedInstance.touch()
-//        BasketSingleton.sharedInstance.touch()
-//        RealmSingleton.sharedInstance.touch()
-//        DeviceInformationSingleton.sharedInstance.touch()
-
         if self.loggedIn == true {
             NSOperationQueue.mainQueue().addOperationWithBlock {
 //                self.selectedIndex = 2
                 self.performSegueWithIdentifier("HomeVCSegue", sender: self)
             }
         } else {
-            print("not loggedIn")
-            NSOperationQueue.mainQueue().addOperationWithBlock({ 
+            NSOperationQueue.mainQueue().addOperationWithBlock({
                 self.startup()
             })
         }
@@ -122,30 +111,12 @@ class StartupViewController: UIViewController {
     
     override func viewWillAppear(animated: Bool) {
         super.viewWillAppear(animated)
-        print("willappear")
         self.setupVideo()
         
     }
     
     override func viewDidAppear(animated: Bool) {
         super.viewDidAppear(animated)
-        print("didappear")
-//        LocalNotificationsSingleton.sharedInstance.touch()
-//        TokenHandlerSingleton.sharedInstance.touch()
-//        UserDefaultsSingleton.sharedInstance.touch()
-//        BasketSingleton.sharedInstance.touch()
-//        RealmSingleton.sharedInstance.touch()
-//        DeviceInformationSingleton.sharedInstance.touch()
-//
-//        NSOperationQueue.mainQueue().addOperationWithBlock { 
-//            self.startup()
-//            
-//        }
-        
-//        let delayTime = dispatch_time(DISPATCH_TIME_NOW, Int64(1 * Double(NSEC_PER_SEC)))
-//        dispatch_after(delayTime, dispatch_get_main_queue()) {
-//            self.startup()
-//        }
 
         switch returnFormVC {
         case .ForgotPasswordVC:
@@ -217,7 +188,6 @@ class StartupViewController: UIViewController {
     
     // MARK: - Functions
     private func startup() {
-        print("startup")
         LocalNotificationsSingleton.sharedInstance.touch()
         TokenHandlerSingleton.sharedInstance.touch()
         UserDefaultsSingleton.sharedInstance.touch()
@@ -228,7 +198,6 @@ class StartupViewController: UIViewController {
         do {
             self.reachability = try Reachability.reachabilityForInternetConnection()
         } catch {
-            print("Unable to create Reachability")
         }
         
         
@@ -769,6 +738,21 @@ class StartupViewController: UIViewController {
                                 
                                 if PurchasedModelHandler.getByUsernameAndId(id: id, username: username) != nil {
                                     PurchasedModelHandler.updateDownloadTimes(username: username, id: id, newDownloadTimes: downloaded)
+                                    
+                                    let target = record["target"]
+                                    let targetType = target["product_type"].stringValue
+                                    
+                                    if targetType == "Entrance" {
+                                        let uniqueId = target["unique_key"].stringValue
+                                        let month = target["month"].intValue
+                                        
+                                        if let item = EntranceModelHandler.getByUsernameAndId(id: uniqueId, username: username) {
+                                            if item.month != month {
+                                                EntranceModelHandler.correctMonthOfEntrance(id: uniqueId, username: username, month: month)
+                                            }
+                                        }
+                                    }
+                                    
                                 } else {
                                     // does not exist
                                     let target = record["target"]
@@ -788,13 +772,14 @@ class StartupViewController: UIViewController {
                                             let bookletsCount = target["booklets_count"].intValue
                                             let duration = target["duration"].intValue
                                             let year = target["year"].intValue
+                                            let month = target["month"].intValue
                                             let extraData = JSON(data: target["extra_data"].stringValue.dataUsingEncoding(NSUTF8StringEncoding)!)
                                             
                                             let lastPablishedStr = target["last_published"].stringValue
                                             let lastPublished = FormatterSingleton.sharedInstance.UTCDateFormatter.dateFromString(lastPablishedStr)
                                             
                                             if EntranceModelHandler.getByUsernameAndId(id: uniqueId, username: username) == nil {
-                                                let entrance = EntranceStructure(entranceTypeTitle: type, entranceOrgTitle: org, entranceGroupTitle: group, entranceSetTitle: setName, entranceSetId: setId, entranceExtraData: extraData, entranceBookletCounts: bookletsCount, entranceYear: year, entranceDuration: duration, entranceUniqueId: uniqueId, entranceLastPublished: lastPublished)
+                                                let entrance = EntranceStructure(entranceTypeTitle: type, entranceOrgTitle: org, entranceGroupTitle: group, entranceSetTitle: setName, entranceSetId: setId, entranceExtraData: extraData, entranceBookletCounts: bookletsCount, entranceYear: year, entranceMonth: month, entranceDuration: duration, entranceUniqueId: uniqueId, entranceLastPublished: lastPublished)
                                                 
                                                 EntranceModelHandler.add(entrance: entrance, username: username)
                                                 
@@ -804,12 +789,10 @@ class StartupViewController: UIViewController {
                                 }
                                 
                                 purchasedId.append(id)
-                                //print ("---> \(purchasedId)")
                             }
                             
                             // delete all that does not exist
                             let deletedItems = PurchasedModelHandler.getAllPurchasedNotIn(username: username, ids: purchasedId)
-                            //print ("---> \(deletedItems)")
                             
                             if deletedItems.count > 0 {
                                 for item in deletedItems {
@@ -988,7 +971,6 @@ class StartupViewController: UIViewController {
     private func unsetupVideo() {
         if (self.player != nil) {
             NSNotificationCenter.defaultCenter().removeObserver(self, name: AVPlayerItemDidPlayToEndTimeNotification, object: nil)
-            print("un setuping ")
             player?.pause()
             player = nil
             
@@ -1010,7 +992,6 @@ class StartupViewController: UIViewController {
         
         let username = UserDefaultsSingleton.sharedInstance.getUsername()!
         if let device = DeviceInformationModelHandler.findByUniqueId(username) {
-            print (device)
             if device.isMe == true {
                 self.statusLabel.text = "دستگاه فعلی"
                 
@@ -1038,15 +1019,12 @@ class StartupViewController: UIViewController {
                 }
             }
         } catch {
-            print("Unable to start notifier")
         }
         
     }
     
     func loadBasket() {
         BasketSingleton.sharedInstance.loadBasketItems(viewController: self) { (count) in
-            // basket items loaded
-//            print("basket items loaded: \(count)")
         }
     }
     
@@ -1065,37 +1043,28 @@ class StartupViewController: UIViewController {
     override func prepareForSegue(segue: UIStoryboardSegue, sender: AnyObject?) {
         if segue.identifier == "HomeVCSegue" {
             if self.isOnline {
-//                print("--> basket items load started")
                 self.loadBasket()
             }
             unsetupVideo()
             UIApplication.sharedApplication().idleTimerDisabled = false
-//            self.reachability?.stopNotifier()
-            
+
             if let destinationVC = segue.destinationViewController as? UITabBarController {
                 destinationVC.selectedIndex = self.selectedIndex
             }
-//            self.dismissViewControllerAnimated(true, completion: {
-//                
-//            })
-//
         }
     }
     
     // MARK: - Unwind Segue Operations
     
     @IBAction func unwindForgotPasswordPressed(segue: UIStoryboardSegue) {
-//        print("Unwind: Forgot Password Pressed")
         self.returnFormVC = .ForgotPasswordVC
     }
     
     @IBAction func unwindSignUpPressed(segue: UIStoryboardSegue) {
-//        print("Unwind: SignUp Pressed")
         self.returnFormVC = .SignupVC
     }
     
     @IBAction func unwindLogInPressed(segue: UIStoryboardSegue) {
-//        print("Unwnid: LogIn Pressed")
         self.returnFormVC = .LogIn
     }
 }

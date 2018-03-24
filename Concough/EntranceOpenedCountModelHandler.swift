@@ -17,7 +17,7 @@ class EntranceOpenedCountModelHandler {
                 })
                 return true
             } catch(let error as NSError) {
-                print("\(error)")
+//                print("\(error)")
             }
             
         } else {
@@ -33,7 +33,7 @@ class EntranceOpenedCountModelHandler {
                 })
                 return true
             } catch(let error as NSError) {
-                print("\(error)")
+//                print("\(error)")
             }
         }
         return false
@@ -59,7 +59,7 @@ class EntranceOpenedCountModelHandler {
                 RealmSingleton.sharedInstance.DefaultRealm.delete(eopened)
             })
         } catch (let error as NSError) {
-            print("\(error)")
+//            print("\(error)")
             return false
         }
         

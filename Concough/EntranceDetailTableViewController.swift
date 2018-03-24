@@ -216,7 +216,7 @@ class EntranceDetailTableViewController: UITableViewController {
         if let localEntrance = EntranceModelHandler.getByUsernameAndId(id: self.entranceUniqueId, username: username) {
             let extra = JSON(data: localEntrance.extraData.dataUsingEncoding(NSUTF8StringEncoding)!)
             
-            self.entrance = EntranceStructure(entranceTypeTitle: localEntrance.type, entranceOrgTitle: localEntrance.organization, entranceGroupTitle: localEntrance.group, entranceSetTitle: localEntrance.set, entranceSetId: localEntrance.setId, entranceExtraData: extra, entranceBookletCounts: localEntrance.bookletsCount, entranceYear: localEntrance.year, entranceDuration: localEntrance.duration, entranceUniqueId: localEntrance.uniqueId, entranceLastPublished: localEntrance.lastPublished)
+            self.entrance = EntranceStructure(entranceTypeTitle: localEntrance.type, entranceOrgTitle: localEntrance.organization, entranceGroupTitle: localEntrance.group, entranceSetTitle: localEntrance.set, entranceSetId: localEntrance.setId, entranceExtraData: extra, entranceBookletCounts: localEntrance.bookletsCount, entranceYear: localEntrance.year, entranceMonth: localEntrance.month, entranceDuration: localEntrance.duration, entranceUniqueId: localEntrance.uniqueId, entranceLastPublished: localEntrance.lastPublished)
             
             self.state! = .EntranceComplete
             self.stateMachine()
@@ -261,11 +261,12 @@ class EntranceDetailTableViewController: UITableViewController {
                             let booklet_count = record["booklets_count"].intValue
                             let duration = record["duration"].intValue
                             let year = record["year"].intValue
+                            let month = record["month"].intValue
                             let last_published_str = record["last_published"].stringValue
                             
                             let last_published = FormatterSingleton.sharedInstance.UTCDateFormatter.dateFromString(last_published_str)
                             
-                            self.entrance = EntranceStructure(entranceTypeTitle: entrance_type, entranceOrgTitle: organization, entranceGroupTitle: entrance_group, entranceSetTitle: entrance_set, entranceSetId: entrance_set_id, entranceExtraData: extra_data, entranceBookletCounts: booklet_count, entranceYear: year, entranceDuration: duration, entranceUniqueId: self.entranceUniqueId, entranceLastPublished: last_published)
+                            self.entrance = EntranceStructure(entranceTypeTitle: entrance_type, entranceOrgTitle: organization, entranceGroupTitle: entrance_group, entranceSetTitle: entrance_set, entranceSetId: entrance_set_id, entranceExtraData: extra_data, entranceBookletCounts: booklet_count, entranceYear: year, entranceMonth: month, entranceDuration: duration, entranceUniqueId: self.entranceUniqueId, entranceLastPublished: last_published)
                             
                             self.state = EntranceVCStateEnum.EntranceComplete
                             NSOperationQueue.mainQueue().addOperationWithBlock({ 
@@ -372,7 +373,6 @@ class EntranceDetailTableViewController: UITableViewController {
                     if let status = localData["status"].string {
                         switch status {
                         case "OK":
-                            print("\(localData)")
                             let purchase = localData["purchase"]
                             if let purchaseStatus = purchase["status"].bool {
                                 if purchaseStatus == false {
@@ -500,7 +500,6 @@ class EntranceDetailTableViewController: UITableViewController {
                     if let status = localData["status"].string {
                         switch status {
                         case "OK":
-                            print("\(localData)")
                             let purchase = localData["purchase"]
                             // get purchase record
                             if purchase["purchase_record"] != nil {
@@ -599,7 +598,6 @@ class EntranceDetailTableViewController: UITableViewController {
                     if let status = localData["status"].string {
                         switch status {
                         case "OK":
-                            print("\(localData)")
                             let purchase = localData["purchase"]
                             // get purchase record
                             if purchase["purchase_record"] != nil {
@@ -1210,7 +1208,7 @@ class EntranceDetailTableViewController: UITableViewController {
             case 2:
                 if let cell = self.tableView.dequeueReusableCellWithIdentifier("INFORMATION_SECTION", forIndexPath: indexPath) as? EDInformationSectionTableViewCell {
                     
-                    cell.configureCell(bookletCount: self.entrance!.entranceBookletCounts!, duration: self.entrance!.entranceDuration!, year: self.entrance!.entranceYear!)
+                    cell.configureCell(bookletCount: self.entrance!.entranceBookletCounts!, duration: self.entrance!.entranceDuration!, year: self.entrance!.entranceYear!, month: self.entrance!.entranceMonth!)
                     return cell
                 }
             default:

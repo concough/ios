@@ -26,7 +26,7 @@ class UserLogModelHandler {
             })
             return true
         } catch(let error as NSError) {
-            print("\(error)")
+//            print("\(error)")
         }
         return false
     }

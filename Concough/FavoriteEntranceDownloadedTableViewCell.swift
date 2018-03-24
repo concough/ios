@@ -43,7 +43,11 @@ class FavoriteEntranceDownloadedTableViewCell: UITableViewCell {
     
     // MARK: - Functions
     internal func configureCell(entrance entrance: EntranceStructure, purchased: EntrancePrurchasedStructure, indexPath: NSIndexPath, starCount: Int, openedCount: Int, qCount: Int) {
-        self.title.text = "آزمون \(entrance.entranceTypeTitle!) " + FormatterSingleton.sharedInstance.NumberFormatter.stringFromNumber(entrance.entranceYear!)!
+        if entrance.entranceMonth > 0 {
+            self.title.text = "آزمون \(entrance.entranceTypeTitle!) \(monthToString(entrance.entranceMonth!)) " + FormatterSingleton.sharedInstance.NumberFormatter.stringFromNumber(entrance.entranceYear!)!
+        } else {
+            self.title.text = "آزمون \(entrance.entranceTypeTitle!) " + FormatterSingleton.sharedInstance.NumberFormatter.stringFromNumber(entrance.entranceYear!)!
+        }
         self.subTitle.text = "\(entrance.entranceSetTitle!) (\(entrance.entranceGroupTitle!))"
         self.startQuestionsCountLabel.text = FormatterSingleton.sharedInstance.NumberFormatter.stringFromNumber(starCount)!
         self.observeCountLabel.text = FormatterSingleton.sharedInstance.NumberFormatter.stringFromNumber(openedCount)!
@@ -133,10 +137,9 @@ class FavoriteEntranceDownloadedTableViewCell: UITableViewCell {
                         if error == HTTPErrorType.Refresh {
                             self.downloadImage(esetId: esetId, indexPath: indexPath)
                         } else {
-                            // print the error for now
                             self.entranceImageView?.image = UIImage()
                             self.setNeedsLayout()
-                            print("error in downloaing image from \(fullPath!)")
+//                            print("error in downloaing image from \(fullPath!)")
                         }
                     } else {
                         if let myData = data {

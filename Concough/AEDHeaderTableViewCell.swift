@@ -75,10 +75,9 @@ class AEDHeaderTableViewCell: UITableViewCell {
                         if error == HTTPErrorType.Refresh {
                             self.downloadImage(esetId: esetId, indexPath: indexPath)
                         } else {
-                            // print the error for now
                             self.entranceImage?.image = UIImage()
                             self.setNeedsLayout()
-                            print("error in downloaing image from \(fullPath!)")
+//                            print("error in downloaing image from \(fullPath!)")
                         }
                     } else {
                         if let myData = data {

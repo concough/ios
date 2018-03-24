@@ -163,6 +163,7 @@ class ArchiveDetailTableViewController: UITableViewController, DZNEmptyDataSetSo
                                 for (_, item) in record {
                                     let organization_title = item["organization"]["title"].stringValue
                                     let entrance_year = item["year"].intValue
+                                    let entrance_month = item["month"].intValue
                                     let last_published_str = item["last_published"].stringValue
                                     let unique_id = item["unique_key"].stringValue
                                     let extra_data = JSON(data: item["extra_data"].stringValue.dataUsingEncoding(NSUTF8StringEncoding)!)
@@ -173,6 +174,7 @@ class ArchiveDetailTableViewController: UITableViewController, DZNEmptyDataSetSo
                                     
                                     var entrance = ArchiveEntranceStructure()
                                     entrance.year = entrance_year
+                                    entrance.month = entrance_month
                                     entrance.organization = organization_title
                                     entrance.extraData = extra_data
                                     entrance.buyCount = buy_count
@@ -248,7 +250,7 @@ class ArchiveDetailTableViewController: UITableViewController, DZNEmptyDataSetSo
         let entranceRow = self.entrances[index]
         let uniqueId: String = entranceRow.uniqueId!
         
-        let entranceStruct = EntranceStructure(entranceTypeTitle: self.esetDetail.entranceTypeTitle!, entranceOrgTitle: entranceRow.organization!, entranceGroupTitle: self.esetDetail.entranceGroupTitle!, entranceSetTitle: self.esetDetail.entranceEset!.title!, entranceSetId: self.esetDetail.entranceEset!.id!, entranceExtraData: entranceRow.extraData, entranceBookletCounts: entranceRow.bookletCount!, entranceYear: entranceRow.year!, entranceDuration: entranceRow.entranceDuration!, entranceUniqueId: entranceRow.uniqueId!, entranceLastPublished: entranceRow.lastPablished!)
+        let entranceStruct = EntranceStructure(entranceTypeTitle: self.esetDetail.entranceTypeTitle!, entranceOrgTitle: entranceRow.organization!, entranceGroupTitle: self.esetDetail.entranceGroupTitle!, entranceSetTitle: self.esetDetail.entranceEset!.title!, entranceSetId: self.esetDetail.entranceEset!.id!, entranceExtraData: entranceRow.extraData, entranceBookletCounts: entranceRow.bookletCount!, entranceYear: entranceRow.year!, entranceMonth: entranceRow.month!, entranceDuration: entranceRow.entranceDuration!, entranceUniqueId: entranceRow.uniqueId!, entranceLastPublished: entranceRow.lastPablished!)
         
         if let cell = self.tableView.cellForRowAtIndexPath(NSIndexPath(forRow: index, inSection: 1)) as? AEDAdvanceTableViewCell {
             cell.disableBuyButton()
@@ -283,7 +285,6 @@ class ArchiveDetailTableViewController: UITableViewController, DZNEmptyDataSetSo
             if let id = BasketSingleton.sharedInstance.findSaleByTargetId(targetId: uniqueId, type: "Entrance") {
                 // sale object exist --> remove it
                 BasketSingleton.sharedInstance.removeSaleById(viewController: self, saleId: id, completion: { (count) in
-                    print ("sale count: \(count)")
                     self.updateBasketBadge(count: count)
                     
                     self.changeBuyButtonStateForIndex(index)
@@ -293,7 +294,6 @@ class ArchiveDetailTableViewController: UITableViewController, DZNEmptyDataSetSo
                 })
             } else {
                 BasketSingleton.sharedInstance.addSale(viewController: self, target: entranceStruct as Any, type: "Entrance", completion: { (count) in
-                    print("sales count: \(count)")
                     self.updateBasketBadge(count: count)
                     
                         self.changeBuyButtonStateForIndex(index)

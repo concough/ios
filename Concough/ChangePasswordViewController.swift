@@ -100,7 +100,6 @@ class ChangePasswordViewController: UIViewController, UITextFieldDelegate {
             } else {
                 if let localData = data {
                     if let status = localData["status"].string {
-                        print(localData)
                         switch status {
                         case "OK":
                             let modifiedStr = localData["modified"].stringValue
