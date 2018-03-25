@@ -38,6 +38,18 @@ class ArchiveDetailTableViewController: UITableViewController, DZNEmptyDataSetSo
         self.tableView.emptyDataSetDelegate = self
         self.tableView.emptyDataSetSource = self
 
+        if self.refreshControl == nil {
+            self.refreshControl = UIRefreshControl()
+            self.refreshControl?.attributedTitle = NSAttributedString(string: "برای به روز رسانی به پایین بکشید", attributes: [NSFontAttributeName: UIFont(name: "IRANSansMobile-UltraLight", size: 12)!])
+        }
+        self.refreshControl?.addTarget(self, action: #selector(self.refreshTableView(_:)), forControlEvents: .ValueChanged)
+        
+        if #available(iOS 10.0, *) {
+            self.tableView.refreshControl = refreshControl
+        } else {
+            self.tableView.addSubview(refreshControl!)
+        }
+
         // configure queue and add operation of loading entrances to it
         self.queue = NSOperationQueue()
         let operation = NSBlockOperation() {
@@ -55,23 +67,12 @@ class ArchiveDetailTableViewController: UITableViewController, DZNEmptyDataSetSo
     override func viewDidAppear(animated: Bool) {
         self.setupBarButton()
         // uitableview refresh control setup
-        if self.refreshControl == nil {
-            self.refreshControl = UIRefreshControl()
-            self.refreshControl?.attributedTitle = NSAttributedString(string: "برای به روز رسانی به پایین بکشید", attributes: [NSFontAttributeName: UIFont(name: "IRANSansMobile-UltraLight", size: 12)!])
-        }
-        self.refreshControl?.addTarget(self, action: #selector(self.refreshTableView(_:)), forControlEvents: .ValueChanged)
-
-        if #available(iOS 10.0, *) {
-            self.tableView.refreshControl = refreshControl
-        } else {
-            self.tableView.addSubview(refreshControl!)
-        }
         
-        NSOperationQueue.mainQueue().addOperationWithBlock {
-            self.tableView.reloadData()
+        if (self.entrances.count > 0) {
+            NSOperationQueue.mainQueue().addOperationWithBlock {
+                self.tableView.reloadData()
+            }            
         }
-        
-        
     }
     
     // MARK: -Actions
@@ -158,7 +159,7 @@ class ArchiveDetailTableViewController: UITableViewController, DZNEmptyDataSetSo
                                 // get record
                                 let record = localData["record"]
                                 
-                                
+                                let username = UserDefaultsSingleton.sharedInstance.getUsername()!
                                 var localArray: [ArchiveEntranceStructure] = []
                                 for (_, item) in record {
                                     let organization_title = item["organization"]["title"].stringValue
@@ -182,6 +183,19 @@ class ArchiveDetailTableViewController: UITableViewController, DZNEmptyDataSetSo
                                     entrance.uniqueId = unique_id
                                     entrance.bookletCount = booklets_count
                                     entrance.entranceDuration = duration
+                                    
+                                    entrance.saled = false
+                                    entrance.buyed = false
+                                    
+                                    if EntranceModelHandler.existById(id: unique_id, username: self.username) {
+                                        entrance.buyed = true
+                                    }
+                                    
+                                    if let index = BasketSingleton.sharedInstance.findSaleByTargetId(targetId: unique_id, type: "Entrance") {
+                                        if index >= 0 {
+                                            entrance.saled = true
+                                        }
+                                    }
                                     
                                     localArray.append(entrance)
                                 }
@@ -370,38 +384,12 @@ class ArchiveDetailTableViewController: UITableViewController, DZNEmptyDataSetSo
         case 1:
             if let cell = self.tableView.dequeueReusableCellWithIdentifier("ADVANCE_SECTION", forIndexPath: indexPath) as? AEDAdvanceTableViewCell {
                 
-                var saled = false
-                var buyed = false
-                
-                if EntranceModelHandler.existById(id: self.entrances[indexPath.row].uniqueId!, username: self.username) {
-                    buyed = true
-                }
-                
-                if let index = BasketSingleton.sharedInstance.findSaleByTargetId(targetId: self.entrances[indexPath.row].uniqueId!, type: "Entrance") {
-                    if index >= 0 {
-                        saled = true
-                    }
-                }
-                
-                cell.configureCell(indexPath: indexPath, esetId: (self.esetDetail.entranceEset?.id)!, entrance: self.entrances[indexPath.row], state: saled, buyed: buyed)
+                cell.configureCell(indexPath: indexPath, esetId: (self.esetDetail.entranceEset?.id)!, entrance: self.entrances[indexPath.row])
                 
                 cell.addToBasketButton.tag = indexPath.row
                 cell.addToBasketButton.addTarget(self, action: #selector(self.addToBasketPressed(_:)), forControlEvents: .TouchUpInside)
                 return cell
             }
-            /*
-            if let cell = self.tableView.dequeueReusableCellWithIdentifier("BASIC_SECTION", forIndexPath: indexPath) as? AEDBasicTableViewCell {
-                
-                let setTitle: String = (self.esetDetail.entranceEset?.title)!
-                
-                if indexPath.row == self.entrances.count - 1 {
-                    cell.configureCell(indexPath: indexPath, esetTitle: setTitle,  entrance: self.entrances[indexPath.row], hiddenLine: true)
-                } else {
-                    cell.configureCell(indexPath: indexPath, esetTitle: setTitle, entrance: self.entrances[indexPath.row])
-                }
-                return cell
-            }
-             */
         default:
             break
         }

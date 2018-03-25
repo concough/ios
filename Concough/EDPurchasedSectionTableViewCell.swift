@@ -36,7 +36,7 @@ class EDPurchasedSectionTableViewCell: UITableViewCell {
     }
     
     internal func configureCell(purchased purchased: EntrancePrurchasedStructure) {
-        self.downloadCountLabel.text = FormatterSingleton.sharedInstance.NumberFormatter.stringFromNumber(purchased.downloaded!)! + " دستگاه"
+        self.downloadCountLabel.text = FormatterSingleton.sharedInstance.NumberFormatter.stringFromNumber(purchased.downloaded!)! + " دانلود"
         self.purchaseTime.text = FormatterSingleton.sharedInstance.IRDateFormatter.stringFromDate(purchased.created!)
         
         self.refreshPurchaseButton.hidden = false

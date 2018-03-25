@@ -425,6 +425,20 @@ class EntranceShowTableViewController: UITableViewController, EHHorizontalSelect
                 $0["order"].intValue < $1["order"].intValue
             }
             
+            let filemgr = NSFileManager.defaultManager()
+            let dirPaths = NSSearchPathForDirectoriesInDomains(.DocumentDirectory, .UserDomainMask, true)
+            
+            let docsDir = dirPaths[0] as NSString
+
+            let username = UserDefaultsSingleton.sharedInstance.getUsername()
+            var filePath = docsDir.stringByAppendingPathComponent("\(username!)_\(self.entranceUniqueId)")
+
+            var isDirectory = ObjCBool(true)
+            let exist = filemgr.fileExistsAtPath(filePath, isDirectory: &isDirectory)
+            if !exist {
+                filePath = docsDir.stringByAppendingPathComponent(self.entranceUniqueId)
+            }
+            
             var imagesData = [NSData]()
             for image in images {
                 let imageId = image["unique_key"].stringValue
@@ -432,11 +446,8 @@ class EntranceShowTableViewController: UITableViewController, EHHorizontalSelect
                     imagesData.append(self.imagesRepo[imageId]!)
                 } else {
                     // open it from file
-                    let filemgr = NSFileManager.defaultManager()
-                    let dirPaths = NSSearchPathForDirectoriesInDomains(.DocumentDirectory, .UserDomainMask, true)
                     
-                    let docsDir = dirPaths[0] as NSString
-                    let filePath = (docsDir.stringByAppendingPathComponent(self.entranceUniqueId) as NSString).stringByAppendingPathComponent(imageId)
+                    let filePath = (filePath as NSString).stringByAppendingPathComponent(imageId)
                     if filemgr.fileExistsAtPath(filePath) {
                         if let data = filemgr.contentsAtPath(filePath) {
                             self.imagesRepo[imageId] = data
@@ -534,22 +545,6 @@ class EntranceShowTableViewController: UITableViewController, EHHorizontalSelect
             
         }
     }
-
-    /*
-    override func scrollViewDidEndDragging(scrollView: UIScrollView, willDecelerate decelerate: Bool) {
-        if self.showType == "Starred" {
-            if let path = self.tableView.indexPathsForVisibleRows?.first {
-                let section = path.section
-                self.topSection = section
-                
-                if let v = self.tableView.headerViewForSection(section) {
-                    v.contentView.backgroundColor = UIColor(white: 1.0, alpha: 1.0)
-                    v.setNeedsLayout()
-                }
-            }
-        }
-    }
-    */
  
     override func scrollViewDidScroll(scrollView: UIScrollView) {
         if self.showType == "Starred" {
@@ -557,17 +552,6 @@ class EntranceShowTableViewController: UITableViewController, EHHorizontalSelect
                 let section = path.section
                 self.topSection = section
                 
-                /*
-                if let v = self.tableView.headerViewForSection(section) {
-                    v.contentView.backgroundColor = UIColor(white: 1.0, alpha: 1.0)
-
-                    let view2 = UIView(frame: CGRectMake(0.0, v.contentView.layer.bounds.height - 1, v.contentView.layer.bounds.width, 1.0))
-                    view2.backgroundColor = UIColor(netHex: 0xEEEEEE, alpha: 1.0)
-                 
-                    v.addSubview(view2)
-                    v.setNeedsLayout()
-                }
- */
             }
         }
     }

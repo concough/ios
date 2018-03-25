@@ -33,10 +33,14 @@ class HomeTableViewController: UITableViewController, DZNEmptyDataSetDelegate, D
         self.queue.maxConcurrentOperationCount = 1  // make serial queue
         
         // tableView Initilization
+        self.tableView.estimatedRowHeight = 200.0
         self.tableView.emptyDataSetDelegate = self
         self.tableView.emptyDataSetSource = self
         self.tableView.tableFooterView = UIView()
         
+        NSOperationQueue.mainQueue().addOperationWithBlock {
+            self.loading = AlertClass.showLoadingMessage(viewController: self)
+        }
         loadFeeds(next: nil)
     }
 
@@ -57,12 +61,9 @@ class HomeTableViewController: UITableViewController, DZNEmptyDataSetDelegate, D
     }
     
     func refreshTableView(refreshControl_: UIRefreshControl) {
-        //self.refreshControl?.endRefreshing()
-
         let operation = NSBlockOperation() {
             self.loadFeeds(next: nil)
         }
-        
         queue.addOperation(operation)
     }
     
@@ -70,7 +71,8 @@ class HomeTableViewController: UITableViewController, DZNEmptyDataSetDelegate, D
         super.didReceiveMemoryWarning()
         // Dispose of any resources that can be recreated.
     }
-
+    
+    
     // MARK: - Table view data source
 
     override func numberOfSectionsInTableView(tableView: UITableView) -> Int {
@@ -80,37 +82,50 @@ class HomeTableViewController: UITableViewController, DZNEmptyDataSetDelegate, D
 
     override func tableView(tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         // #warning Incomplete implementation, return the number of rows
+        if self.moreFeedExist {
+            return activityList.count + 1
+        }
+        
         return activityList.count
     }
 
     
     override func tableView(tableView: UITableView, cellForRowAtIndexPath indexPath: NSIndexPath) -> UITableViewCell {
-        let activity = activityList[indexPath.row] as ConcoughActivity
         
-        switch activity.activityType {
+        if indexPath.row == activityList.count {
+            if let cell = self.tableView.dequeueReusableCellWithIdentifier("ACTIVITY_UPDATE", forIndexPath: indexPath) as? ActivityUpdateTableViewCell {
+                cell.cellConfigure()
+                return cell
+            }
+            
+        } else {
+            let activity = activityList[indexPath.row] as ConcoughActivity
+            
+            switch activity.activityType {
             case "ENTRANCE_CREATE":
                 let target = activity.target
-
+                
                 if let cell = self.tableView.dequeueReusableCellWithIdentifier(activity.activityType, forIndexPath: indexPath) as? EntranceCreateTableViewCell {
                     
                     cell.tag = indexPath.row
                     cell.cellConfigure(indexPath, target: target)
                     return cell
                 }
-            
-            
+                
+                
             case "ENTRANCE_UPDATE":
                 let target = activity.target
-
+                
                 if let cell = self.tableView.dequeueReusableCellWithIdentifier(activity.activityType, forIndexPath: indexPath) as? EntranceUpdateTableViewCell {
                     
                     cell.tag = indexPath.row
                     cell.cellConfigure(indexPath, target: target)
                     return cell
                 }
-            
+                
             default:
                 break
+            }
         }
 
         let cell = UITableViewCell(style: .Default, reuseIdentifier: "Cell")
@@ -119,67 +134,52 @@ class HomeTableViewController: UITableViewController, DZNEmptyDataSetDelegate, D
     
     override func tableView(tableView: UITableView, heightForRowAtIndexPath indexPath: NSIndexPath) -> CGFloat {
         
-        let activity = activityList[indexPath.row] as ConcoughActivity
-        //guard let activity = activityList[indexPath.row] as ConcoughActivity else {
-        //    return 0.0
-        //}
-
-        switch activity.activityType {
-            case "ENTRANCE_CREATE": return 270.0
-            case "ENTRANCE_UPDATE": return 150.0
-        default: return 0.0
-        }
+        return UITableViewAutomaticDimension
+        
+//        let activity = activityList[indexPath.row] as ConcoughActivity
+//        //guard let activity = activityList[indexPath.row] as ConcoughActivity else {
+//        //    return 0.0
+//        //}
+//
+//        switch activity.activityType {
+//            case "ENTRANCE_CREATE": return 270.0
+//            case "ENTRANCE_UPDATE": return 150.0
+//        default: return 0.0
+//        }
     }
 
     override func tableView(tableView: UITableView, willDisplayCell cell: UITableViewCell, forRowAtIndexPath indexPath: NSIndexPath) {
         
-        let lastSectionIndex = tableView.numberOfSections - 1
-        let lastRowIndex = tableView.numberOfRowsInSection(lastSectionIndex) - 5
-        
-        let activity = activityList[indexPath.row] as ConcoughActivity
-        
-        switch activity.activityType {
-        case "ENTRANCE_CREATE":
-            if let cell1 = cell as? EntranceCreateTableViewCell {
-                cell1.downloadEsetImage(activity.target["entrance_set"]["id"].intValue, indexPath: indexPath)
+        if indexPath.row < activityList.count {
+            let lastSectionIndex = tableView.numberOfSections - 1
+            let lastRowIndex = tableView.numberOfRowsInSection(lastSectionIndex) - 5 - 1
+            
+            let activity = activityList[indexPath.row] as ConcoughActivity
+            
+            switch activity.activityType {
+            case "ENTRANCE_CREATE":
+                if let cell1 = cell as? EntranceCreateTableViewCell {
+                    cell1.downloadEsetImage(activity.target["entrance_set"]["id"].intValue, indexPath: indexPath)
+                }
+            case "ENTRANCE_UPDATE":
+                if let cell1 = cell as? EntranceUpdateTableViewCell {
+                    cell1.downloadEsetImage(activity.target["entrance_set"]["id"].intValue, indexPath: indexPath)
+                }
+            default:
+                break
             }
-        case "ENTRANCE_UPDATE":
-            if let cell1 = cell as? EntranceUpdateTableViewCell {
-                cell1.downloadEsetImage(activity.target["entrance_set"]["id"].intValue, indexPath: indexPath)
+            
+            if ((indexPath.section == lastSectionIndex) && (indexPath.row == lastRowIndex)) {
+                // must load more
+                if self.moreFeedExist == true {
+                    // get last item of activity feed
+                    let activity = self.activityList[lastRowIndex + 4]
+                    let last_time = activity.createdStr
+                    
+                    loadFeeds(next: last_time)
+                }
             }
-        default:
-            break
         }
-        
-        if ((indexPath.section == lastSectionIndex) && (indexPath.row == lastRowIndex)) {
-            // must load more
-            if self.moreFeedExist == true {
-                // get last item of activity feed
-                let activity = self.activityList[lastRowIndex + 4]
-                let last_time = activity.createdStr
-
-                loadFeeds(next: last_time)
-            }
-        }
-    }
-    
-    override func tableView(tableView: UITableView, didEndDisplayingCell cell: UITableViewCell, forRowAtIndexPath indexPath: NSIndexPath) {
-
-//        let activity = activityList[indexPath.row] as ConcoughActivity
-//        
-//        switch activity.activityType {
-//        case "ENTRANCE_CREATE":
-//            if let cell1 = cell as? EntranceCreateTableViewCell {
-//                cell1.downloadEsetImage(activity.target["entrance_set"]["id"].intValue, indexPath: indexPath)
-//            }
-//        case "ENTRANCE_UPDATE":
-//            if let cell1 = cell as? EntranceUpdateTableViewCell {
-//                cell1.downloadEsetImage(activity.target["entrance_set"]["id"].intValue, indexPath: indexPath)
-//            }
-//        default:
-//            break
-//        }
-    
     }
     
     override func tableView(tableView: UITableView, didSelectRowAtIndexPath indexPath: NSIndexPath) {
@@ -237,16 +237,24 @@ class HomeTableViewController: UITableViewController, DZNEmptyDataSetDelegate, D
     private func loadFeeds(next next: String?) {
         UIApplication.sharedApplication().networkActivityIndicatorVisible = true
         
+//        if next == nil {
+//            NSOperationQueue.mainQueue().addOperationWithBlock {
+//                self.loading = AlertClass.showLoadingMessage(viewController: self)
+//            }            
+//        }
+        
         if next == nil {
-            NSOperationQueue.mainQueue().addOperationWithBlock {
-                self.loading = AlertClass.showLoadingMessage(viewController: self)
-            }            
+            NSOperationQueue.mainQueue().addOperationWithBlock({ 
+                self.navigationItem.title = "به روز رسانی ..."
+            })
+            
         }
         
         DataRestAPIClass.updateActivity(next: next, completion: {
             refresh, data, error in
                         
             NSOperationQueue.mainQueue().addOperationWithBlock {
+                self.navigationItem.title = "کنکوق"
                 self.refreshControl?.endRefreshing()
                 AlertClass.hideLoaingMessage(progressHUD: self.loading)
                 UIApplication.sharedApplication().networkActivityIndicatorVisible = false
@@ -282,6 +290,7 @@ class HomeTableViewController: UITableViewController, DZNEmptyDataSetDelegate, D
                         
                     } else { // no more feeds
                         self.moreFeedExist = false
+                        self.tableView.reloadData()
                         
                     }
                 case .Refresh:
@@ -297,6 +306,7 @@ class HomeTableViewController: UITableViewController, DZNEmptyDataSetDelegate, D
         }, failure: { (error) in
             if let err = error {
                 NSOperationQueue.mainQueue().addOperationWithBlock {
+                    self.navigationItem.title = "کنکوق"
                     AlertClass.hideLoaingMessage(progressHUD: self.loading)
                     self.refreshControl?.endRefreshing()
                     UIApplication.sharedApplication().networkActivityIndicatorVisible = false

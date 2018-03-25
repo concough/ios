@@ -17,6 +17,7 @@
 		EB114CD61E24B2B500D833D1 /* EDPurchasedSectionTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = EB114CD51E24B2B500D833D1 /* EDPurchasedSectionTableViewCell.swift */; };
 		EB1400EA1E2E57300029B22A /* FavoritesTableViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = EB1400E91E2E57300029B22A /* FavoritesTableViewController.swift */; };
 		EB18EF5E1F73C32800F393D2 /* GrayPanelUI2.swift in Sources */ = {isa = PBXBuildFile; fileRef = EB18EF5D1F73C32800F393D2 /* GrayPanelUI2.swift */; };
+		EB1995B920676D5600EC5B97 /* ActivityUpdateTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = EB1995B820676D5300EC5B97 /* ActivityUpdateTableViewCell.swift */; };
 		EB1AA8DB1DD332B500F0CED9 /* HomeTableViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = EB1AA8DA1DD332B500F0CED9 /* HomeTableViewController.swift */; };
 		EB1AA8DE1DD386CA00F0CED9 /* EntranceActivity.swift in Sources */ = {isa = PBXBuildFile; fileRef = EB1AA8DD1DD386CA00F0CED9 /* EntranceActivity.swift */; };
 		EB2F358F1E338890009AF6CA /* StarredQuestionHeaderCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = EB2F358E1E338890009AF6CA /* StarredQuestionHeaderCell.swift */; };
@@ -42,6 +43,7 @@
 		EB61CF201E26830E0047B942 /* EntranceQuestionModelHandler.swift in Sources */ = {isa = PBXBuildFile; fileRef = EB61CF1F1E26830E0047B942 /* EntranceQuestionModelHandler.swift */; };
 		EB61CF221E2686980047B942 /* EntrancePackageHandler.swift in Sources */ = {isa = PBXBuildFile; fileRef = EB61CF211E2686980047B942 /* EntrancePackageHandler.swift */; };
 		EB61CF251E26983D0047B942 /* EntrancePackageDownloader.swift in Sources */ = {isa = PBXBuildFile; fileRef = EB61CF241E26983D0047B942 /* EntrancePackageDownloader.swift */; };
+		EB7415DA2067A0F0000F6791 /* BaseTabViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = EB7415D92067A0F0000F6791 /* BaseTabViewController.swift */; };
 		EB762F541DCF99D10084CA1D /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = EB762F531DCF99D10084CA1D /* AppDelegate.swift */; };
 		EB762F591DCF99D10084CA1D /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = EB762F571DCF99D10084CA1D /* Main.storyboard */; };
 		EB762F5B1DCF99D10084CA1D /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = EB762F5A1DCF99D10084CA1D /* Assets.xcassets */; };
@@ -182,6 +184,7 @@
 		EB114CD51E24B2B500D833D1 /* EDPurchasedSectionTableViewCell.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = EDPurchasedSectionTableViewCell.swift; sourceTree = "<group>"; };
 		EB1400E91E2E57300029B22A /* FavoritesTableViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = FavoritesTableViewController.swift; sourceTree = "<group>"; };
 		EB18EF5D1F73C32800F393D2 /* GrayPanelUI2.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = GrayPanelUI2.swift; sourceTree = "<group>"; };
+		EB1995B820676D5300EC5B97 /* ActivityUpdateTableViewCell.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ActivityUpdateTableViewCell.swift; sourceTree = "<group>"; };
 		EB1AA8DA1DD332B500F0CED9 /* HomeTableViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = HomeTableViewController.swift; sourceTree = "<group>"; };
 		EB1AA8DD1DD386CA00F0CED9 /* EntranceActivity.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = EntranceActivity.swift; sourceTree = "<group>"; };
 		EB2F358E1E338890009AF6CA /* StarredQuestionHeaderCell.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = StarredQuestionHeaderCell.swift; sourceTree = "<group>"; };
@@ -205,6 +208,7 @@
 		EB61CF1F1E26830E0047B942 /* EntranceQuestionModelHandler.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = EntranceQuestionModelHandler.swift; sourceTree = "<group>"; };
 		EB61CF211E2686980047B942 /* EntrancePackageHandler.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = EntrancePackageHandler.swift; sourceTree = "<group>"; };
 		EB61CF241E26983D0047B942 /* EntrancePackageDownloader.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = EntrancePackageDownloader.swift; sourceTree = "<group>"; };
+		EB7415D92067A0F0000F6791 /* BaseTabViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = BaseTabViewController.swift; sourceTree = "<group>"; };
 		EB762F501DCF99D10084CA1D /* Concough.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Concough.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		EB762F531DCF99D10084CA1D /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		EB762F581DCF99D10084CA1D /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/Main.storyboard; sourceTree = "<group>"; };
@@ -471,6 +475,7 @@
 				EBC23B8D1E44B73400A557BC /* SettingsOptionTableViewCell.swift */,
 				EBC23B8F1E44B7AC00A557BC /* SettingsLogoutTableViewCell.swift */,
 				EBC23B931E44CB1A00A557BC /* SettingsGradeTableViewCell.swift */,
+				EB1995B820676D5300EC5B97 /* ActivityUpdateTableViewCell.swift */,
 			);
 			name = Views;
 			sourceTree = "<group>";
@@ -525,6 +530,7 @@
 				EBC23B971E44F56F00A557BC /* SettingsReportBugViewController.swift */,
 				EBACA8F51E4862B800BABFF0 /* ContactsTableViewController.swift */,
 				EB0538441E48B52E00104DCE /* ChangePasswordViewController.swift */,
+				EB7415D92067A0F0000F6791 /* BaseTabViewController.swift */,
 			);
 			name = Controllers;
 			sourceTree = "<group>";
@@ -891,6 +897,7 @@
 				EBA657901E09500E00F0DC84 /* EntranceDetailTableViewController.swift in Sources */,
 				EBC23B9C1E44FCB600A557BC /* DeviceStructures.swift in Sources */,
 				EBB68D501DF6CE02003792B3 /* SubmitSignupCodeViewController.swift in Sources */,
+				EB7415DA2067A0F0000F6791 /* BaseTabViewController.swift in Sources */,
 				EB61CF1C1E267F160047B942 /* EntranceBookletModelHandler.swift in Sources */,
 				EB61CF101E251C5E0047B942 /* EntranceModelHandler.swift in Sources */,
 				EB1AA8DB1DD332B500F0CED9 /* HomeTableViewController.swift in Sources */,
@@ -906,6 +913,7 @@
 				EBB68D4A1DF327EE003792B3 /* MediaRequestRepositorySingleton.swift in Sources */,
 				EBA6579C1E0AAE5700F0DC84 /* ArchiveTableViewController.swift in Sources */,
 				EBA657981E09830F00F0DC84 /* EDHeaderSectionTableViewCell.swift in Sources */,
+				EB1995B920676D5600EC5B97 /* ActivityUpdateTableViewCell.swift in Sources */,
 				EBB68D311DEAC7B6003792B3 /* TokenHandlerSingleton.swift in Sources */,
 				EBA657AE1E114DF600F0DC84 /* AEDBasicTableViewCell.swift in Sources */,
 				EBB932921E22627D00D14800 /* BasketCheckoutTableViewController.swift in Sources */,

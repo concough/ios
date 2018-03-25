@@ -35,6 +35,7 @@ class ArchiveTableViewController: UITableViewController, EHHorizontalSelectionVi
     private var groupsString: [String]! = []
     private var groups: [String: Int]! = [:]
     private var sets: [ArchiveEsetStructure]! = []
+    private var isTableViewEmpty: Bool = true
     
     //private var groupsRepo: [Int: [String: Int]] = [:]
     //private var setsRepo: [String: [ArchiveEsetStructure]] = [:]
@@ -52,25 +53,13 @@ class ArchiveTableViewController: UITableViewController, EHHorizontalSelectionVi
         self.queue = NSOperationQueue()
         self.queue.maxConcurrentOperationCount = 1
         
+        self.tableView.estimatedRowHeight = 60.0
         self.tableView.tableFooterView = UIView()
         self.initializeHorizontalView()
         
         self.tableView.emptyDataSetSource = self
         self.tableView.emptyDataSetDelegate = self
 
-        if self.refreshControl == nil {
-            self.refreshControl = UIRefreshControl()
-            self.refreshControl?.attributedTitle = NSAttributedString(string: "برای به روز رسانی به پایین بکشید", attributes: [NSFontAttributeName: UIFont(name: "IRANSansMobile-UltraLight", size: 12)!])
-        }
-        self.refreshControl?.addTarget(self, action: #selector(self.refreshTableView(_:)), forControlEvents: .ValueChanged)
-
-        if #available(iOS 10.0, *) {
-            self.tableView.refreshControl = refreshControl
-        } else {
-            self.tableView.addSubview(refreshControl!)
-        }
-        self.refreshControl?.endRefreshing()
-        
         // create operation and call it
         let operation = NSBlockOperation(block: {
             self.getEntranceTypes()
@@ -116,6 +105,21 @@ class ArchiveTableViewController: UITableViewController, EHHorizontalSelectionVi
     
     // MARK: - Functions
     
+    private func attachPullTorefresh() {
+        if self.refreshControl == nil {
+            self.refreshControl = UIRefreshControl()
+            self.refreshControl?.attributedTitle = NSAttributedString(string: "برای به روز رسانی به پایین بکشید", attributes: [NSFontAttributeName: UIFont(name: "IRANSansMobile-UltraLight", size: 12)!])
+        }
+        self.refreshControl?.addTarget(self, action: #selector(self.refreshTableView(_:)), forControlEvents: .ValueChanged)
+        
+        if #available(iOS 10.0, *) {
+            self.tableView.refreshControl = refreshControl
+        } else {
+            self.tableView.addSubview(refreshControl!)
+        }
+        self.refreshControl?.endRefreshing()
+    }
+    
     // BTNavigationDropdownMenu
     private func configureMenu() {
         if self.typesString.count > 0 {
@@ -138,6 +142,9 @@ class ArchiveTableViewController: UITableViewController, EHHorizontalSelectionVi
         self.typeTitle = self.typesString[indexPath]
         self.selectedEntranceTypeIndex = self.types[self.typesString[indexPath]]!
 
+        self.isTableViewEmpty = true
+        self.tableView.reloadData()
+        
         let operation = NSBlockOperation(block: {
             self.getEntranceGroups(entranceTypeId: self.types[self.typesString[indexPath]]!)
         })
@@ -180,6 +187,8 @@ class ArchiveTableViewController: UITableViewController, EHHorizontalSelectionVi
     func horizontalSelection(hSelView: EHHorizontalSelectionView, didSelectObjectAtIndex index: UInt) {
         self.selectedEntranceGroupIndex = self.groups[self.groupsString[Int(index)]]!
         
+        self.isTableViewEmpty = true
+        self.tableView.reloadData()
         let operation = NSBlockOperation(block: {
             self.getEntranceSets(entranceGroupId: self.groups[self.groupsString[Int(index)]]!)
         })
@@ -225,6 +234,10 @@ class ArchiveTableViewController: UITableViewController, EHHorizontalSelectionVi
             self.sets.removeAll()
             //self.setsRepo.removeAll()
             
+            self.isTableViewEmpty = true
+            self.tableView.reloadData()
+            
+            self.menuView?.userInteractionEnabled = false
             let operation = NSBlockOperation(block: {
                 self.getEntranceTypes()
             })
@@ -275,9 +288,9 @@ class ArchiveTableViewController: UITableViewController, EHHorizontalSelectionVi
     }
     
     private func getEntranceTypes() {
-//        NSOperationQueue.mainQueue().addOperationWithBlock { 
-//            self.loading = AlertClass.showLoadingMessage(viewController: self)
-//        }
+        NSOperationQueue.mainQueue().addOperationWithBlock {
+            self.navigationItem.title = "دریافت اطلاعات ..."
+        }
         
         ArchiveRestAPIClass.getEntranceTypes({ (data, error) in
             NSOperationQueue.mainQueue().addOperationWithBlock({ 
@@ -314,6 +327,7 @@ class ArchiveTableViewController: UITableViewController, EHHorizontalSelectionVi
                                 self.typeTitle = self.typesString[0]
                                 self.selectedEntranceTypeIndex = self.types[self.typesString[0]]!
                                 
+                                self.menuView?.userInteractionEnabled = true
                                 let operation = NSBlockOperation(block: { 
                                     self.getEntranceGroups(entranceTypeId: self.types[self.typesString[0]]!)
                                 })
@@ -355,16 +369,10 @@ class ArchiveTableViewController: UITableViewController, EHHorizontalSelectionVi
                         AlertClass.showTopMessage(viewController: self, messageType: "NetworkError", messageSubType: err.rawValue, type: "error", completion: nil)
                     })
                     
-//                    AlertClass.showSimpleErrorMessage(viewController: self, messageType: "NetworkError", messageSubType: err.rawValue, completion: { 
-//                        NSOperationQueue.mainQueue().addOperationWithBlock({ 
-//                            self.performSegueWithIdentifier("HomeVCUnSegue", sender: self)
-//                        })
-//                    })
                 default:
                     NSOperationQueue.mainQueue().addOperationWithBlock({
                         AlertClass.showTopMessage(viewController: self, messageType: "NetworkError", messageSubType: err.rawValue, type: "", completion: nil)
                     })
-//                    AlertClass.showSimpleErrorMessage(viewController: self, messageType: "NetworkError", messageSubType: err.rawValue, completion: nil)
                 }
             }
         }
@@ -473,14 +481,13 @@ class ArchiveTableViewController: UITableViewController, EHHorizontalSelectionVi
     }
     
     private func getEntranceSets(entranceGroupId groupId: Int) {
-
-        NSOperationQueue.mainQueue().addOperationWithBlock { 
-            self.loading = AlertClass.showLoadingMessage(viewController: self)
-        }
+//        NSOperationQueue.mainQueue().addOperationWithBlock { 
+//            self.loading = AlertClass.showLoadingMessage(viewController: self)
+//        }
         
         ArchiveRestAPIClass.getEntranceSets(entranceGroupId: groupId, completion: { (data, error) in
             NSOperationQueue.mainQueue().addOperationWithBlock({ 
-                AlertClass.hideLoaingMessage(progressHUD: self.loading)
+//                AlertClass.hideLoaingMessage(progressHUD: self.loading)
                 self.refreshControl?.endRefreshing()
             })
             
@@ -521,7 +528,7 @@ class ArchiveTableViewController: UITableViewController, EHHorizontalSelectionVi
                                 localSets.append(archiveSet)
                             }
                             self.sets = localSets
-//                            self.setsRepo.updateValue(self.sets, forKey: "\(self.selectedEntranceTypeIndex):\(groupId)")
+                            self.isTableViewEmpty = false
                             
                             NSOperationQueue.mainQueue().addOperationWithBlock({ 
                                 self.tableView.reloadData()
@@ -546,10 +553,14 @@ class ArchiveTableViewController: UITableViewController, EHHorizontalSelectionVi
                         }
                     }
                 }
+                
+                NSOperationQueue.mainQueue().addOperationWithBlock({ 
+                    self.attachPullTorefresh()
+                })
             }
         }) { (error) in
             NSOperationQueue.mainQueue().addOperationWithBlock({
-                AlertClass.hideLoaingMessage(progressHUD: self.loading)
+//                AlertClass.hideLoaingMessage(progressHUD: self.loading)
                 self.refreshControl?.endRefreshing()
 
             })
@@ -601,35 +612,51 @@ class ArchiveTableViewController: UITableViewController, EHHorizontalSelectionVi
     }
     
     override func tableView(tableView: UITableView, heightForRowAtIndexPath indexPath: NSIndexPath) -> CGFloat {
+        if self.isTableViewEmpty {
+            return UITableViewAutomaticDimension
+        }
         return 60.0;
     }
     
     override func tableView(tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
+        if self.isTableViewEmpty {
+            return 1
+        }
         return self.sets.count
     }
     
     override func tableView(tableView: UITableView, cellForRowAtIndexPath indexPath: NSIndexPath) -> UITableViewCell {
-        if let cell = tableView.dequeueReusableCellWithIdentifier("ARCHIVE_ADVANCE", forIndexPath: indexPath) as? ArchiveAdvanceTableViewCell {
-            cell.configureCell(indexPath: indexPath, set: self.sets[indexPath.row])
-            return cell
-        }
-        else if let cell = tableView.dequeueReusableCellWithIdentifier("ARCHIVE_BASIC", forIndexPath: indexPath) as? ArchiveBasicTableViewCell {
-            cell.configureCell(indexPath: indexPath, set: self.sets[indexPath.row])
-            return cell
+        if self.isTableViewEmpty {
+            if let cell = tableView.dequeueReusableCellWithIdentifier("ARCHIVE_UPDATE", forIndexPath: indexPath) as? ActivityUpdateTableViewCell {
+                cell.cellConfigure()
+                return cell
+            }
+        } else {
+            if let cell = tableView.dequeueReusableCellWithIdentifier("ARCHIVE_ADVANCE", forIndexPath: indexPath) as? ArchiveAdvanceTableViewCell {
+                cell.configureCell(indexPath: indexPath, set: self.sets[indexPath.row])
+                return cell
+            }
+            else if let cell = tableView.dequeueReusableCellWithIdentifier("ARCHIVE_BASIC", forIndexPath: indexPath) as? ArchiveBasicTableViewCell {
+                cell.configureCell(indexPath: indexPath, set: self.sets[indexPath.row])
+                return cell
+            }
         }
         return UITableViewCell()
     }
     
     override func tableView(tableView: UITableView, didSelectRowAtIndexPath indexPath: NSIndexPath) {
-        if indexPath.row < self.sets.count {
-            
-            self.selectedTableIndex = indexPath.row
-            if self.sets[indexPath.row].entranceCount > 0 {
-                NSOperationQueue.mainQueue().addOperationWithBlock({ 
-                    self.performSegueWithIdentifier("ArchiveDetailVCSegue", sender: self)
-                    
-                })
+        if !self.isTableViewEmpty {
+            if indexPath.row < self.sets.count {
+                
+                self.selectedTableIndex = indexPath.row
+                if self.sets[indexPath.row].entranceCount > 0 {
+                    NSOperationQueue.mainQueue().addOperationWithBlock({
+                        self.performSegueWithIdentifier("ArchiveDetailVCSegue", sender: self)
+                        
+                    })
+                }
             }
+            
         }
     }
     

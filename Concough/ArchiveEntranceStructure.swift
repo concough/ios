@@ -19,5 +19,7 @@ struct ArchiveEntranceStructure {
     var uniqueId: String?
     var bookletCount: Int?
     var entranceDuration: Int?
+    var buyed: Bool?
+    var saled: Bool?
 }
 

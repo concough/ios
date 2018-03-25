@@ -36,7 +36,7 @@ class AEDAdvanceTableViewCell: UITableViewCell {
         self.esetImageView.image = UIImage(named: "NoImage")
     }
     
-    internal func configureCell(indexPath indexPath: NSIndexPath, esetId: Int,  entrance: ArchiveEntranceStructure, state: Bool, buyed: Bool) {
+    internal func configureCell(indexPath indexPath: NSIndexPath, esetId: Int,  entrance: ArchiveEntranceStructure) {
 //        self.orgTypeLabel.text = "\(entrance.organization!) "
         self.orgYearLabel.text = FormatterSingleton.sharedInstance.NumberFormatter.stringFromNumber(entrance.year!)!
         
@@ -51,7 +51,10 @@ class AEDAdvanceTableViewCell: UITableViewCell {
         }
         
         self.buyCountLabel.text = FormatterSingleton.sharedInstance.NumberFormatter.stringFromNumber(entrance.buyCount!)! + " خرید"
-        self.publishedDateLabel.text = FormatterSingleton.sharedInstance.IRDateFormatter.stringFromDate(entrance.lastPablished!)
+        
+//        self.publishedDateLabel.text = FormatterSingleton.sharedInstance.IRDateFormatter.stringFromDate(entrance.lastPablished!)
+        self.publishedDateLabel.text = "\(entrance.lastPablished!.timeAgoSinceDate())"
+        
         
 //        if let extraData = entrance.extraData {
 //            var s = ""
@@ -65,7 +68,7 @@ class AEDAdvanceTableViewCell: UITableViewCell {
 //            self.extraDataLabel.text = s
 //        }
         self.extraDataLabel.text = "\(entrance.organization!)"
-        self.changeButtonState(state: state, buyed: buyed)
+        self.changeButtonState(state: entrance.saled!, buyed: entrance.buyed!)
         //self.downloadImage(esetId: esetId, indexPath: indexPath)
     }
     

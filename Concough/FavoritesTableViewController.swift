@@ -684,7 +684,8 @@ class FavoritesTableViewController: UITableViewController, DZNEmptyDataSetDelega
                         let dirPaths = NSSearchPathForDirectoriesInDomains(.DocumentDirectory, .UserDomainMask, true)
                         
                         let docsDir = dirPaths[0] as NSString
-                        let newDir = docsDir.stringByAppendingPathComponent(productId)
+                        let pathAdd = "\(username)_\(productId)"
+                        let newDir = docsDir.stringByAppendingPathComponent(pathAdd)
                         
                         var isDir: ObjCBool = false
                         if filemgr.fileExistsAtPath(newDir, isDirectory: &isDir) == true {
@@ -722,7 +723,8 @@ class FavoritesTableViewController: UITableViewController, DZNEmptyDataSetDelega
                             let dirPaths = NSSearchPathForDirectoriesInDomains(.DocumentDirectory, .UserDomainMask, true)
                             
                             let docsDir = dirPaths[0] as NSString
-                            let newDir = docsDir.stringByAppendingPathComponent(productId)
+                            let pathAdd = "\(username)_\(productId)"
+                            let newDir = docsDir.stringByAppendingPathComponent(pathAdd)
                             
                             do {
                                 try filemgr.removeItemAtPath(newDir)

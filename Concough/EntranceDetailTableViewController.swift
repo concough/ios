@@ -32,9 +32,11 @@ class EntranceDetailTableViewController: UITableViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         
+        self.tableView.estimatedRowHeight = 100.0
         
         self.title = "آزمون"
         self.queue = NSOperationQueue()
+        
     }
 
     override func viewWillAppear(animated: Bool) {
@@ -348,14 +350,14 @@ class EntranceDetailTableViewController: UITableViewController {
     }
     
     private func downloadUserPurchaseData() {
-        NSOperationQueue.mainQueue().addOperationWithBlock { 
-            self.loading = AlertClass.showLoadingMessage(viewController: self)
-        }
+//        NSOperationQueue.mainQueue().addOperationWithBlock { 
+//            self.loading = AlertClass.showLoadingMessage(viewController: self)
+//        }
         
         PurchasedRestAPIClass.getEntrancePurchasedData(uniqueId: self.entranceUniqueId, completion: { (data, error) in
             NSOperationQueue.mainQueue().addOperationWithBlock({ 
                 self.refreshControl?.endRefreshing()
-                AlertClass.hideLoaingMessage(progressHUD: self.loading)
+//                AlertClass.hideLoaingMessage(progressHUD: self.loading)
                 
             })
             
@@ -447,9 +449,11 @@ class EntranceDetailTableViewController: UITableViewController {
             }
         }, failure: { (error) in
             NSOperationQueue.mainQueue().addOperationWithBlock({
-                AlertClass.hideLoaingMessage(progressHUD: self.loading)
+//                AlertClass.hideLoaingMessage(progressHUD: self.loading)
+            self.refreshControl?.endRefreshing()
+
             })
-            
+        
             if let err = error {
                 switch err {
                 case .HostUnreachable:
@@ -788,7 +792,7 @@ class EntranceDetailTableViewController: UITableViewController {
         ProductRestAPIClass.getEntranceSaleData(uniqueId: self.entranceUniqueId, completion: { (data, error) in
             NSOperationQueue.mainQueue().addOperationWithBlock({ 
                 self.refreshControl?.endRefreshing()
-                AlertClass.hideLoaingMessage(progressHUD: self.loading)
+//                AlertClass.hideLoaingMessage(progressHUD: self.loading)
                 
             })
             
@@ -856,7 +860,7 @@ class EntranceDetailTableViewController: UITableViewController {
         }) { (error) in
             NSOperationQueue.mainQueue().addOperationWithBlock({
                 self.refreshControl?.endRefreshing()
-                AlertClass.hideLoaingMessage(progressHUD: self.loading)
+//                AlertClass.hideLoaingMessage(progressHUD: self.loading)
             })
             
             if let err = error {
@@ -1045,7 +1049,8 @@ class EntranceDetailTableViewController: UITableViewController {
                         let dirPaths = NSSearchPathForDirectoriesInDomains(.DocumentDirectory, .UserDomainMask, true)
                         
                         let docsDir = dirPaths[0] as NSString
-                        let newDir = docsDir.stringByAppendingPathComponent(self.entranceUniqueId!)
+                        let pathAdd = "\(username)_\(self.entranceUniqueId!)"
+                        let newDir = docsDir.stringByAppendingPathComponent(pathAdd)
                         
                         var isDir: ObjCBool = false
                         if filemgr.fileExistsAtPath(newDir, isDirectory: &isDir) == true {
@@ -1082,7 +1087,8 @@ class EntranceDetailTableViewController: UITableViewController {
                             let dirPaths = NSSearchPathForDirectoriesInDomains(.DocumentDirectory, .UserDomainMask, true)
                             
                             let docsDir = dirPaths[0] as NSString
-                            let newDir = docsDir.stringByAppendingPathComponent(self.entranceUniqueId!)
+                            let pathAdd = "\(username)_\(self.entranceUniqueId!)"
+                            let newDir = docsDir.stringByAppendingPathComponent(pathAdd)
                             
                             do {
                                 try filemgr.removeItemAtPath(newDir)
@@ -1152,7 +1158,7 @@ class EntranceDetailTableViewController: UITableViewController {
         case .Initialize:
             return 0
         case .EntranceComplete:
-            return 1
+            fallthrough
         case .DownloadStarted:
             fallthrough
         case .Downloaded:
@@ -1171,7 +1177,7 @@ class EntranceDetailTableViewController: UITableViewController {
         case .Initialize:
             return 0
         case .EntranceComplete:
-            return 3
+            fallthrough
         case .DownloadStarted:
             fallthrough
         case .Downloaded:
@@ -1246,6 +1252,11 @@ class EntranceDetailTableViewController: UITableViewController {
                     cell.jumpToFavoritesButton.addTarget(self, action: #selector(self.showEntranceButtonPressed(_:)), forControlEvents: .TouchUpInside)
                     return cell
                 }
+            } else {
+                if let cell = self.tableView.dequeueReusableCellWithIdentifier("ENTRANCE_DETAIL_LOADING", forIndexPath: indexPath) as? ActivityUpdateTableViewCell {
+                    cell.cellConfigure()
+                    return cell
+                }
             }
         default:
             break
@@ -1254,33 +1265,41 @@ class EntranceDetailTableViewController: UITableViewController {
     }
     
     override func tableView(tableView: UITableView, heightForRowAtIndexPath indexPath: NSIndexPath) -> CGFloat {
-        switch indexPath.section {
-        case 0:
-            switch indexPath.row {
-            case 0:
-                return 180.0
-            case 1:
-                return 70.0
-            case 2:
-                return 80.0
-            default:
-                break
-            }
-        case 1:
-            if self.state! == .ShowSaleInfo {
-                if self.selfBasketAdd == true {
-                    return 185.0
-                } else {
-                    return 90.0
-                }
-            } else if self.state! == .Purchased || self.state! == .Downloaded || self.state! == .DownloadStarted {
-                return 100.0
-            }
-        default:
-            break
-        }
-        return 0.0
+        return UITableViewAutomaticDimension
     }
+    
+//    override func tableView(tableView: UITableView, heightForRowAtIndexPath indexPath: NSIndexPath) -> CGFloat {
+//        switch indexPath.section {
+//        case 0:
+//            switch indexPath.row {
+//            case 0:
+//                let text = "\(self.entrance!.entranceSetTitle!)"
+//                let labelSize = (text as NSString).sizeWithAttributes(nil)
+//                
+//                return 160.0 + labelSize.height
+//                
+//            case 1:
+//                return 70.0
+//            case 2:
+//                return 80.0
+//            default:
+//                break
+//            }
+//        case 1:
+//            if self.state! == .ShowSaleInfo {
+//                if self.selfBasketAdd == true {
+//                    return 185.0
+//                } else {
+//                    return 90.0
+//                }
+//            } else if self.state! == .Purchased || self.state! == .Downloaded || self.state! == .DownloadStarted {
+//                return 100.0
+//            }
+//        default:
+//            break
+//        }
+//        return 0.0
+//    }
     
     // MARK: - Navigation
     override func prepareForSegue(segue: UIStoryboardSegue, sender: AnyObject?) {

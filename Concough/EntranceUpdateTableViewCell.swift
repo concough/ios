@@ -31,6 +31,7 @@ class EntranceUpdateTableViewCell: UITableViewCell {
     
     override func prepareForReuse() {
         self.entranceImage?.image = nil
+        self.entranceImage?.assicatedObject = ""
     }
     
     override func drawRect(rect: CGRect) {
@@ -68,10 +69,13 @@ class EntranceUpdateTableViewCell: UITableViewCell {
         
         if let publishedStr = target["last_published"].string {
             let date:NSDate = FormatterSingleton.sharedInstance.UTCDateFormatter.dateFromString(publishedStr)!
-            self.entranceUpdateTimeUILabel.text = "\(FormatterSingleton.sharedInstance.IRDateFormatter.stringFromDate(date))"
+//            self.entranceUpdateTimeUILabel.text = "\(FormatterSingleton.sharedInstance.IRDateFormatter.stringFromDate(date))"
+            self.entranceUpdateTimeUILabel.text = "\(date.timeAgoSinceDate())"
+            
         } else if let publishedStr = target["last_update"].string {
             let date:NSDate = FormatterSingleton.sharedInstance.UTCDateFormatter.dateFromString(publishedStr)!
-            self.entranceUpdateTimeUILabel.text = "\(FormatterSingleton.sharedInstance.IRDateFormatter.stringFromDate(date))"            
+//            self.entranceUpdateTimeUILabel.text = "\(FormatterSingleton.sharedInstance.IRDateFormatter.stringFromDate(date))"            
+            self.entranceUpdateTimeUILabel.text = "\(date.timeAgoSinceDate())"
         }
         
         let myAttribute = [NSFontAttributeName: UIFont(name: "IRANSansMobile", size: 12)!,
@@ -136,9 +140,9 @@ class EntranceUpdateTableViewCell: UITableViewCell {
                             MediaCacheSingleton.sharedInstance[fullPath!] = myData
                             
                             if self.entranceImage.assicatedObject == esetUrl {
-                                NSOperationQueue.mainQueue().addOperationWithBlock({
+//                                NSOperationQueue.mainQueue().addOperationWithBlock({
                                     self.entranceImage.image = UIImage(data: myData)
-                                })
+//                                })
                             }
                         }
                     }

@@ -34,6 +34,7 @@ class ArchiveAdvanceTableViewCell: UITableViewCell {
     override func prepareForReuse() {
         self.selectionStyle = .None
         self.entranceSetImageView.image = UIImage(named: "NoImage")
+        self.entranceSetImageView.assicatedObject = ""
     }
     
     internal func configureCell(indexPath indexPath: NSIndexPath, setId: Int, title: String, subTitle: String, code: Int) {
@@ -94,10 +95,10 @@ class ArchiveAdvanceTableViewCell: UITableViewCell {
                             MediaCacheSingleton.sharedInstance[fullPath!] = myData
                             
                             if self.imageView?.assicatedObject == esetUrl {
-                                NSOperationQueue.mainQueue().addOperationWithBlock({
+//                                NSOperationQueue.mainQueue().addOperationWithBlock({
                                     self.entranceSetImageView?.image = UIImage(data: myData)
                                     //self.setNeedsLayout()
-                                })
+//                                })
                             }
                         }
                     }

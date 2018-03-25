@@ -21,6 +21,8 @@ class AEDHeaderTableViewCell: UITableViewCell {
         super.awakeFromNib()
         // Initialization code
         self.selectionStyle = .None
+        self.entranceSetLabel.lineBreakMode = .ByWordWrapping
+        self.entranceSetLabel.numberOfLines = 0
     }
 
     override func drawRect(rect: CGRect) {
@@ -45,6 +47,7 @@ class AEDHeaderTableViewCell: UITableViewCell {
         self.entranceSetLabel.text = esetTitle
         self.entranceCountLabel.text = "\(count) آزمون منتشر شده"
         if (entranceSetCode == 0) {
+            self.entranceSetCodeLabel.hidden = true
             self.entranceSetCodeLabel.text = "کد: ندارد"
         } else {
             self.entranceSetCodeLabel.text = "کد: " + FormatterSingleton.sharedInstance.NumberFormatter.stringFromNumber(entranceSetCode)!

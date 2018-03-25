@@ -15,6 +15,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
 
     var path: String? = nil
     var backgroundUpdateTask: UIBackgroundTaskIdentifier!
+    var previousController: UIViewController? = nil
     
     func application(application: UIApplication, didFinishLaunchingWithOptions launchOptions: [NSObject: AnyObject]?) -> Bool {
         // Override point for customization after application launch.
@@ -31,7 +32,6 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         UITabBarItem.appearance().setTitleTextAttributes(attributes2, forState: .Normal)
         
         application.idleTimerDisabled = false
-        
         
         
         // TSMessage appearance
@@ -170,8 +170,8 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
             UIApplication.sharedApplication().endBackgroundTask(self.backgroundUpdateTask)
             self.backgroundUpdateTask = UIBackgroundTaskInvalid
         })
-    }
-
+    }    
+    
     func applicationWillEnterForeground(application: UIApplication) {
         // Called as part of the transition from the background to the inactive state; here you can undo many of the changes made on entering the background.
     }

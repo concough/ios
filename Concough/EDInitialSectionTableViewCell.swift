@@ -21,6 +21,8 @@ class EDInitialSectionTableViewCell: UITableViewCell {
     override func awakeFromNib() {
         super.awakeFromNib()
         self.selectionStyle = .None
+        self.subTitleLabel.lineBreakMode = .ByWordWrapping
+        self.subTitleLabel.numberOfLines = 0
     }
 
     override func setSelected(selected: Bool, animated: Bool) {
