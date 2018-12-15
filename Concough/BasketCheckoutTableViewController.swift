@@ -20,6 +20,8 @@ class BasketCheckoutTableViewController: UIViewController, UITableViewDelegate, 
     internal var loading: MBProgressHUD?
     internal var filemgr: NSFileManager?
     
+    private var retryCounter = 0
+    
     private lazy var refreshConrtol: UIRefreshControl = {
         var refreshControl = UIRefreshControl()
         refreshControl.attributedTitle = NSAttributedString(string: "برای به روز رسانی به پایین بکشید", attributes: [NSFontAttributeName: UIFont(name: "IRANSansMobile-UltraLight", size: 12)!])

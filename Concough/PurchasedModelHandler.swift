@@ -118,7 +118,9 @@ class PurchasedModelHandler {
     }
     
     class func getAllPurchased(username username: String) -> Results<PurchasedModel> {
-        let items = RealmSingleton.sharedInstance.DefaultRealm.objects(PurchasedModel.self).filter("username = '\(username)'").sorted("created", ascending: false)
+        let sorts = [SortDescriptor(property: "isDownloaded", ascending: false), SortDescriptor(property: "created", ascending: false)]
+        
+        let items = RealmSingleton.sharedInstance.DefaultRealm.objects(PurchasedModel.self).filter("username = '\(username)'").sorted(sorts)
         //.so
         return items
     }

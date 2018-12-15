@@ -14,6 +14,7 @@ class FormatterSingleton {
     private let _UTCdateFormatter: NSDateFormatter!
     private let _UTCShortDateFormatter: NSDateFormatter!
     private let _numberFormatter: NSNumberFormatter!
+    private let _decimalFormatter: NSNumberFormatter!
     
     static let sharedInstance = FormatterSingleton()
     
@@ -34,6 +35,10 @@ class FormatterSingleton {
         self._numberFormatter = NSNumberFormatter()
         self._numberFormatter.numberStyle = .NoStyle
         self._numberFormatter.locale = NSLocale(localeIdentifier: "fa")
+    
+        self._decimalFormatter = NSNumberFormatter()
+        self._decimalFormatter.numberStyle = .DecimalStyle
+        self._decimalFormatter.locale = NSLocale(localeIdentifier: "fa")
     }
     
     var IRDateFormatter: NSDateFormatter {
@@ -57,6 +62,12 @@ class FormatterSingleton {
     var NumberFormatter: NSNumberFormatter {
         get {
             return self._numberFormatter
+        }
+    }
+
+    var DecimalFormatter: NSNumberFormatter {
+        get {
+            return self._decimalFormatter
         }
     }
 }

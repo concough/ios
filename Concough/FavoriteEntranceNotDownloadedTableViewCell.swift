@@ -18,10 +18,12 @@ class FavoriteEntranceNotDownloadedTableViewCell: UITableViewCell {
     @IBOutlet weak var bookletCount: UILabel!
     @IBOutlet weak var duration: UILabel!
     @IBOutlet weak var downloadTimes: UILabel!
-    @IBOutlet weak var downloadView: UIView!
+    @IBOutlet weak var downloadView: UIStackView!
     @IBOutlet weak var entranceImageView: UIImageView!
     @IBOutlet weak var progressView: UIProgressView!
-    @IBOutlet weak var downloadLabel: UILabel!
+
+    @IBOutlet weak var downloadButton: UIButton!
+    @IBOutlet weak var yearLabel: UILabel!
     
     override func awakeFromNib() {
         super.awakeFromNib()
@@ -38,12 +40,36 @@ class FavoriteEntranceNotDownloadedTableViewCell: UITableViewCell {
         self.progressView.setProgress(0, animated: false)
     }
     
+    override func drawRect(rect: CGRect) {
+        self.downloadButton.layer.borderWidth = 1.5
+        self.downloadButton.layer.borderColor = self.downloadButton.titleColorForState(.Normal)?.CGColor
+        self.downloadButton.layer.cornerRadius = 5.0
+        self.downloadButton.layer.masksToBounds = true
+        
+//        self.yearLabel.layer.borderWidth = 0.5
+//        self.yearLabel.layer.borderColor = UIColor(netHex: GRAY_COLOR_HEX_1, alpha: 0.5).CGColor
+//        self.yearLabel.layer.cornerRadius = 7.0
+//        self.yearLabel.layer.masksToBounds = true
+        
+    }
+    
     // MARK: - Functions
     internal func configureCell(entrance entrance: EntranceStructure, purchased: EntrancePrurchasedStructure, indexPath: NSIndexPath) {
+        self.title.text = "آزمون \(entrance.entranceTypeTitle!)"
         if entrance.entranceMonth > 0 {
-            self.title.text = "آزمون \(entrance.entranceTypeTitle!) \(monthToString(entrance.entranceMonth!)) " + FormatterSingleton.sharedInstance.NumberFormatter.stringFromNumber(entrance.entranceYear!)!
+            let myAttribute = [NSFontAttributeName: UIFont(name: "IRANSansMobile", size: 14)!,
+                               NSForegroundColorAttributeName: UIColor(netHex: GRAY_BLUE_COLOR_HEX, alpha: 0.5)]
+            let str1 = NSAttributedString(string: "\(monthToString(entrance.entranceMonth!))", attributes: myAttribute)
+            
+            let str2 = NSAttributedString(string: " \(FormatterSingleton.sharedInstance.NumberFormatter.stringFromNumber(entrance.entranceYear!)!)")
+            
+            let strFinal = NSMutableAttributedString(string: "")
+            strFinal.appendAttributedString(str1)
+            strFinal.appendAttributedString(str2)
+            
+            self.yearLabel.attributedText = strFinal
         } else {
-            self.title.text = "آزمون \(entrance.entranceTypeTitle!) " + FormatterSingleton.sharedInstance.NumberFormatter.stringFromNumber(entrance.entranceYear!)!
+            self.yearLabel.text = FormatterSingleton.sharedInstance.NumberFormatter.stringFromNumber(entrance.entranceYear!)!
         }
         self.subTitle.text = "\(entrance.entranceSetTitle!) (\(entrance.entranceGroupTitle!))"
         
@@ -62,30 +88,26 @@ class FavoriteEntranceNotDownloadedTableViewCell: UITableViewCell {
         
         self.bookletCount.text = FormatterSingleton.sharedInstance.NumberFormatter.stringFromNumber(entrance.entranceBookletCounts!)! + " دفترچه"
         self.duration.text = FormatterSingleton.sharedInstance.NumberFormatter.stringFromNumber(entrance.entranceDuration!)! + " دقیقه"
-        self.downloadTimes.text = "(" + FormatterSingleton.sharedInstance.NumberFormatter.stringFromNumber(purchased.downloaded!)! + " بار دانلود شده است)"
+        self.downloadTimes.text = FormatterSingleton.sharedInstance.NumberFormatter.stringFromNumber(purchased.downloaded!)! + " بار دانلود شده است"
         
         // download Images
         self.downloadImage(esetId: entrance.entranceSetId!, indexPath: indexPath)
         self.progressView.hidden = true
         
         if purchased.isDataDownloaded! {
-            self.downloadLabel.text = "ادامه دانلود"
+            self.downloadButton.setTitle("ادامه دانلود", forState: .Normal)
+        } else {
+            self.downloadButton.setTitle("دانلود", forState: .Normal)
         }
         
     }
     
-    internal func addGestures(viewController viewController: FavoritesTableViewController, indexPath: NSIndexPath) {
-        let singleTapGestureRecognizer = UITapGestureRecognizer(target: viewController, action: #selector(viewController.downloadTapped(_:)))
-        singleTapGestureRecognizer.numberOfTapsRequired = 1
-        singleTapGestureRecognizer.numberOfTouchesRequired = 1
-        singleTapGestureRecognizer.enabled = true
-        singleTapGestureRecognizer.assicatedObject = "\(indexPath.section):\(indexPath.row)"
+    internal func addTargets(viewController viewController: FavoritesTableViewController, indexPath: NSIndexPath) {
+        self.downloadButton.assicatedObject = "\(indexPath.section):\(indexPath.row)"
         
-        self.downloadView.userInteractionEnabled = true
-        self.downloadView.addGestureRecognizer(singleTapGestureRecognizer)
-
+        self.downloadButton.addTarget(viewController, action: #selector(viewController.downloadTapped(_:)), forControlEvents: .TouchUpInside)
     }
-    
+        
     internal func changeProgressValue(value value: Int, totalCount: Int) {
         let delta = (Float(totalCount) - Float(value)) / Float(totalCount)
         self.progressView.setProgress(delta, animated: true)
@@ -93,7 +115,7 @@ class FavoriteEntranceNotDownloadedTableViewCell: UITableViewCell {
     
     internal func changeToDownloadState() {
         self.progressView.hidden = false
-        self.progressView.setProgress(0.0, animated: true)
+        self.progressView.setProgress(0.1, animated: true)
         self.downloadView.hidden = true
     }
     

@@ -40,6 +40,7 @@ class SignUpViewController: UIViewController, UITextFieldDelegate {
     
     private var isEmailValid: Bool = false
     private var mainUsernameText: String!
+    private var retryCounter = 0
     
     private var activeTextField: UITextField?
     private var loading: MBProgressHUD?
@@ -174,6 +175,7 @@ class SignUpViewController: UIViewController, UITextFieldDelegate {
             })
             
             if error == HTTPErrorType.Success {
+                self.retryCounter = 0
                 // data will returned
                 if let localData = data {
                     if let status = localData["status"].string {
@@ -225,9 +227,16 @@ class SignUpViewController: UIViewController, UITextFieldDelegate {
                 }
             } else {
                 // error exist with network
-                NSOperationQueue.mainQueue().addOperationWithBlock({
-                    AlertClass.showTopMessage(viewController: self, messageType: "HTTPError", messageSubType: (error?.toString())!, type: "error", completion: nil)
-                })
+                if self.retryCounter < CONNECTION_MAX_RETRY {
+                    self.retryCounter += 1
+                    self.makePreSignup(username: username)
+                } else {
+                    self.retryCounter = 0
+                    
+                    NSOperationQueue.mainQueue().addOperationWithBlock({
+                        AlertClass.showTopMessage(viewController: self, messageType: "HTTPError", messageSubType: (error?.toString())!, type: "error", completion: nil)
+                    })
+                }
             }
         }, failure: { (error) in
             NSOperationQueue.mainQueue().addOperationWithBlock({
@@ -260,6 +269,7 @@ class SignUpViewController: UIViewController, UITextFieldDelegate {
         AuthRestAPIClass.checkUsername(username: username, completion: { (data, error) in
             self.usernameMsgRefreshControl.stopAnimating()
             if error == HTTPErrorType.Success {
+                self.retryCounter = 0
                 if let localData = data {
                     if let status = localData["status"].string {
                         switch status {
@@ -290,34 +300,48 @@ class SignUpViewController: UIViewController, UITextFieldDelegate {
                     }
                 }
             } else {
-                self.isUsernameValid = false
-                // show alert
-                self.usernameMsgLabel.text = self.mainUsernameText
-                self.usernameMsgLabel.textColor = UIColor(netHex: GRAY_COLOR_HEX_1, alpha: 1.0)
-                NSOperationQueue.mainQueue().addOperationWithBlock({
-                    AlertClass.showTopMessage(viewController: self, messageType: "HTTPError", messageSubType: (error?.toString())!, type: "error", completion: nil)
-                })
+                if self.retryCounter < CONNECTION_MAX_RETRY {
+                    self.retryCounter += 1
+                    self.checkUsername(username: username)
+                } else {
+                    self.retryCounter = 0
+                    
+                    self.isUsernameValid = false
+                    // show alert
+                    self.usernameMsgLabel.text = self.mainUsernameText
+                    self.usernameMsgLabel.textColor = UIColor(netHex: GRAY_COLOR_HEX_1, alpha: 1.0)
+                    NSOperationQueue.mainQueue().addOperationWithBlock({
+                        AlertClass.showTopMessage(viewController: self, messageType: "HTTPError", messageSubType: (error?.toString())!, type: "error", completion: nil)
+                    })
+                }
             }
         }, failure: { (error) in
-            self.isUsernameValid = false
-            if let err = error {
-                switch err {
-                case .NoInternetAccess:
-                    fallthrough
-                case .HostUnreachable:
-                    NSOperationQueue.mainQueue().addOperationWithBlock({
-                        AlertClass.showTopMessage(viewController: self, messageType: "NetworkError", messageSubType: err.rawValue, type: "error", completion: nil)
-                    })
-//                    AlertClass.showSimpleErrorMessage(viewController: self, messageType: "NetworkError", messageSubType: err.rawValue, completion: {
-//                        NSOperationQueue.mainQueue().addOperationWithBlock({ 
-//                            self.checkUsername(username: username)
-//                        })
-//                    })
-                default:
-                    NSOperationQueue.mainQueue().addOperationWithBlock({
-                        AlertClass.showTopMessage(viewController: self, messageType: "NetworkError", messageSubType: err.rawValue, type: "", completion: nil)
-                    })
-                    break
+            if self.retryCounter < CONNECTION_MAX_RETRY {
+                self.retryCounter += 1
+                self.checkUsername(username: username)
+            } else {
+                self.retryCounter = 0
+                
+                self.isUsernameValid = false
+                if let err = error {
+                    switch err {
+                    case .NoInternetAccess:
+                        fallthrough
+                    case .HostUnreachable:
+                        NSOperationQueue.mainQueue().addOperationWithBlock({
+                            AlertClass.showTopMessage(viewController: self, messageType: "NetworkError", messageSubType: err.rawValue, type: "error", completion: nil)
+                        })
+                        //                    AlertClass.showSimpleErrorMessage(viewController: self, messageType: "NetworkError", messageSubType: err.rawValue, completion: {
+                        //                        NSOperationQueue.mainQueue().addOperationWithBlock({
+                        //                            self.checkUsername(username: username)
+                        //                        })
+                    //                    })
+                    default:
+                        NSOperationQueue.mainQueue().addOperationWithBlock({
+                            AlertClass.showTopMessage(viewController: self, messageType: "NetworkError", messageSubType: err.rawValue, type: "", completion: nil)
+                        })
+                        break
+                    }
                 }
             }
         })

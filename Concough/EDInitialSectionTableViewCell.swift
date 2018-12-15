@@ -10,8 +10,7 @@ import UIKit
 
 class EDInitialSectionTableViewCell: UITableViewCell {
 
-    private let localName: String = "EntranceVC"
-    
+    private let localName: String = "EntranceVC"    
     
     @IBOutlet weak var containerView: UIView!
     @IBOutlet weak var entranceImageView: UIImageView!

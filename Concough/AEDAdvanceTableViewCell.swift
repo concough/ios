@@ -14,12 +14,14 @@ class AEDAdvanceTableViewCell: UITableViewCell {
     @IBOutlet weak var orgYearLabel: UILabel!
     @IBOutlet weak var orgMonthLabel: UILabel!
     @IBOutlet weak var extraDataLabel: UILabel!
-    @IBOutlet weak var buyCountLabel: UILabel!
-    @IBOutlet weak var publishedDateLabel: UILabel!
+    @IBOutlet weak var buyTimeLabel: UILabel!
+    @IBOutlet weak var costLabel: UILabel!
     @IBOutlet weak var orgTypeLabel: UILabel!
     @IBOutlet weak var esetImageView: UIImageView!
     @IBOutlet weak var addToBasketButton: UIButton!
     @IBOutlet weak var buyedDoubleTickImage: UIImageView!
+    @IBOutlet weak var costStackView: UIStackView!
+    @IBOutlet weak var buyedStackView: UIStackView!
     
     override func awakeFromNib() {
         super.awakeFromNib()
@@ -36,7 +38,7 @@ class AEDAdvanceTableViewCell: UITableViewCell {
         self.esetImageView.image = UIImage(named: "NoImage")
     }
     
-    internal func configureCell(indexPath indexPath: NSIndexPath, esetId: Int,  entrance: ArchiveEntranceStructure) {
+    internal func configureCell(indexPath indexPath: NSIndexPath, esetId: Int,  entrance: ArchiveEntranceStructure, buyed: Bool, buyedTime: NSDate?) {
 //        self.orgTypeLabel.text = "\(entrance.organization!) "
         self.orgYearLabel.text = FormatterSingleton.sharedInstance.NumberFormatter.stringFromNumber(entrance.year!)!
         
@@ -50,10 +52,13 @@ class AEDAdvanceTableViewCell: UITableViewCell {
             }
         }
         
-        self.buyCountLabel.text = FormatterSingleton.sharedInstance.NumberFormatter.stringFromNumber(entrance.buyCount!)! + " خرید"
-        
-//        self.publishedDateLabel.text = FormatterSingleton.sharedInstance.IRDateFormatter.stringFromDate(entrance.lastPablished!)
-        self.publishedDateLabel.text = "\(entrance.lastPablished!.timeAgoSinceDate())"
+        if entrance.costBon! > 0 {
+            self.costLabel.text = FormatterSingleton.sharedInstance.NumberFormatter.stringFromNumber(entrance.costBon!)!
+            self.costLabel.textColor = UIColor.darkGrayColor()
+        } else {
+            self.costLabel.text = "رایگان"
+            self.costLabel.textColor = UIColor(netHex: RED_COLOR_HEX, alpha: 1.0)
+        }
         
         
 //        if let extraData = entrance.extraData {
@@ -68,19 +73,31 @@ class AEDAdvanceTableViewCell: UITableViewCell {
 //            self.extraDataLabel.text = s
 //        }
         self.extraDataLabel.text = "\(entrance.organization!)"
-        self.changeButtonState(state: entrance.saled!, buyed: entrance.buyed!)
+        
+        if buyed {
+            if let date = buyedTime {
+                self.buyTimeLabel.text = "خرید: \(date.timeAgoSinceDate())"
+            }
+        }
+        
+        self.changeButtonState(buyed: buyed)
         //self.downloadImage(esetId: esetId, indexPath: indexPath)
     }
     
-    private func changeButtonState(state state: Bool, buyed: Bool) {
+    private func changeButtonState(buyed buyed: Bool) {
         if buyed == false {
             self.addToBasketButton.hidden = false
             self.buyedDoubleTickImage.hidden = true
+            self.costStackView.hidden = false
+            self.buyedStackView.hidden = true
             
-            self.changeBuyButtonState(state: state)
+            self.changeBuyButtonState(state: false)
         } else {
             self.addToBasketButton.hidden = true
             self.buyedDoubleTickImage.hidden = false
+
+            self.costStackView.hidden = true
+            self.buyedStackView.hidden = false
             
 //            self.addToBasketButton.setTitleColor(UIColor(netHex: GREEN_COLOR_HEX, alpha: 1.0), forState: .Normal)
 //            self.addToBasketButton.setTitle("مشاهده آزمون", forState: .Normal)
@@ -106,7 +123,7 @@ class AEDAdvanceTableViewCell: UITableViewCell {
         self.addToBasketButton.enabled = true
         if state == false {
             self.addToBasketButton.setTitleColor(UIColor(netHex: BLUE_COLOR_HEX, alpha: 1.0), forState: .Normal)
-            self.addToBasketButton.setTitle("+ سبد خرید", forState: .Normal)
+            self.addToBasketButton.setTitle("خرید آزمون", forState: .Normal)
             self.addToBasketButton.layer.cornerRadius = 5.0
             self.addToBasketButton.layer.masksToBounds = true
             self.addToBasketButton.layer.borderWidth = 1.0

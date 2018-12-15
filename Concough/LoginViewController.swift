@@ -17,7 +17,7 @@ class LoginViewController: UIViewController, UITextFieldDelegate {
     private var activeTextField: UITextField?
     private var loading: MBProgressHUD?
     private var filemgr: NSFileManager?
-    
+    private var retryCounter = 0
     
     @IBOutlet weak var emailTextField: UITextField!
     @IBOutlet weak var passwordTextField: UITextField!
@@ -127,6 +127,7 @@ class LoginViewController: UIViewController, UITextFieldDelegate {
                         
                         
                         self.getLockedStatus()
+//                        self.getProfile()
                         return
                     }
                 } else {
@@ -184,12 +185,21 @@ class LoginViewController: UIViewController, UITextFieldDelegate {
                 if error == HTTPErrorType.Refresh {
                     self.getLockedStatus()
                 } else {
-                    NSOperationQueue.mainQueue().addOperationWithBlock({
-                        AlertClass.hideLoaingMessage(progressHUD: self.loading)
-                        AlertClass.showTopMessage(viewController: self, messageType: "HTTPError", messageSubType: (error?.toString())!, type: "error", completion: nil)
-                    })
+                    if self.retryCounter < CONNECTION_MAX_RETRY {
+                        self.retryCounter += 1
+                        self.getLockedStatus()
+                    } else {
+                        self.retryCounter = 0
+                        
+                        NSOperationQueue.mainQueue().addOperationWithBlock({
+                            AlertClass.hideLoaingMessage(progressHUD: self.loading)
+                            AlertClass.showTopMessage(viewController: self, messageType: "HTTPError", messageSubType: (error?.toString())!, type: "error", completion: nil)
+                        })
+                    }
+                    
                 }
             } else {
+                self.retryCounter = 0
                 if let localData = data {
                     if let status = localData["status"].string {
                         switch status {
@@ -277,24 +287,30 @@ class LoginViewController: UIViewController, UITextFieldDelegate {
             }
             
             }) { (error) in
-                NSOperationQueue.mainQueue().addOperationWithBlock({
-                    AlertClass.hideLoaingMessage(progressHUD: self.loading)
-                })
-                if let err = error {
-                    switch err {
-                    case .NoInternetAccess:
-                        fallthrough
-                    case .HostUnreachable:
-                        NSOperationQueue.mainQueue().addOperationWithBlock({
-                            AlertClass.showTopMessage(viewController: self, messageType: "NetworkError", messageSubType: err.rawValue, type: "error", completion: nil)
-                        })
-                    default:
-                        NSOperationQueue.mainQueue().addOperationWithBlock({
-                            AlertClass.showTopMessage(viewController: self, messageType: "NetworkError", messageSubType: err.rawValue, type: "", completion: nil)
-                        })
+                if self.retryCounter < CONNECTION_MAX_RETRY {
+                    self.retryCounter += 1
+                    self.getLockedStatus()
+                } else {
+                    self.retryCounter = 0
+                    
+                    NSOperationQueue.mainQueue().addOperationWithBlock({
+                        AlertClass.hideLoaingMessage(progressHUD: self.loading)
+                    })
+                    if let err = error {
+                        switch err {
+                        case .NoInternetAccess:
+                            fallthrough
+                        case .HostUnreachable:
+                            NSOperationQueue.mainQueue().addOperationWithBlock({
+                                AlertClass.showTopMessage(viewController: self, messageType: "NetworkError", messageSubType: err.rawValue, type: "error", completion: nil)
+                            })
+                        default:
+                            NSOperationQueue.mainQueue().addOperationWithBlock({
+                                AlertClass.showTopMessage(viewController: self, messageType: "NetworkError", messageSubType: err.rawValue, type: "", completion: nil)
+                            })
+                        }
                     }
                 }
-                
         }
     }
     
@@ -310,12 +326,20 @@ class LoginViewController: UIViewController, UITextFieldDelegate {
                 if error == HTTPErrorType.Refresh {
                     self.getProfile()
                 } else {
-                    NSOperationQueue.mainQueue().addOperationWithBlock({
-                        AlertClass.hideLoaingMessage(progressHUD: self.loading)
-                        AlertClass.showTopMessage(viewController: self, messageType: "HTTPError", messageSubType: (error?.toString())!, type: "error", completion: nil)
-                    })
+                    if self.retryCounter < CONNECTION_MAX_RETRY {
+                        self.retryCounter += 1
+                        self.getProfile()
+                    } else {
+                        self.retryCounter = 0
+                        
+                        NSOperationQueue.mainQueue().addOperationWithBlock({
+                            AlertClass.hideLoaingMessage(progressHUD: self.loading)
+                            AlertClass.showTopMessage(viewController: self, messageType: "HTTPError", messageSubType: (error?.toString())!, type: "error", completion: nil)
+                        })
+                    }
                 }
             } else {
+                self.retryCounter = 0
                 if let localData = data {
                     if let status = localData["status"].string {
                         switch status {
@@ -334,10 +358,10 @@ class LoginViewController: UIViewController, UITextFieldDelegate {
                             
                             
                             if UserDefaultsSingleton.sharedInstance.hasProfile() {
-                                self.syncWithServer()
-//                                NSOperationQueue.mainQueue().addOperationWithBlock({
-//                                    self.performSegueWithIdentifier("HomeVCSegue", sender: self)
-//                                })
+//                                self.syncWithServer()
+                                NSOperationQueue.mainQueue().addOperationWithBlock({
+                                    self.performSegueWithIdentifier("HomeVCSegue", sender: self)
+                                })
                             } else {
                                 // profile not created --> try again
                             }
@@ -364,285 +388,308 @@ class LoginViewController: UIViewController, UITextFieldDelegate {
                 }
             }
         }, failure: { (error) in
-            NSOperationQueue.mainQueue().addOperationWithBlock({
-                AlertClass.hideLoaingMessage(progressHUD: self.loading)
-            })
-            
-            if let err = error {
-                switch err {
-                case .NoInternetAccess:
-                    fallthrough
-                case .HostUnreachable:
-                    NSOperationQueue.mainQueue().addOperationWithBlock({
-                        AlertClass.showTopMessage(viewController: self, messageType: "NetworkError", messageSubType: err.rawValue, type: "error", completion: nil)
-                    })
-                    
-//                    case .NoInternetAccess:
-//                        AlertClass.showSimpleErrorMessage(viewController: self, messageType: "NetworkError", messageSubType: err.rawValue, completion: {
-//                            self.getProfile()
-//                        })
-                default:
-                    NSOperationQueue.mainQueue().addOperationWithBlock({
-                        AlertClass.showTopMessage(viewController: self, messageType: "NetworkError", messageSubType: err.rawValue, type: "", completion: nil)
-                    })
-                }
-            }
-        })
-    }
-    
-    private func syncWithServer() {
-        NSOperationQueue.mainQueue().addOperationWithBlock {
-            self.loading = AlertClass.showLoadingMessage(viewController: self)
-            UIApplication.sharedApplication().networkActivityIndicatorVisible = true
-        }
-        
-        PurchasedRestAPIClass.getPurchasedList({ (data, error) in
-            NSOperationQueue.mainQueue().addOperationWithBlock {
-                UIApplication.sharedApplication().networkActivityIndicatorVisible = false
-                AlertClass.hideLoaingMessage(progressHUD: self.loading)
-            }
-            
-            if error != HTTPErrorType.Success {
-                if error == HTTPErrorType.Refresh {
-                    self.syncWithServer()
-                } else {
-                    AlertClass.showTopMessage(viewController: self, messageType: "HTTPError", messageSubType: (error?.toString())!, type: "error", completion: nil)
-                }
+            if self.retryCounter < CONNECTION_MAX_RETRY {
+                self.retryCounter += 1
+                self.getProfile()
             } else {
-                if let localData = data {
-                    if let status = localData["status"].string {
-                        switch status {
-                        case "OK":
-                            
-                            var purchasedId: [Int] = []
-                            let records = localData["records"].arrayValue
-                            let username = UserDefaultsSingleton.sharedInstance.getUsername()!
-                            for record in records {
-                                let id = record["id"].intValue
-                                let downloaded = record["downloaded"].intValue
-                                let createdStr = record["created"].stringValue
-                                let created = FormatterSingleton.sharedInstance.UTCDateFormatter.dateFromString(createdStr)
-                                
-                                if PurchasedModelHandler.getByUsernameAndId(id: id, username: username) != nil {
-                                    PurchasedModelHandler.updateDownloadTimes(username: username, id: id, newDownloadTimes: downloaded)
-                                    
-                                    let target = record["target"]
-                                    let targetType = target["product_type"].stringValue
-                                    
-                                    if targetType == "Entrance" {
-                                        let uniqueId = target["unique_key"].stringValue
-                                        let month = target["month"].intValue
-                                        
-                                        if let item = EntranceModelHandler.getByUsernameAndId(id: uniqueId, username: username) {
-                                            if item.month != month {
-                                                EntranceModelHandler.correctMonthOfEntrance(id: uniqueId, username: username, month: month)
-                                            }
-                                        }
-                                    }
-                                    
-                                } else {
-                                    // does not exist
-                                    let target = record["target"]
-                                    let targetType = target["product_type"].stringValue
-                                    
-                                    if targetType == "Entrance" {
-                                        let uniqueId = target["unique_key"].stringValue
-                                        
-                                        if PurchasedModelHandler.add(id: id, username: username, isDownloaded: false, downloadTimes: downloaded, isImageDownlaoded: false, purchaseType: targetType, purchaseUniqueId: uniqueId, created: created!) == true {
-                                            
-                                            // save entrance
-                                            let org = target["organization"]["title"].stringValue
-                                            let type = target["entrance_type"]["title"].stringValue
-                                            let setName = target["entrance_set"]["title"].stringValue
-                                            let group = target["entrance_set"]["group"]["title"].stringValue
-                                            let setId = target["entrance_set"]["id"].intValue
-                                            let bookletsCount = target["booklets_count"].intValue
-                                            let duration = target["duration"].intValue
-                                            let year = target["year"].intValue
-                                            let month = target["month"].intValue
-                                            let extraData = JSON(data: target["extra_data"].stringValue.dataUsingEncoding(NSUTF8StringEncoding)!)
-                                            
-                                            let lastPablishedStr = target["last_published"].stringValue
-                                            let lastPublished = FormatterSingleton.sharedInstance.UTCDateFormatter.dateFromString(lastPablishedStr)
-                                            
-                                            if EntranceModelHandler.getByUsernameAndId(id: uniqueId, username: username) == nil {
-                                                let entrance = EntranceStructure(entranceTypeTitle: type, entranceOrgTitle: org, entranceGroupTitle: group, entranceSetTitle: setName, entranceSetId: setId, entranceExtraData: extraData, entranceBookletCounts: bookletsCount, entranceYear: year, entranceMonth: month, entranceDuration: duration, entranceUniqueId: uniqueId, entranceLastPublished: lastPublished)
-                                                
-                                                EntranceModelHandler.add(entrance: entrance, username: username)
-                                                
-                                            }
-                                        }
-                                    }
-                                }
-                                
-                                purchasedId.append(id)
-                            }
-                            
-                            // delete all that does not exist
-                            let deletedItems = PurchasedModelHandler.getAllPurchasedNotIn(username: username, ids: purchasedId)
-                            
-                            if deletedItems.count > 0 {
-                                for item in deletedItems {
-                                    self.deletePurchaseData(uniqueId: item.productUniqueId)
-                                    
-                                    // delete product and purchase
-                                    if item.productType == "Entrance" {
-                                        if EntranceModelHandler.removeById(id: item.productUniqueId, username: username) == true {
-                                            
-                                            EntranceOpenedCountModelHandler.removeByEntranceId(entranceUniqueId: item.productUniqueId)
-                                            EntranceQuestionStarredModelHandler.removeByEntranceId(entranceUniqueId: item.productUniqueId)
-                                            PurchasedModelHandler.removeById(username: username, id: item.id)
-                                            
-                                        }
-                                    }
-                                }
-                            }
-                            
-                            self.downloadImages(purchasedId)
-                            
-                        case "Error":
-                            if let errorType = localData["error_type"].string {
-                                switch errorType {
-                                case "EmptyArray":
-                                    // All purchased must be deleted
-                                    let username = UserDefaultsSingleton.sharedInstance.getUsername()!
-                                    let items = PurchasedModelHandler.getAllPurchased(username: username)
-                                    for item in items {
-                                        self.deletePurchaseData(uniqueId: item.productUniqueId)
-                                        
-                                        // delete product and purchase
-                                        if item.productType == "Entrance" {
-                                            if EntranceModelHandler.removeById(id: item.productUniqueId, username: username) == true {
-                                                
-                                                EntranceOpenedCountModelHandler.removeByEntranceId(entranceUniqueId: item.productUniqueId)
-                                                EntranceQuestionStarredModelHandler.removeByEntranceId(entranceUniqueId: item.productUniqueId)
-                                                PurchasedModelHandler.removeById(username: username, id: item.id)
-                                                
-                                            }
-                                        }
-                                    }
-                                    break
-                                default:
-                                    break
-                                    //                                    AlertClass.showSimpleErrorMessage(viewController: self, messageType: "ErrorResult", messageSubType: errorType, completion: nil)
-                                }
-                            }
-                        default:
-                            break
-                        }
-                    }
-                }
-            }
-            
-            NSOperationQueue.mainQueue().addOperationWithBlock({
-                self.performSegueWithIdentifier("HomeVCSegue", sender: self)
-            })
-
-        }) { (error) in
-            NSOperationQueue.mainQueue().addOperationWithBlock {
-                UIApplication.sharedApplication().networkActivityIndicatorVisible = false
-                AlertClass.hideLoaingMessage(progressHUD: self.loading)
-            }
-            
-            if let err = error {
-                switch err {
-                case .NoInternetAccess:
-                    fallthrough
-                case .HostUnreachable:
-                    NSOperationQueue.mainQueue().addOperationWithBlock({
-                        AlertClass.showTopMessage(viewController: self, messageType: "NetworkError", messageSubType: err.rawValue, type: "error", completion: nil)
-                    })
-                    
-                    //                    AlertClass.showSimpleErrorMessage(viewController: self, messageType: "NetworkError", messageSubType: err.rawValue, completion: {
-                    //                        NSOperationQueue.mainQueue().addOperationWithBlock({
-                    //                            self.syncWithServer()
+                self.retryCounter = 0
+                
+                NSOperationQueue.mainQueue().addOperationWithBlock({
+                    AlertClass.hideLoaingMessage(progressHUD: self.loading)
+                })
+                
+                if let err = error {
+                    switch err {
+                    case .NoInternetAccess:
+                        fallthrough
+                    case .HostUnreachable:
+                        NSOperationQueue.mainQueue().addOperationWithBlock({
+                            AlertClass.showTopMessage(viewController: self, messageType: "NetworkError", messageSubType: err.rawValue, type: "error", completion: nil)
+                        })
+                        
+                        //                    case .NoInternetAccess:
+                        //                        AlertClass.showSimpleErrorMessage(viewController: self, messageType: "NetworkError", messageSubType: err.rawValue, completion: {
+                        //                            self.getProfile()
                     //                        })
-                //                    })
-                default:
-                    NSOperationQueue.mainQueue().addOperationWithBlock({
-                        AlertClass.showTopMessage(viewController: self, messageType: "NetworkError", messageSubType: err.rawValue, type: "", completion: nil)
-                    })
-                    //                    AlertClass.showSimpleErrorMessage(viewController: self, messageType: "NetworkError", messageSubType: err.rawValue, completion: nil)
-                }
-            }
-            
-            NSOperationQueue.mainQueue().addOperationWithBlock({
-                self.performSegueWithIdentifier("HomeVCSegue", sender: self)
-            })
-        }
-    }
-    
-    private func downloadImages(ids: [Int]) {
-        self.filemgr = NSFileManager.defaultManager()
-        let dirPaths = NSSearchPathForDirectoriesInDomains(.DocumentDirectory, .UserDomainMask, true)
-        
-        let docsDir = dirPaths[0] as NSString
-        let newDir = docsDir.stringByAppendingPathComponent("images")
-        
-        let username: String = UserDefaultsSingleton.sharedInstance.getUsername()!
-        let purchased = PurchasedModelHandler.getAllPurchasedIn(username: username, ids: ids)
-        for p in purchased {
-            if p.productType == "Entrance" {
-                if let entrance = EntranceModelHandler.getByUsernameAndId(id: p.productUniqueId, username: username) {
-                    downloadEsetImage(esetId: entrance.setId, rootDirectory: newDir)
-                }
-            }
-        }
-    }
-    
-    private func downloadEsetImage(esetId esetId: Int, rootDirectory: String) {
-        
-        MediaRestAPIClass.downloadEsetImageLocal(esetId, completion: {
-            fullPath, data, error in
-            
-            if error != .Success {
-                if error == HTTPErrorType.Refresh {
-                    self.downloadEsetImage(esetId: esetId, rootDirectory: rootDirectory)
-                } else {
-                    //                    print("error in downloaing image from \(fullPath!)")
-                }
-            } else {
-                if let myData = data {
-                    let esetDir = (rootDirectory as NSString).stringByAppendingPathComponent("eset")
-                    
-                    do {
-                        if self.filemgr?.fileExistsAtPath(esetDir) == false {
-                            try self.filemgr?.createDirectoryAtPath(esetDir, withIntermediateDirectories: true, attributes: nil)
-                        }
-                        
-                        let filePath = (esetDir as NSString).stringByAppendingPathComponent(String(esetId))
-                        
-                        if self.filemgr?.fileExistsAtPath(filePath) == true {
-                            try self.filemgr?.removeItemAtPath(filePath)
-                        }
-                        self.filemgr?.createFileAtPath(filePath, contents: myData, attributes: nil)
-                        
-                        
-                    } catch {
-                        
+                    default:
+                        NSOperationQueue.mainQueue().addOperationWithBlock({
+                            AlertClass.showTopMessage(viewController: self, messageType: "NetworkError", messageSubType: err.rawValue, type: "", completion: nil)
+                        })
                     }
                 }
             }
-            }, failure: { (error) in
         })
-        
     }
     
-    
-    private func deletePurchaseData(uniqueId uniqueId: String) {
-        let filemgr = NSFileManager.defaultManager()
-        let dirPaths = NSSearchPathForDirectoriesInDomains(.DocumentDirectory, .UserDomainMask, true)
-        
-        let docsDir = dirPaths[0] as NSString
-        let newDir = docsDir.stringByAppendingPathComponent(uniqueId)
-        
-        do {
-            
-            try filemgr.removeItemAtPath(newDir)
-        } catch {}
-    }
-
-    
+//    private func syncWithServer() {
+//        NSOperationQueue.mainQueue().addOperationWithBlock {
+//            self.loading = AlertClass.showLoadingMessage(viewController: self)
+//            UIApplication.sharedApplication().networkActivityIndicatorVisible = true
+//        }
+//        
+//        PurchasedRestAPIClass.getPurchasedList({ (data, error) in
+//            NSOperationQueue.mainQueue().addOperationWithBlock {
+//                UIApplication.sharedApplication().networkActivityIndicatorVisible = false
+//                AlertClass.hideLoaingMessage(progressHUD: self.loading)
+//            }
+//            
+//            if error != HTTPErrorType.Success {
+//                if error == HTTPErrorType.Refresh {
+//                    self.syncWithServer()
+//                } else {
+//                    if self.retryCounter < CONNECTION_MAX_RETRY {
+//                        self.retryCounter += 1
+//                        self.syncWithServer()
+//                    } else {
+//                        self.retryCounter = 0
+//                        
+//                        AlertClass.showTopMessage(viewController: self, messageType: "HTTPError", messageSubType: (error?.toString())!, type: "error", completion: nil)
+//                    }
+//                }
+//            } else {
+//                self.retryCounter = 0
+//                
+//                if let localData = data {
+//                    if let status = localData["status"].string {
+//                        switch status {
+//                        case "OK":
+//                            
+//                            var purchasedId: [Int] = []
+//                            let records = localData["records"].arrayValue
+//                            let username = UserDefaultsSingleton.sharedInstance.getUsername()!
+//                            for record in records {
+//                                let id = record["id"].intValue
+//                                let downloaded = record["downloaded"].intValue
+//                                let createdStr = record["created"].stringValue
+//                                let created = FormatterSingleton.sharedInstance.UTCDateFormatter.dateFromString(createdStr)
+//                                
+//                                if PurchasedModelHandler.getByUsernameAndId(id: id, username: username) != nil {
+//                                    PurchasedModelHandler.updateDownloadTimes(username: username, id: id, newDownloadTimes: downloaded)
+//                                    
+//                                    let target = record["target"]
+//                                    let targetType = target["product_type"].stringValue
+//                                    
+//                                    if targetType == "Entrance" {
+//                                        let uniqueId = target["unique_key"].stringValue
+//                                        let month = target["month"].intValue
+//                                        
+//                                        if let item = EntranceModelHandler.getByUsernameAndId(id: uniqueId, username: username) {
+//                                            if item.month != month {
+//                                                EntranceModelHandler.correctMonthOfEntrance(id: uniqueId, username: username, month: month)
+//                                            }
+//                                        }
+//                                    }
+//                                    
+//                                } else {
+//                                    // does not exist
+//                                    let target = record["target"]
+//                                    let targetType = target["product_type"].stringValue
+//                                    
+//                                    if targetType == "Entrance" {
+//                                        let uniqueId = target["unique_key"].stringValue
+//                                        
+//                                        if PurchasedModelHandler.add(id: id, username: username, isDownloaded: false, downloadTimes: downloaded, isImageDownlaoded: false, purchaseType: targetType, purchaseUniqueId: uniqueId, created: created!) == true {
+//                                            
+//                                            // save entrance
+//                                            let org = target["organization"]["title"].stringValue
+//                                            let type = target["entrance_type"]["title"].stringValue
+//                                            let setName = target["entrance_set"]["title"].stringValue
+//                                            let group = target["entrance_set"]["group"]["title"].stringValue
+//                                            let setId = target["entrance_set"]["id"].intValue
+//                                            let bookletsCount = target["booklets_count"].intValue
+//                                            let duration = target["duration"].intValue
+//                                            let year = target["year"].intValue
+//                                            let month = target["month"].intValue
+//                                            let extraData = JSON(data: target["extra_data"].stringValue.dataUsingEncoding(NSUTF8StringEncoding)!)
+//                                            
+//                                            let lastPablishedStr = target["last_published"].stringValue
+//                                            let lastPublished = FormatterSingleton.sharedInstance.UTCDateFormatter.dateFromString(lastPablishedStr)
+//                                            
+//                                            if EntranceModelHandler.getByUsernameAndId(id: uniqueId, username: username) == nil {
+//                                                let entrance = EntranceStructure(entranceTypeTitle: type, entranceOrgTitle: org, entranceGroupTitle: group, entranceSetTitle: setName, entranceSetId: setId, entranceExtraData: extraData, entranceBookletCounts: bookletsCount, entranceYear: year, entranceMonth: month, entranceDuration: duration, entranceUniqueId: uniqueId, entranceLastPublished: lastPublished)
+//                                                
+//                                                EntranceModelHandler.add(entrance: entrance, username: username)
+//                                                
+//                                            }
+//                                        }
+//                                    }
+//                                }
+//                                
+//                                purchasedId.append(id)
+//                            }
+//                            
+//                            // delete all that does not exist
+//                            let deletedItems = PurchasedModelHandler.getAllPurchasedNotIn(username: username, ids: purchasedId)
+//                            
+//                            if deletedItems.count > 0 {
+//                                for item in deletedItems {
+//                                    self.deletePurchaseData(uniqueId: item.productUniqueId)
+//                                    
+//                                    // delete product and purchase
+//                                    if item.productType == "Entrance" {
+//                                        if EntranceModelHandler.removeById(id: item.productUniqueId, username: username) == true {
+//                                            
+//                                            EntranceOpenedCountModelHandler.removeByEntranceId(entranceUniqueId: item.productUniqueId, username: username)
+//                                            EntranceQuestionStarredModelHandler.removeByEntranceId(entranceUniqueId: item.productUniqueId, username: username)
+//                                            PurchasedModelHandler.removeById(username: username, id: item.id)
+//                                            
+//                                        }
+//                                    }
+//                                }
+//                            }
+//                            
+//                            self.downloadImages(purchasedId)
+//                            
+//                        case "Error":
+//                            if let errorType = localData["error_type"].string {
+//                                switch errorType {
+//                                case "EmptyArray":
+//                                    // All purchased must be deleted
+//                                    let username = UserDefaultsSingleton.sharedInstance.getUsername()!
+//                                    let items = PurchasedModelHandler.getAllPurchased(username: username)
+//                                    for item in items {
+//                                        self.deletePurchaseData(uniqueId: item.productUniqueId)
+//                                        
+//                                        // delete product and purchase
+//                                        if item.productType == "Entrance" {
+//                                            if EntranceModelHandler.removeById(id: item.productUniqueId, username: username) == true {
+//                                                
+//                                                EntranceOpenedCountModelHandler.removeByEntranceId(entranceUniqueId: item.productUniqueId, username: username)
+//                                                EntranceQuestionStarredModelHandler.removeByEntranceId(entranceUniqueId: item.productUniqueId, username: username)
+//                                                PurchasedModelHandler.removeById(username: username, id: item.id)
+//                                                
+//                                            }
+//                                        }
+//                                    }
+//                                    break
+//                                default:
+//                                    break
+//                                    //                                    AlertClass.showSimpleErrorMessage(viewController: self, messageType: "ErrorResult", messageSubType: errorType, completion: nil)
+//                                }
+//                            }
+//                        default:
+//                            break
+//                        }
+//                    }
+//                }
+//            }
+//            
+//            NSOperationQueue.mainQueue().addOperationWithBlock({
+//                self.performSegueWithIdentifier("HomeVCSegue", sender: self)
+//            })
+//
+//        }) { (error) in
+//            NSOperationQueue.mainQueue().addOperationWithBlock {
+//                UIApplication.sharedApplication().networkActivityIndicatorVisible = false
+//                AlertClass.hideLoaingMessage(progressHUD: self.loading)
+//            }
+//            
+//            if self.retryCounter < CONNECTION_MAX_RETRY {
+//                self.retryCounter += 1
+//                self.syncWithServer()
+//            } else {
+//                self.retryCounter = 0
+//                
+//                if let err = error {
+//                    switch err {
+//                    case .NoInternetAccess:
+//                        fallthrough
+//                    case .HostUnreachable:
+//                        NSOperationQueue.mainQueue().addOperationWithBlock({
+//                            AlertClass.showTopMessage(viewController: self, messageType: "NetworkError", messageSubType: err.rawValue, type: "error", completion: nil)
+//                        })
+//                        
+//                        //                    AlertClass.showSimpleErrorMessage(viewController: self, messageType: "NetworkError", messageSubType: err.rawValue, completion: {
+//                        //                        NSOperationQueue.mainQueue().addOperationWithBlock({
+//                        //                            self.syncWithServer()
+//                        //                        })
+//                    //                    })
+//                    default:
+//                        NSOperationQueue.mainQueue().addOperationWithBlock({
+//                            AlertClass.showTopMessage(viewController: self, messageType: "NetworkError", messageSubType: err.rawValue, type: "", completion: nil)
+//                        })
+//                        //                    AlertClass.showSimpleErrorMessage(viewController: self, messageType: "NetworkError", messageSubType: err.rawValue, completion: nil)
+//                    }
+//                }
+//                
+//                NSOperationQueue.mainQueue().addOperationWithBlock({
+//                    self.performSegueWithIdentifier("HomeVCSegue", sender: self)
+//                })
+//            }
+//        }
+//    }
+//    
+//    private func downloadImages(ids: [Int]) {
+//        self.filemgr = NSFileManager.defaultManager()
+//        let dirPaths = NSSearchPathForDirectoriesInDomains(.DocumentDirectory, .UserDomainMask, true)
+//        
+//        let docsDir = dirPaths[0] as NSString
+//        let newDir = docsDir.stringByAppendingPathComponent("images")
+//        
+//        let username: String = UserDefaultsSingleton.sharedInstance.getUsername()!
+//        let purchased = PurchasedModelHandler.getAllPurchasedIn(username: username, ids: ids)
+//        for p in purchased {
+//            if p.productType == "Entrance" {
+//                if let entrance = EntranceModelHandler.getByUsernameAndId(id: p.productUniqueId, username: username) {
+//                    downloadEsetImage(esetId: entrance.setId, rootDirectory: newDir)
+//                }
+//            }
+//        }
+//    }
+//    
+//    private func downloadEsetImage(esetId esetId: Int, rootDirectory: String) {
+//        
+//        MediaRestAPIClass.downloadEsetImageLocal(esetId, completion: {
+//            fullPath, data, error in
+//            
+//            if error != .Success {
+//                if error == HTTPErrorType.Refresh {
+//                    self.downloadEsetImage(esetId: esetId, rootDirectory: rootDirectory)
+//                } else {
+//                    //                    print("error in downloaing image from \(fullPath!)")
+//                }
+//            } else {
+//                if let myData = data {
+//                    let esetDir = (rootDirectory as NSString).stringByAppendingPathComponent("eset")
+//                    
+//                    do {
+//                        if self.filemgr?.fileExistsAtPath(esetDir) == false {
+//                            try self.filemgr?.createDirectoryAtPath(esetDir, withIntermediateDirectories: true, attributes: nil)
+//                        }
+//                        
+//                        let filePath = (esetDir as NSString).stringByAppendingPathComponent(String(esetId))
+//                        
+//                        if self.filemgr?.fileExistsAtPath(filePath) == true {
+//                            try self.filemgr?.removeItemAtPath(filePath)
+//                        }
+//                        self.filemgr?.createFileAtPath(filePath, contents: myData, attributes: nil)
+//                        
+//                        
+//                    } catch {
+//                        
+//                    }
+//                }
+//            }
+//            }, failure: { (error) in
+//        })
+//        
+//    }
+//    
+//    
+//    private func deletePurchaseData(uniqueId uniqueId: String) {
+//        let filemgr = NSFileManager.defaultManager()
+//        let dirPaths = NSSearchPathForDirectoriesInDomains(.DocumentDirectory, .UserDomainMask, true)
+//        
+//        let docsDir = dirPaths[0] as NSString
+//        let newDir = docsDir.stringByAppendingPathComponent(uniqueId)
+//        
+//        do {
+//            
+//            try filemgr.removeItemAtPath(newDir)
+//        } catch {}
+//    }
+//
+//    
     // MARK: - TextField Delegate Methods
     
     func textFieldDidBeginEditing(textField: UITextField) {
@@ -694,14 +741,13 @@ class LoginViewController: UIViewController, UITextFieldDelegate {
         view.endEditing(true)
     }
     
-    /*
     // MARK: - Navigation
 
-    // In a storyboard-based application, you will often want to do a little preparation before navigation
-    override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
-        // Get the new view controller using segue.destinationViewController.
-        // Pass the selected object to the new view controller.
+    override func prepareForSegue(segue: UIStoryboardSegue, sender: AnyObject?) {
+        if segue.identifier == "StartupVCSegue" {
+        } else if segue.identifier == "HomeVCSegue" {
+            SynchronizationSingleton.sharedInstance.startSync()
+        }
     }
-    */
 
 }

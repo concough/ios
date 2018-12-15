@@ -13,4 +13,5 @@ class EntranceOpenedCountModel: Object {
     dynamic var entranceUniqueId: String = ""
     dynamic var count: Int = 1
     dynamic var type: String = ""
+    dynamic var username: String = ""
 }

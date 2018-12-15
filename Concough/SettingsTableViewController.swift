@@ -15,6 +15,7 @@ class SettingsTableViewController: UITableViewController, ContactsProtocol {
     private var loading: MBProgressHUD?
     private var loadUrlString: String = ""
     private var inEditingMode: Bool = false
+    private var retryCounter = 0
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -99,11 +100,20 @@ class SettingsTableViewController: UITableViewController, ContactsProtocol {
                 if error == HTTPErrorType.Refresh {
                     self.editGradeButtonPressed(sender)
                 } else {
-                    NSOperationQueue.mainQueue().addOperationWithBlock({
-                        AlertClass.showTopMessage(viewController: self, messageType: "HTTPError", messageSubType: (error?.toString())!, type: "error", completion: nil)
-                    })
+                    if self.retryCounter < CONNECTION_MAX_RETRY {
+                        self.retryCounter += 1
+                        self.editGradeButtonPressed(sender)
+                    } else {
+                        self.retryCounter = 0
+                        
+                        NSOperationQueue.mainQueue().addOperationWithBlock({
+                            AlertClass.showTopMessage(viewController: self, messageType: "HTTPError", messageSubType: (error?.toString())!, type: "error", completion: nil)
+                        })
+                    }
                 }
             } else {
+                self.retryCounter = 0
+                
                 if let localData = data {
                     if let status = localData["status"].string {
                         switch status {
@@ -142,23 +152,31 @@ class SettingsTableViewController: UITableViewController, ContactsProtocol {
                 NSOperationQueue.mainQueue().addOperationWithBlock({
                     AlertClass.hideLoaingMessage(progressHUD: self.loading)
                 })
-                if let err = error {
-                    switch err {
-                    case .NoInternetAccess:
-                        fallthrough
-                    case .HostUnreachable:
-                        NSOperationQueue.mainQueue().addOperationWithBlock({
-                            AlertClass.showTopMessage(viewController: self, messageType: "NetworkError", messageSubType: err.rawValue, type: "error", completion: nil)
-                        })
-                        //                    AlertClass.showSimpleErrorMessage(viewController: self, messageType: "NetworkError", messageSubType: err.rawValue, completion: {
-                        //                        NSOperationQueue.mainQueue().addOperationWithBlock({
-                        //                            self.postProfile()
-                        //                        })
-                    //                    })
-                    default:
-                        NSOperationQueue.mainQueue().addOperationWithBlock({
-                            AlertClass.showTopMessage(viewController: self, messageType: "NetworkError", messageSubType: err.rawValue, type: "", completion: nil)
-                        })
+                
+                if self.retryCounter < CONNECTION_MAX_RETRY {
+                    self.retryCounter += 1
+                    self.editGradeButtonPressed(sender)
+                } else {
+                    self.retryCounter = 0
+                    
+                    if let err = error {
+                        switch err {
+                        case .NoInternetAccess:
+                            fallthrough
+                        case .HostUnreachable:
+                            NSOperationQueue.mainQueue().addOperationWithBlock({
+                                AlertClass.showTopMessage(viewController: self, messageType: "NetworkError", messageSubType: err.rawValue, type: "error", completion: nil)
+                            })
+                            //                    AlertClass.showSimpleErrorMessage(viewController: self, messageType: "NetworkError", messageSubType: err.rawValue, completion: {
+                            //                        NSOperationQueue.mainQueue().addOperationWithBlock({
+                            //                            self.postProfile()
+                            //                        })
+                        //                    })
+                        default:
+                            NSOperationQueue.mainQueue().addOperationWithBlock({
+                                AlertClass.showTopMessage(viewController: self, messageType: "NetworkError", messageSubType: err.rawValue, type: "", completion: nil)
+                            })
+                        }
                     }
                 }
         }
@@ -185,6 +203,12 @@ class SettingsTableViewController: UITableViewController, ContactsProtocol {
         NSOperationQueue.mainQueue().addOperationWithBlock({
             self.performSegueWithIdentifier("SettingsWebviewVCSegue", sender: self)
         })        
+    }
+    
+    public func reloadForSync() {
+        NSOperationQueue.mainQueue().addOperationWithBlock({
+            self.tableView.reloadData()
+        })
     }
     
     private func showChooseGradeDialog(values: [String:String]) {
@@ -242,11 +266,21 @@ class SettingsTableViewController: UITableViewController, ContactsProtocol {
                 if error == HTTPErrorType.Refresh {
                     self.acquireButtonPressed(isLogout)
                 } else {
-                    NSOperationQueue.mainQueue().addOperationWithBlock({
-                        AlertClass.showTopMessage(viewController: self, messageType: "HTTPError", messageSubType: (error?.toString())!, type: "error", completion: nil)
-                    })
+                    if self.retryCounter < CONNECTION_MAX_RETRY {
+                        self.retryCounter += 1
+                        self.acquireButtonPressed(isLogout)
+                        
+                    } else {
+                        self.retryCounter = 0
+                        
+                        NSOperationQueue.mainQueue().addOperationWithBlock({
+                            AlertClass.showTopMessage(viewController: self, messageType: "HTTPError", messageSubType: (error?.toString())!, type: "error", completion: nil)
+                        })
+                    }
                 }
             } else {
+                self.retryCounter = 0
+                
                 if let localData = data {
                     if let status = localData["status"].string {
                         switch status {
@@ -268,6 +302,8 @@ class SettingsTableViewController: UITableViewController, ContactsProtocol {
                             DeviceInformationSingleton.sharedInstance.setDeviceState(username, device_name: device_name, device_model: device_model, state: false, isMe: isMe)
                             
                             if let vc = self.storyboard?.instantiateViewControllerWithIdentifier("StartupVC") as? StartupViewController {
+                                SynchronizationSingleton.sharedInstance.stopSync()
+                                vc.returnFormVC = .FromLock
                                 NSOperationQueue.mainQueue().addOperationWithBlock({
                                     self.presentViewController(vc, animated: true, completion: nil)
                                 })
@@ -304,6 +340,10 @@ class SettingsTableViewController: UITableViewController, ContactsProtocol {
                         DeviceInformationSingleton.sharedInstance.clearAll(username)
                         
                         if let vc = self.storyboard?.instantiateViewControllerWithIdentifier("StartupVC") as? StartupViewController {
+                            SynchronizationSingleton.sharedInstance.stopSync()
+                            
+                            vc.returnFormVC = .FromLock
+                            
                             NSOperationQueue.mainQueue().addOperationWithBlock({
                                 self.presentViewController(vc, animated: true, completion: nil)
                             })
@@ -317,42 +357,53 @@ class SettingsTableViewController: UITableViewController, ContactsProtocol {
                 NSOperationQueue.mainQueue().addOperationWithBlock({
                     AlertClass.hideLoaingMessage(progressHUD: self.loading)
                 })
-                if let err = error {
-                    switch err {
-                    case .NoInternetAccess:
-                        fallthrough
-                    case .HostUnreachable:
-                        NSOperationQueue.mainQueue().addOperationWithBlock({
-                            AlertClass.showTopMessage(viewController: self, messageType: "NetworkError", messageSubType: err.rawValue, type: "error", completion: nil)
-                        })
-                        //                    AlertClass.showSimpleErrorMessage(viewController: self, messageType: "NetworkError", messageSubType: err.rawValue, completion: {
-                        //                        NSOperationQueue.mainQueue().addOperationWithBlock({
-                        //                            self.postProfile()
-                        //                        })
-                    //                    })
-                    default:
-                        NSOperationQueue.mainQueue().addOperationWithBlock({
-                            AlertClass.showTopMessage(viewController: self, messageType: "NetworkError", messageSubType: err.rawValue, type: "", completion: nil)
-                        })
-                    }
-                }
                 
-                if (isLogout) {
-                    let username = UserDefaultsSingleton.sharedInstance.getUsername()!
-                    if KeyChainAccessProxy.clearAllValue() && UserDefaultsSingleton.sharedInstance.clearAll() {
-                        
-                        TokenHandlerSingleton.sharedInstance.invalidateTokens()
-                        DeviceInformationSingleton.sharedInstance.clearAll(username)
-                        
-                        if let vc = self.storyboard?.instantiateViewControllerWithIdentifier("StartupVC") as? StartupViewController {
+                if self.retryCounter < CONNECTION_MAX_RETRY {
+                    self.retryCounter += 1
+                    self.acquireButtonPressed(isLogout)
+                    
+                } else {
+                    self.retryCounter = 0
+                    
+                    if let err = error {
+                        switch err {
+                        case .NoInternetAccess:
+                            fallthrough
+                        case .HostUnreachable:
                             NSOperationQueue.mainQueue().addOperationWithBlock({
-                                self.presentViewController(vc, animated: true, completion: nil)
+                                AlertClass.showTopMessage(viewController: self, messageType: "NetworkError", messageSubType: err.rawValue, type: "error", completion: nil)
+                            })
+                            //                    AlertClass.showSimpleErrorMessage(viewController: self, messageType: "NetworkError", messageSubType: err.rawValue, completion: {
+                            //                        NSOperationQueue.mainQueue().addOperationWithBlock({
+                            //                            self.postProfile()
+                            //                        })
+                        //                    })
+                        default:
+                            NSOperationQueue.mainQueue().addOperationWithBlock({
+                                AlertClass.showTopMessage(viewController: self, messageType: "NetworkError", messageSubType: err.rawValue, type: "", completion: nil)
                             })
                         }
                     }
                     
+                    if (isLogout) {
+                        let username = UserDefaultsSingleton.sharedInstance.getUsername()!
+                        if KeyChainAccessProxy.clearAllValue() && UserDefaultsSingleton.sharedInstance.clearAll() {
+                            
+                            TokenHandlerSingleton.sharedInstance.invalidateTokens()
+                            DeviceInformationSingleton.sharedInstance.clearAll(username)
+                            
+                            if let vc = self.storyboard?.instantiateViewControllerWithIdentifier("StartupVC") as? StartupViewController {
+                                SynchronizationSingleton.sharedInstance.stopSync()
+                                vc.returnFormVC = .FromLock
+                                
+                                NSOperationQueue.mainQueue().addOperationWithBlock({
+                                    self.presentViewController(vc, animated: true, completion: nil)
+                                })
+                            }
+                        }
+                        
+                    }
                 }
-                
         }
         
     }
@@ -388,11 +439,20 @@ class SettingsTableViewController: UITableViewController, ContactsProtocol {
                 if error == HTTPErrorType.Refresh {
                     self.contactsSelected(list: list)
                 } else {
-                    NSOperationQueue.mainQueue().addOperationWithBlock({
-                        AlertClass.showTopMessage(viewController: self, messageType: "HTTPError", messageSubType: (error?.toString())!, type: "error", completion: nil)
-                    })
+                    if self.retryCounter < CONNECTION_MAX_RETRY {
+                        self.retryCounter += 1
+                        self.contactsSelected(list: list)
+                    } else {
+                        self.retryCounter = 0
+                        
+                        NSOperationQueue.mainQueue().addOperationWithBlock({
+                            AlertClass.showTopMessage(viewController: self, messageType: "HTTPError", messageSubType: (error?.toString())!, type: "error", completion: nil)
+                        })
+                    }
                 }
             } else {
+                self.retryCounter = 0 
+                
                 if let localData = data {
                     if let status = localData["status"].string {
                         switch status {
@@ -407,23 +467,30 @@ class SettingsTableViewController: UITableViewController, ContactsProtocol {
                 }
             }            
         }) { (error) in
-            if let err = error {
-                switch err {
-                case .NoInternetAccess:
-                    fallthrough
-                case .HostUnreachable:
-                    NSOperationQueue.mainQueue().addOperationWithBlock({
-                        AlertClass.showTopMessage(viewController: self, messageType: "NetworkError", messageSubType: err.rawValue, type: "error", completion: nil)
-                    })
-                    //                            AlertClass.showSimpleErrorMessage(viewController: self, messageType: "NetworkError", messageSubType: err.rawValue, completion: {
-                    //                                NSOperationQueue.mainQueue().addOperationWithBlock({
-                    //                                    self.login()
-                    //                                })
-                //                            })
-                default:
-                    NSOperationQueue.mainQueue().addOperationWithBlock({
-                        AlertClass.showTopMessage(viewController: self, messageType: "NetworkError", messageSubType: err.rawValue, type: "", completion: nil)
-                    })
+            if self.retryCounter < CONNECTION_MAX_RETRY {
+                self.retryCounter += 1
+                self.contactsSelected(list: list)
+            } else {
+                self.retryCounter = 0
+                
+                if let err = error {
+                    switch err {
+                    case .NoInternetAccess:
+                        fallthrough
+                    case .HostUnreachable:
+                        NSOperationQueue.mainQueue().addOperationWithBlock({
+                            AlertClass.showTopMessage(viewController: self, messageType: "NetworkError", messageSubType: err.rawValue, type: "error", completion: nil)
+                        })
+                        //                            AlertClass.showSimpleErrorMessage(viewController: self, messageType: "NetworkError", messageSubType: err.rawValue, completion: {
+                        //                                NSOperationQueue.mainQueue().addOperationWithBlock({
+                        //                                    self.login()
+                        //                                })
+                    //                            })
+                    default:
+                        NSOperationQueue.mainQueue().addOperationWithBlock({
+                            AlertClass.showTopMessage(viewController: self, messageType: "NetworkError", messageSubType: err.rawValue, type: "", completion: nil)
+                        })
+                    }
                 }
             }
         }
@@ -435,13 +502,22 @@ class SettingsTableViewController: UITableViewController, ContactsProtocol {
             
             let purchasedItems = PurchasedModelHandler.getAllPurchased(username: username)
             for item in purchasedItems {
-                self.deletePurchaseData(uniqueId: item.productUniqueId)
+                self.deletePurchaseData(uniqueId: item.productUniqueId, username: username)
             
                 if PurchasedModelHandler.resetDownloadFlags(username: username, id: item.id) == true {
                     
-                    EntrancePackageHandler.removePackage(username: username, entranceUniqueId: item.productUniqueId)
-                    EntranceQuestionStarredModelHandler.removeByEntranceId(entranceUniqueId: item.productUniqueId)
-                    //EntranceOpenedCountModelHandler.removeByEntranceId(entranceUniqueId: item.productUniqueId)
+                    if item.productType == "Entrance" {
+                        EntrancePackageHandler.removePackage(username: username, entranceUniqueId: item.productUniqueId)
+                        EntranceQuestionStarredModelHandler.removeByEntranceId(entranceUniqueId: item.productUniqueId, username: username)
+                        EntranceOpenedCountModelHandler.removeByEntranceId(entranceUniqueId: item.productUniqueId, username: username)
+                        EntranceQuestionCommentModelHandler.removeAllCommentOfEnrance(entranceUniqueId: item.productUniqueId, username: username)
+                        
+                        EntranceLastVisitInfoModelHandler.removeByEntranceId(username: username, uniqueId: item.productUniqueId)
+                        EntranceQuestionCommentModelHandler.removeAllCommentOfEnrance(entranceUniqueId: item.productUniqueId, username: username)
+                        EntranceLessonExamModelHandler.removeAllExamsByEntranceId(username: username, entranceUniqueId: item.productUniqueId)
+                        EntranceQuestionExamStatModelHandler.removeAllStatsByEntranceId(username: username, entranceUniqueId: item.productUniqueId)
+                        
+                    }
                 }
             }
             
@@ -452,12 +528,22 @@ class SettingsTableViewController: UITableViewController, ContactsProtocol {
         }
     }
     
-    private func deletePurchaseData(uniqueId uniqueId: String) {
+    private func deletePurchaseData(uniqueId uniqueId: String, username: String) {
         let filemgr = NSFileManager.defaultManager()
         let dirPaths = NSSearchPathForDirectoriesInDomains(.DocumentDirectory, .UserDomainMask, true)
         
         let docsDir = dirPaths[0] as NSString
-        let newDir = docsDir.stringByAppendingPathComponent(uniqueId)
+        
+        let pathAdd = "\(username)_\(uniqueId)"
+        var newDir = docsDir.stringByAppendingPathComponent(pathAdd)
+        
+        var isDir: ObjCBool = false
+        if filemgr.fileExistsAtPath(newDir, isDirectory: &isDir) == true {
+            if isDir {
+            }
+        } else {
+            newDir = docsDir.stringByAppendingPathComponent(uniqueId)
+        }
         
         do {
             
@@ -482,11 +568,21 @@ class SettingsTableViewController: UITableViewController, ContactsProtocol {
                 if error == HTTPErrorType.Refresh {
                     self.changeGrade(title: title, titleString: titleString)
                 } else {
-                    NSOperationQueue.mainQueue().addOperationWithBlock({
-                        AlertClass.showTopMessage(viewController: self, messageType: "HTTPError", messageSubType: (error?.toString())!, type: "error", completion: nil)
-                    })
+                    if self.retryCounter < CONNECTION_MAX_RETRY {
+                        self.retryCounter += 1
+                        self.changeGrade(title: title, titleString: titleString)
+                    } else {
+                        self.retryCounter = 0
+                        
+                        NSOperationQueue.mainQueue().addOperationWithBlock({
+                            AlertClass.showTopMessage(viewController: self, messageType: "HTTPError", messageSubType: (error?.toString())!, type: "error", completion: nil)
+                        })
+                        
+                    }
                 }
             } else {
+                self.retryCounter = 0
+                
                 if let localData = data {
                     if let status = localData["status"].string {
                         switch status {
@@ -531,23 +627,31 @@ class SettingsTableViewController: UITableViewController, ContactsProtocol {
             NSOperationQueue.mainQueue().addOperationWithBlock({
                 AlertClass.hideLoaingMessage(progressHUD: self.loading)
             })
-            if let err = error {
-                switch err {
-                case .NoInternetAccess:
-                    fallthrough
-                case .HostUnreachable:
-                    NSOperationQueue.mainQueue().addOperationWithBlock({
-                        AlertClass.showTopMessage(viewController: self, messageType: "NetworkError", messageSubType: err.rawValue, type: "error", completion: nil)
-                    })
-                    //                    AlertClass.showSimpleErrorMessage(viewController: self, messageType: "NetworkError", messageSubType: err.rawValue, completion: {
-                    //                        NSOperationQueue.mainQueue().addOperationWithBlock({
-                    //                            self.postProfile()
-                    //                        })
-                //                    })
-                default:
-                    NSOperationQueue.mainQueue().addOperationWithBlock({
-                        AlertClass.showTopMessage(viewController: self, messageType: "NetworkError", messageSubType: err.rawValue, type: "", completion: nil)
-                    })
+            
+            if self.retryCounter < CONNECTION_MAX_RETRY {
+                self.retryCounter += 1
+                self.changeGrade(title: title, titleString: titleString)
+            } else {
+                self.retryCounter = 0
+
+                if let err = error {
+                    switch err {
+                    case .NoInternetAccess:
+                        fallthrough
+                    case .HostUnreachable:
+                        NSOperationQueue.mainQueue().addOperationWithBlock({
+                            AlertClass.showTopMessage(viewController: self, messageType: "NetworkError", messageSubType: err.rawValue, type: "error", completion: nil)
+                        })
+                        //                    AlertClass.showSimpleErrorMessage(viewController: self, messageType: "NetworkError", messageSubType: err.rawValue, completion: {
+                        //                        NSOperationQueue.mainQueue().addOperationWithBlock({
+                        //                            self.postProfile()
+                        //                        })
+                    //                    })
+                    default:
+                        NSOperationQueue.mainQueue().addOperationWithBlock({
+                            AlertClass.showTopMessage(viewController: self, messageType: "NetworkError", messageSubType: err.rawValue, type: "", completion: nil)
+                        })
+                    }
                 }
             }
         }
@@ -590,9 +694,9 @@ class SettingsTableViewController: UITableViewController, ContactsProtocol {
             return 1
         case 1:
             if self.inEditingMode {
-                return 5
+                return 6
             }
-            return 4
+            return 5
         case 2:
             return 3
         default:
@@ -634,6 +738,20 @@ class SettingsTableViewController: UITableViewController, ContactsProtocol {
                     return cell
                 }
             case 1:
+                if let cell = self.tableView.dequeueReusableCellWithIdentifier("SETTINGS_WALLET", forIndexPath: indexPath) as? SettingsWalletTableViewCell {
+                    
+                    var cost = 0
+                    if UserDefaultsSingleton.sharedInstance.hasProfile() {
+                        if UserDefaultsSingleton.sharedInstance.hasWallet() {
+                            cost = UserDefaultsSingleton.sharedInstance.getWalletInfo()!.cash
+                        }
+                        
+                    }
+                    
+                    cell.configureCell(cost: cost)
+                    return cell
+                }
+            case 2:
                 if self.inEditingMode {
                     if let cell = self.tableView.dequeueReusableCellWithIdentifier("SETTINGS_‌OPTION", forIndexPath: indexPath) as? SettingsOptionTableViewCell {
                         
@@ -647,7 +765,7 @@ class SettingsTableViewController: UITableViewController, ContactsProtocol {
                         return cell
                     }
                 }
-            case 2:
+            case 3:
                 if self.inEditingMode {
                     if let cell = self.tableView.dequeueReusableCellWithIdentifier("SETTINGS_‌OPTION", forIndexPath: indexPath) as? SettingsOptionTableViewCell {
                         
@@ -657,17 +775,17 @@ class SettingsTableViewController: UITableViewController, ContactsProtocol {
                 } else {
                     if let cell = self.tableView.dequeueReusableCellWithIdentifier("SETTINGS_‌OPTION", forIndexPath: indexPath) as? SettingsOptionTableViewCell {
                         
-                        cell.configureCell(optionTitle: "گزارش خطا", type: "normal", showAccessory: true, iconName: "BugFilled")
+                        cell.configureCell(optionTitle: "پیشنهاد و انتقاد", type: "normal", showAccessory: true, iconName: "BugFilled")
                         return cell
                     }
                 }
-            case 3:
+            case 4:
                 if let cell = self.tableView.dequeueReusableCellWithIdentifier("SETTINGS_‌OPTION", forIndexPath: indexPath) as? SettingsOptionTableViewCell {
                     
                     cell.configureCell(optionTitle: "قفل کردن دستگاه", type: "option", showAccessory: false, iconName: "PhonelinkLockFilled")
                     return cell
                 }
-            case 4:
+            case 5:
                 if let cell = self.tableView.dequeueReusableCellWithIdentifier("SETTINGS_LOGOUT", forIndexPath: indexPath) as? SettingsLogoutTableViewCell {
                     
                     cell.configureCell(optionTitle: "خروج از سیستم", iconName: "LogoutFilled")
@@ -733,7 +851,7 @@ class SettingsTableViewController: UITableViewController, ContactsProtocol {
     override func tableView(tableView: UITableView, didSelectRowAtIndexPath indexPath: NSIndexPath) {
         if indexPath.section == 1 {
             switch indexPath.row {
-            case 1:
+            case 2:
                 if self.inEditingMode {
                     NSOperationQueue.mainQueue().addOperationWithBlock({
                         self.performSegueWithIdentifier("ChangePasswordVCSegue", sender: self)
@@ -744,7 +862,7 @@ class SettingsTableViewController: UITableViewController, ContactsProtocol {
                         self.performSegueWithIdentifier("SettingsWebviewVCSegue", sender: self)
                     })
                 }
-            case 2:
+            case 3:
                 if self.inEditingMode {
                     NSOperationQueue.mainQueue().addOperationWithBlock {
                         AlertClass.showAlertMessageCustom(viewController: self, title: "آیا مطمینید؟", message: "تنها اطلاعات محصولات حذف خواهند شد و مجددا قابل بارگذاری است", yesButtonTitle: "بله", noButtonTitle: "خیر", completion: {
@@ -757,13 +875,11 @@ class SettingsTableViewController: UITableViewController, ContactsProtocol {
                         self.performSegueWithIdentifier("SettingsReportBugVCSegue", sender: self)
                     })
                 }
-            case 3:
+            case 4:
                 self.acquireButtonPressed()
                 //                NSOperationQueue.mainQueue().addOperationWithBlock {
                 //                    self.performSegueWithIdentifier("InviteFriendsVCSegue", sender: self)
             //                }
-            case 4:
-                break
             default:
                 break
             }

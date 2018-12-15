@@ -21,6 +21,8 @@ class BasketSingleton {
     private var _totalCost: Int = 0
     private var _sales: [(id: Int, created: NSDate, cost: Int, target: Any, type: String)] = []
     
+    private var retryCounter = 0
+    
     private init() {
         self._queue = NSOperationQueue()
         self._lock = NSLock()
@@ -68,9 +70,18 @@ class BasketSingleton {
                 if error == HTTPErrorType.Refresh {
                     self.loadBasketItems(viewController: viewController, completion: completion)
                 } else {
-                    AlertClass.showTopMessage(viewController: viewController, messageType: "HTTPError", messageSubType: (error?.toString())!, type: "error", completion: nil)
+                    if self.retryCounter < CONNECTION_MAX_RETRY {
+                        self.retryCounter += 1
+                        self.loadBasketItems(viewController: viewController, completion: completion)
+                    } else {
+                        self.retryCounter = 0
+                        
+                        AlertClass.showTopMessage(viewController: viewController, messageType: "HTTPError", messageSubType: (error?.toString())!, type: "error", completion: nil)
+                    }
                 }
             } else {
+                self.retryCounter = 0
+                
                 if let localData = data {
                     if let status = localData["status"].string {
                         switch status {
@@ -155,30 +166,36 @@ class BasketSingleton {
                     AlertClass.hideLoaingMessage(progressHUD: vc.loading)
                 }
             }
-            
-            if let err = error {
-                switch err {
-                case .NoInternetAccess:
-                    fallthrough
-                case .HostUnreachable:
-                    NSOperationQueue.mainQueue().addOperationWithBlock({
-                        AlertClass.showTopMessage(viewController: viewController, messageType: "NetworkError", messageSubType: err.rawValue, type: "error", completion: nil)
-                    })
-                    
-//                    AlertClass.showSimpleErrorMessage(viewController: viewController, messageType: "NetworkError", messageSubType: err.rawValue, completion: {
-//                        let operation = NSBlockOperation(block: {
-//                            self.loadBasketItems(viewController: viewController, completion: completion)
-//                        })
-//                        self._queue.addOperation(operation)
-//                    })
-                default:
-                    NSOperationQueue.mainQueue().addOperationWithBlock({
-                        AlertClass.showTopMessage(viewController: viewController, messageType: "NetworkError", messageSubType: err.rawValue, type: "", completion: nil)
-                    })
-//                    AlertClass.showSimpleErrorMessage(viewController: viewController, messageType: "NetworkError", messageSubType: err.rawValue, completion: nil)
+
+            if self.retryCounter < CONNECTION_MAX_RETRY {
+                self.retryCounter += 1
+                self.loadBasketItems(viewController: viewController, completion: completion)
+            } else {
+                self.retryCounter = 0
+                
+                if let err = error {
+                    switch err {
+                    case .NoInternetAccess:
+                        fallthrough
+                    case .HostUnreachable:
+                        NSOperationQueue.mainQueue().addOperationWithBlock({
+                            AlertClass.showTopMessage(viewController: viewController, messageType: "NetworkError", messageSubType: err.rawValue, type: "error", completion: nil)
+                        })
+                        
+                        //                    AlertClass.showSimpleErrorMessage(viewController: viewController, messageType: "NetworkError", messageSubType: err.rawValue, completion: {
+                        //                        let operation = NSBlockOperation(block: {
+                        //                            self.loadBasketItems(viewController: viewController, completion: completion)
+                        //                        })
+                        //                        self._queue.addOperation(operation)
+                    //                    })
+                    default:
+                        NSOperationQueue.mainQueue().addOperationWithBlock({
+                            AlertClass.showTopMessage(viewController: viewController, messageType: "NetworkError", messageSubType: err.rawValue, type: "", completion: nil)
+                        })
+                        //                    AlertClass.showSimpleErrorMessage(viewController: viewController, messageType: "NetworkError", messageSubType: err.rawValue, completion: nil)
+                    }
                 }
             }
-            
         }
     }
     
@@ -188,18 +205,27 @@ class BasketSingleton {
                 if error == HTTPErrorType.Refresh {
                     self.createBasket(viewController: viewController, completion: completion, failure: failure)
                 } else {
-                    NSOperationQueue.mainQueue().addOperationWithBlock({
-                        AlertClass.showTopMessage(viewController: viewController, messageType: "HTTPError", messageSubType: (error?.toString())!, type: "error", completion: nil)
-                    })
-                    
-                    if let fail = failure {
-                        fail()
-                        return
+                    if self.retryCounter < CONNECTION_MAX_RETRY {
+                        self.retryCounter += 1
+                        self.createBasket(viewController: viewController, completion: completion, failure: failure)
+                    } else {
+                        self.retryCounter = 0
+                        
+                        NSOperationQueue.mainQueue().addOperationWithBlock({
+                            AlertClass.showTopMessage(viewController: viewController, messageType: "HTTPError", messageSubType: (error?.toString())!, type: "error", completion: nil)
+                        })
+                        
+                        if let fail = failure {
+                            fail()
+                            return
+                        }
                     }
                 }
                 
 //                AlertClass.showSimpleErrorMessage(viewController: viewController, messageType: "HTTPError", messageSubType: (error?.toString())!, completion: nil)
             } else {
+                self.retryCounter = 0
+                
                 if let localData = data {
                     if let status = localData["status"].string {
                         switch status {
@@ -232,34 +258,40 @@ class BasketSingleton {
                 }
             }
         }) { (error) in
-            if let err = error {
-                switch err {
-                case .HostUnreachable:
-                    fallthrough
-                case .NoInternetAccess:
-                    NSOperationQueue.mainQueue().addOperationWithBlock({
-                        AlertClass.showTopMessage(viewController: viewController, messageType: "NetworkError", messageSubType: err.rawValue, type: "error", completion: nil)
-                    })
-                    
-//                    AlertClass.showSimpleErrorMessage(viewController: viewController, messageType: "NetworkError", messageSubType: err.rawValue, completion: {
-//                        let operation = NSBlockOperation(block: {
-//                            self.createBasket(viewController: viewController, completion: completion)
-//                        })
-//                        self._queue.addOperation(operation)
-//                    })
-                default:
-                    NSOperationQueue.mainQueue().addOperationWithBlock({
-                        AlertClass.showTopMessage(viewController: viewController, messageType: "NetworkError", messageSubType: err.rawValue, type: "", completion: nil)
-                    })
-                    
-//                    AlertClass.showSimpleErrorMessage(viewController: viewController, messageType: "NetworkError", messageSubType: err.rawValue, completion: nil)
-                }
-                if let fail = failure {
-                    fail()
-                    return
+            if self.retryCounter < CONNECTION_MAX_RETRY {
+                self.retryCounter += 1
+                self.createBasket(viewController: viewController, completion: completion, failure: failure)
+            } else {
+                self.retryCounter = 0
+                
+                if let err = error {
+                    switch err {
+                    case .HostUnreachable:
+                        fallthrough
+                    case .NoInternetAccess:
+                        NSOperationQueue.mainQueue().addOperationWithBlock({
+                            AlertClass.showTopMessage(viewController: viewController, messageType: "NetworkError", messageSubType: err.rawValue, type: "error", completion: nil)
+                        })
+                        
+                        //                    AlertClass.showSimpleErrorMessage(viewController: viewController, messageType: "NetworkError", messageSubType: err.rawValue, completion: {
+                        //                        let operation = NSBlockOperation(block: {
+                        //                            self.createBasket(viewController: viewController, completion: completion)
+                        //                        })
+                        //                        self._queue.addOperation(operation)
+                    //                    })
+                    default:
+                        NSOperationQueue.mainQueue().addOperationWithBlock({
+                            AlertClass.showTopMessage(viewController: viewController, messageType: "NetworkError", messageSubType: err.rawValue, type: "", completion: nil)
+                        })
+                        
+                        //                    AlertClass.showSimpleErrorMessage(viewController: viewController, messageType: "NetworkError", messageSubType: err.rawValue, completion: nil)
+                    }
+                    if let fail = failure {
+                        fail()
+                        return
+                    }
                 }
             }
-            
         }
     }
     
@@ -298,17 +330,26 @@ class BasketSingleton {
                         if error == HTTPErrorType.Refresh {
                             self.addSale(viewController: viewController, target: target, type: type, completion: completion, failure: failure)
                         } else {
-                            NSOperationQueue.mainQueue().addOperationWithBlock({
-                                AlertClass.showTopMessage(viewController: viewController, messageType: "HTTPError", messageSubType: (error?.toString())!, type: "error", completion: nil)
+                            if self.retryCounter < CONNECTION_MAX_RETRY {
+                                self.retryCounter += 1
+                                self.addSale(viewController: viewController, target: target, type: type, completion: completion, failure: failure)
+                            } else {
+                                self.retryCounter = 0
                                 
-                                if let fail = failure {
-                                    fail()
-                                }
-                            })
+                                NSOperationQueue.mainQueue().addOperationWithBlock({
+                                    AlertClass.showTopMessage(viewController: viewController, messageType: "HTTPError", messageSubType: (error?.toString())!, type: "error", completion: nil)
+                                    
+                                    if let fail = failure {
+                                        fail()
+                                    }
+                                })
+                            }
                         }
                         
 //                        AlertClass.showSimpleErrorMessage(viewController: viewController, messageType: "HTTPError", messageSubType: (error?.toString())!, completion: nil)
                     } else {
+                        self.retryCounter = 0
+                        
                         if let localData = data {
                             if let status = localData["status"].string {
                                 switch status {
@@ -397,32 +438,38 @@ class BasketSingleton {
                         }
                     }
                 }, failure: { (error) in
-                    if let err = error {
-                        switch err {
-                        case .HostUnreachable:
-                            fallthrough
-                        case .NoInternetAccess:
-                            NSOperationQueue.mainQueue().addOperationWithBlock({
-                                AlertClass.showTopMessage(viewController: viewController, messageType: "NetworkError", messageSubType: err.rawValue, type: "error", completion: nil)
-                            })
-                            
-//                            AlertClass.showSimpleErrorMessage(viewController: viewController, messageType: "NetworkError", messageSubType: err.rawValue, completion: {
-//                                let operation = NSBlockOperation(block: {
-//                                    self.addSale(viewController: viewController, target: target, type: type, completion: completion)
-//                                })
-//                                self._queue.addOperation(operation)
-//                            })
-                        default:
-                            NSOperationQueue.mainQueue().addOperationWithBlock({
-                                AlertClass.showTopMessage(viewController: viewController, messageType: "NetworkError", messageSubType: err.rawValue, type: "", completion: nil)
-                            })
-//                            AlertClass.showSimpleErrorMessage(viewController: viewController, messageType: "NetworkError", messageSubType: err.rawValue, completion: nil)
+                    if self.retryCounter < CONNECTION_MAX_RETRY {
+                        self.retryCounter += 1
+                        self.addSale(viewController: viewController, target: target, type: type, completion: completion, failure: failure)
+                    } else {
+                        self.retryCounter = 0
+                        
+                        if let err = error {
+                            switch err {
+                            case .HostUnreachable:
+                                fallthrough
+                            case .NoInternetAccess:
+                                NSOperationQueue.mainQueue().addOperationWithBlock({
+                                    AlertClass.showTopMessage(viewController: viewController, messageType: "NetworkError", messageSubType: err.rawValue, type: "error", completion: nil)
+                                })
+                                
+                                //                            AlertClass.showSimpleErrorMessage(viewController: viewController, messageType: "NetworkError", messageSubType: err.rawValue, completion: {
+                                //                                let operation = NSBlockOperation(block: {
+                                //                                    self.addSale(viewController: viewController, target: target, type: type, completion: completion)
+                                //                                })
+                                //                                self._queue.addOperation(operation)
+                            //                            })
+                            default:
+                                NSOperationQueue.mainQueue().addOperationWithBlock({
+                                    AlertClass.showTopMessage(viewController: viewController, messageType: "NetworkError", messageSubType: err.rawValue, type: "", completion: nil)
+                                })
+                                //                            AlertClass.showSimpleErrorMessage(viewController: viewController, messageType: "NetworkError", messageSubType: err.rawValue, completion: nil)
+                            }
+                        }
+                        if let fail = failure {
+                            fail()
                         }
                     }
-                    if let fail = failure {
-                        fail()
-                    }
-                    
                 })
         }
     }
@@ -469,16 +516,26 @@ class BasketSingleton {
                         self.removeSaleById(viewController: viewController, saleId: saleId, completion: completion, failure: failure)
                         return
                     } else {
-                        NSOperationQueue.mainQueue().addOperationWithBlock({
-                            AlertClass.showTopMessage(viewController: viewController, messageType: "HTTPError", messageSubType: (error?.toString())!, type: "error", completion: nil)
-                        })
-                        if let fail = failure {
-                            fail()
+                        if self.retryCounter < CONNECTION_MAX_RETRY {
+                            self.retryCounter += 1
+                            self.removeSaleById(viewController: viewController, saleId: saleId, completion: completion, failure: failure)
                             return
+                        } else {
+                            self.retryCounter = 0
+                            
+                            NSOperationQueue.mainQueue().addOperationWithBlock({
+                                AlertClass.showTopMessage(viewController: viewController, messageType: "HTTPError", messageSubType: (error?.toString())!, type: "error", completion: nil)
+                            })
+                            if let fail = failure {
+                                fail()
+                                return
+                            }
                         }
                     }
 //                    AlertClass.showSimpleErrorMessage(viewController: viewController, messageType: "HTTPError", messageSubType: (error?.toString())!, completion: nil)
                 } else {
+                    self.retryCounter = 0
+                    
                     if let localData = data {
                         if let status = localData["status"].string {
                             switch status {
@@ -529,32 +586,40 @@ class BasketSingleton {
                     }
                 }
             }, failure: { (error) in
-                if let err = error {
-                    switch err {
-                    case .HostUnreachable:
-                        fallthrough
-                    case .NoInternetAccess:
-                        NSOperationQueue.mainQueue().addOperationWithBlock({
-                            AlertClass.showTopMessage(viewController: viewController, messageType: "NetworkError", messageSubType: err.rawValue, type: "error", completion: nil)
-                        })
-                        
-//                        AlertClass.showSimpleErrorMessage(viewController: viewController, messageType: "NetworkError", messageSubType: err.rawValue, completion: {
-//                            let operation = NSBlockOperation(block: {
-//                                self.removeSaleById(viewController: viewController, saleId: saleId, completion: completion)
-//                            })
-//                            self._queue.addOperation(operation)
-//                        })
-                    default:
-                        NSOperationQueue.mainQueue().addOperationWithBlock({
-                            AlertClass.showTopMessage(viewController: viewController, messageType: "NetworkError", messageSubType: err.rawValue, type: "", completion: nil)
-                        })
-//                        AlertClass.showSimpleErrorMessage(viewController: viewController, messageType: "NetworkError", messageSubType: err.rawValue, completion: nil)
-                    }
-                }
-                
-                if let fail = failure {
-                    fail()
+                if self.retryCounter < CONNECTION_MAX_RETRY {
+                    self.retryCounter += 1
+                    self.removeSaleById(viewController: viewController, saleId: saleId, completion: completion, failure: failure)
                     return
+                } else {
+                    self.retryCounter = 0
+                    
+                    if let err = error {
+                        switch err {
+                        case .HostUnreachable:
+                            fallthrough
+                        case .NoInternetAccess:
+                            NSOperationQueue.mainQueue().addOperationWithBlock({
+                                AlertClass.showTopMessage(viewController: viewController, messageType: "NetworkError", messageSubType: err.rawValue, type: "error", completion: nil)
+                            })
+                            
+                            //                        AlertClass.showSimpleErrorMessage(viewController: viewController, messageType: "NetworkError", messageSubType: err.rawValue, completion: {
+                            //                            let operation = NSBlockOperation(block: {
+                            //                                self.removeSaleById(viewController: viewController, saleId: saleId, completion: completion)
+                            //                            })
+                            //                            self._queue.addOperation(operation)
+                        //                        })
+                        default:
+                            NSOperationQueue.mainQueue().addOperationWithBlock({
+                                AlertClass.showTopMessage(viewController: viewController, messageType: "NetworkError", messageSubType: err.rawValue, type: "", completion: nil)
+                            })
+                            //                        AlertClass.showSimpleErrorMessage(viewController: viewController, messageType: "NetworkError", messageSubType: err.rawValue, completion: nil)
+                        }
+                    }
+                    
+                    if let fail = failure {
+                        fail()
+                        return
+                    }
                 }
             })
         }
@@ -578,13 +643,22 @@ class BasketSingleton {
                     if error == HTTPErrorType.Refresh {
                         self.checkout(viewController: viewController, completion: completion, redirectCompletion: redirectCompletion)
                     } else {
-                        NSOperationQueue.mainQueue().addOperationWithBlock({
-                            AlertClass.showTopMessage(viewController: viewController, messageType: "HTTPError", messageSubType: (error?.toString())!, type: "error", completion: nil)
-                        })
+                        if self.retryCounter < CONNECTION_MAX_RETRY {
+                            self.retryCounter += 1
+                            self.checkout(viewController: viewController, completion: completion, redirectCompletion: redirectCompletion)
+                        } else {
+                            self.retryCounter = 0
+                            
+                            NSOperationQueue.mainQueue().addOperationWithBlock({
+                                AlertClass.showTopMessage(viewController: viewController, messageType: "HTTPError", messageSubType: (error?.toString())!, type: "error", completion: nil)
+                            })
+                        }
                     }
                     
 //                    AlertClass.showSimpleErrorMessage(viewController: viewController, messageType: "HTTPError", messageSubType: (error?.toString())!, completion: nil)
                 } else {
+                    self.retryCounter = 0
+                    
                     if let localData = data {
                         if let status = localData["status"].string {
                             switch status {
@@ -679,30 +753,36 @@ class BasketSingleton {
                         }
                     }
                     
-                    if let err = error {
-                        switch err {
-                        case .HostUnreachable:
-                            fallthrough
-                        case .NoInternetAccess:
-                            NSOperationQueue.mainQueue().addOperationWithBlock({
-                                AlertClass.showTopMessage(viewController: viewController, messageType: "NetworkError", messageSubType: err.rawValue, type: "error", completion: nil)
-                            })
-                            
-//                            AlertClass.showSimpleErrorMessage(viewController: viewController, messageType: "NetworkError", messageSubType: err.rawValue, completion: {
-//                                let operation = NSBlockOperation(block: {
-//                                    self.checkout(viewController: viewController, completion: completion)
-//                                })
-//                                self._queue.addOperation(operation)
-//                            })
-                        default:
-                            NSOperationQueue.mainQueue().addOperationWithBlock({
-                                AlertClass.showTopMessage(viewController: viewController, messageType: "NetworkError", messageSubType: err.rawValue, type: "", completion: nil)
-                            })
-                            
-//                            AlertClass.showSimpleErrorMessage(viewController: viewController, messageType: "NetworkError", messageSubType: err.rawValue, completion: nil)
+                    if self.retryCounter < CONNECTION_MAX_RETRY {
+                        self.retryCounter += 1
+                        self.checkout(viewController: viewController, completion: completion, redirectCompletion: redirectCompletion)
+                    } else {
+                        self.retryCounter = 0
+                        
+                        if let err = error {
+                            switch err {
+                            case .HostUnreachable:
+                                fallthrough
+                            case .NoInternetAccess:
+                                NSOperationQueue.mainQueue().addOperationWithBlock({
+                                    AlertClass.showTopMessage(viewController: viewController, messageType: "NetworkError", messageSubType: err.rawValue, type: "error", completion: nil)
+                                })
+                                
+                                //                            AlertClass.showSimpleErrorMessage(viewController: viewController, messageType: "NetworkError", messageSubType: err.rawValue, completion: {
+                                //                                let operation = NSBlockOperation(block: {
+                                //                                    self.checkout(viewController: viewController, completion: completion)
+                                //                                })
+                                //                                self._queue.addOperation(operation)
+                            //                            })
+                            default:
+                                NSOperationQueue.mainQueue().addOperationWithBlock({
+                                    AlertClass.showTopMessage(viewController: viewController, messageType: "NetworkError", messageSubType: err.rawValue, type: "", completion: nil)
+                                })
+                                
+                                //                            AlertClass.showSimpleErrorMessage(viewController: viewController, messageType: "NetworkError", messageSubType: err.rawValue, completion: nil)
+                            }
                         }
                     }
-                    
             })
     }
 
@@ -724,13 +804,22 @@ class BasketSingleton {
                 if error == HTTPErrorType.Refresh {
                     self.verifyCheckout(viewController: viewController, completion: completion)
                 } else {
-                    NSOperationQueue.mainQueue().addOperationWithBlock({
-                        AlertClass.showTopMessage(viewController: viewController, messageType: "HTTPError", messageSubType: (error?.toString())!, type: "error", completion: nil)
-                    })
+                    if self.retryCounter < CONNECTION_MAX_RETRY {
+                        self.retryCounter += 1
+                        self.verifyCheckout(viewController: viewController, completion: completion)
+                    } else {
+                        self.retryCounter = 0
+                        
+                        NSOperationQueue.mainQueue().addOperationWithBlock({
+                            AlertClass.showTopMessage(viewController: viewController, messageType: "HTTPError", messageSubType: (error?.toString())!, type: "error", completion: nil)
+                        })
+                        
+                    }
                 }
-                
                 //                    AlertClass.showSimpleErrorMessage(viewController: viewController, messageType: "HTTPError", messageSubType: (error?.toString())!, completion: nil)
             } else {
+                self.retryCounter = 0
+                
                 if let localData = data {
                     if let status = localData["status"].string {
                         switch status {
@@ -799,30 +888,36 @@ class BasketSingleton {
                     }
                 }
                 
-                if let err = error {
-                    switch err {
-                    case .HostUnreachable:
-                        fallthrough
-                    case .NoInternetAccess:
-                        NSOperationQueue.mainQueue().addOperationWithBlock({
-                            AlertClass.showTopMessage(viewController: viewController, messageType: "NetworkError", messageSubType: err.rawValue, type: "error", completion: nil)
-                        })
-                        
-                        //                            AlertClass.showSimpleErrorMessage(viewController: viewController, messageType: "NetworkError", messageSubType: err.rawValue, completion: {
-                        //                                let operation = NSBlockOperation(block: {
-                        //                                    self.checkout(viewController: viewController, completion: completion)
-                        //                                })
-                        //                                self._queue.addOperation(operation)
-                    //                            })
-                    default:
-                        NSOperationQueue.mainQueue().addOperationWithBlock({
-                            AlertClass.showTopMessage(viewController: viewController, messageType: "NetworkError", messageSubType: err.rawValue, type: "", completion: nil)
-                        })
-                        
-                        //                            AlertClass.showSimpleErrorMessage(viewController: viewController, messageType: "NetworkError", messageSubType: err.rawValue, completion: nil)
+                if self.retryCounter < CONNECTION_MAX_RETRY {
+                    self.retryCounter += 1
+                    self.verifyCheckout(viewController: viewController, completion: completion)
+                } else {
+                    self.retryCounter = 0
+                    
+                    if let err = error {
+                        switch err {
+                        case .HostUnreachable:
+                            fallthrough
+                        case .NoInternetAccess:
+                            NSOperationQueue.mainQueue().addOperationWithBlock({
+                                AlertClass.showTopMessage(viewController: viewController, messageType: "NetworkError", messageSubType: err.rawValue, type: "error", completion: nil)
+                            })
+                            
+                            //                            AlertClass.showSimpleErrorMessage(viewController: viewController, messageType: "NetworkError", messageSubType: err.rawValue, completion: {
+                            //                                let operation = NSBlockOperation(block: {
+                            //                                    self.checkout(viewController: viewController, completion: completion)
+                            //                                })
+                            //                                self._queue.addOperation(operation)
+                        //                            })
+                        default:
+                            NSOperationQueue.mainQueue().addOperationWithBlock({
+                                AlertClass.showTopMessage(viewController: viewController, messageType: "NetworkError", messageSubType: err.rawValue, type: "", completion: nil)
+                            })
+                            
+                            //                            AlertClass.showSimpleErrorMessage(viewController: viewController, messageType: "NetworkError", messageSubType: err.rawValue, completion: nil)
+                        }
                     }
                 }
-                
         })
     }
     

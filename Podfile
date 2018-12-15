@@ -22,6 +22,7 @@ target 'Concough' do
     pod 'ReachabilitySwift', '~> 2.4'
     pod 'CocoaSecurity'
     pod 'NSUserDefaults+SevenSecurityLayers'
+    pod 'Charts', '~> 2.3.1'
 end
 
 #

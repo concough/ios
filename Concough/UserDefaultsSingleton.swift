@@ -91,4 +91,32 @@ class UserDefaultsSingleton {
         }
         return false
     }
+    
+    func clearWallet() {
+        self._settings.removeObjectForKey("Wallet.Created")
+        self._settings.removeObjectForKey("Wallet.Cash")
+        self._settings.removeObjectForKey("Wallet.Updated")
+    }
+    
+    func hasWallet() -> Bool {
+        if let value = self.getValue(key: "Wallet.Created") as? Bool {
+            return value
+        }
+        return false
+    }
+
+    func getWalletInfo() -> (cash: Int, updated: NSDate)? {
+        if let cash = self.getValue(key: "Wallet.Cash") as? Int,
+            let updated = self.getValue(key: "Wallet.Updated") as? NSDate {
+            return (cash: cash, updated: updated)
+        }
+        return nil
+    }
+    
+    func setWalletInfo(cash cash: Int, updated: NSDate) {
+        self.setValue(cash, key: "Wallet.Cash")
+        self.setValue(updated, key: "Wallet.Updated")
+        self.setValue(true, key: "Wallet.Created")
+        
+    }
 }

@@ -21,6 +21,7 @@ class HomeTableViewController: UITableViewController, DZNEmptyDataSetDelegate, D
     private var selectedActivityIndex: Int = -1
     private var rightBarButtonItem: BBBadgeBarButtonItem!
     private var loading: MBProgressHUD?
+    private var retryCounter = 0
     
     let queue = NSOperationQueue()
     var oldOperation: NSBlockOperation? = nil
@@ -49,7 +50,7 @@ class HomeTableViewController: UITableViewController, DZNEmptyDataSetDelegate, D
     }
     
     override func viewDidAppear(animated: Bool) {
-        self.setupBarButton()
+//        self.setupBarButton()
         
         // uitableview refresh control setup
         if self.refreshControl == nil {
@@ -77,22 +78,24 @@ class HomeTableViewController: UITableViewController, DZNEmptyDataSetDelegate, D
 
     override func numberOfSectionsInTableView(tableView: UITableView) -> Int {
         // #warning Incomplete implementation, return the number of sections
+//        if self.moreFeedExist {
+//            return 2
+//        }
+        
         return 1
+
     }
 
     override func tableView(tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        // #warning Incomplete implementation, return the number of rows
         if self.moreFeedExist {
-            return activityList.count + 1
+            return self.activityList.count + 1
         }
-        
-        return activityList.count
+        return self.activityList.count
     }
 
     
     override func tableView(tableView: UITableView, cellForRowAtIndexPath indexPath: NSIndexPath) -> UITableViewCell {
-        
-        if indexPath.row == activityList.count {
+        if indexPath.row == self.activityList.count {
             if let cell = self.tableView.dequeueReusableCellWithIdentifier("ACTIVITY_UPDATE", forIndexPath: indexPath) as? ActivityUpdateTableViewCell {
                 cell.cellConfigure()
                 return cell
@@ -109,6 +112,9 @@ class HomeTableViewController: UITableViewController, DZNEmptyDataSetDelegate, D
                     
                     cell.tag = indexPath.row
                     cell.cellConfigure(indexPath, target: target)
+                    cell.downloadEsetImage(activity.target["entrance_set"]["id"].intValue, indexPath: indexPath)
+                
+                
                     return cell
                 }
                 
@@ -120,6 +126,20 @@ class HomeTableViewController: UITableViewController, DZNEmptyDataSetDelegate, D
                     
                     cell.tag = indexPath.row
                     cell.cellConfigure(indexPath, target: target)
+                    cell.downloadEsetImage(activity.target["entrance_set"]["id"].intValue, indexPath: indexPath)
+                    
+                    return cell
+                }
+
+            case "ENTRANCE_MULTI":
+                let target = activity.target
+                
+                if let cell = self.tableView.dequeueReusableCellWithIdentifier(activity.activityType, forIndexPath: indexPath) as? EntranceMultiTableViewCell {
+                    
+                    cell.tag = indexPath.row
+                    cell.cellConfigure(indexPath, target: target)
+                    cell.downloadEsetImage(activity.target["entrances"][0]["entrance_set"]["id"].intValue, indexPath: indexPath)
+                    
                     return cell
                 }
                 
@@ -150,35 +170,37 @@ class HomeTableViewController: UITableViewController, DZNEmptyDataSetDelegate, D
 
     override func tableView(tableView: UITableView, willDisplayCell cell: UITableViewCell, forRowAtIndexPath indexPath: NSIndexPath) {
         
-        if indexPath.row < activityList.count {
-            let lastSectionIndex = tableView.numberOfSections - 1
-            let lastRowIndex = tableView.numberOfRowsInSection(lastSectionIndex) - 5 - 1
-            
-            let activity = activityList[indexPath.row] as ConcoughActivity
-            
-            switch activity.activityType {
-            case "ENTRANCE_CREATE":
-                if let cell1 = cell as? EntranceCreateTableViewCell {
-                    cell1.downloadEsetImage(activity.target["entrance_set"]["id"].intValue, indexPath: indexPath)
+        if indexPath.section == 0 {
+            if indexPath.row < activityList.count {
+                let lastSectionIndex = 0
+                let lastRowIndex = tableView.numberOfRowsInSection(lastSectionIndex) - 6
+                
+                //            let activity = activityList[indexPath.row] as ConcoughActivity
+                
+                //            switch activity.activityType {
+                //            case "ENTRANCE_CREATE":
+                //                if let cell1 = cell as? EntranceCreateTableViewCell {
+                //                    cell1.downloadEsetImage(activity.target["entrance_set"]["id"].intValue, indexPath: indexPath)
+                //                }
+                //            case "ENTRANCE_UPDATE":
+                //                if let cell1 = cell as? EntranceUpdateTableViewCell {
+                //                    cell1.downloadEsetImage(activity.target["entrance_set"]["id"].intValue, indexPath: indexPath)
+                //                }
+                //            default:
+                //                break
+                //            }
+                
+                if ((indexPath.section == lastSectionIndex) && (indexPath.row == lastRowIndex)) {
+                    // must load more
+                    if self.moreFeedExist == true {
+                        // get last item of activity feed
+                        let activity = self.activityList[lastRowIndex + 4]
+                        let last_time = activity.createdStr
+                        
+                        loadFeeds(next: last_time)
+                    }
                 }
-            case "ENTRANCE_UPDATE":
-                if let cell1 = cell as? EntranceUpdateTableViewCell {
-                    cell1.downloadEsetImage(activity.target["entrance_set"]["id"].intValue, indexPath: indexPath)
-                }
-            default:
-                break
-            }
-            
-            if ((indexPath.section == lastSectionIndex) && (indexPath.row == lastRowIndex)) {
-                // must load more
-                if self.moreFeedExist == true {
-                    // get last item of activity feed
-                    let activity = self.activityList[lastRowIndex + 4]
-                    let last_time = activity.createdStr
-                    
-                    loadFeeds(next: last_time)
-                }
-            }
+            }            
         }
     }
     
@@ -192,15 +214,20 @@ class HomeTableViewController: UITableViewController, DZNEmptyDataSetDelegate, D
                 NSOperationQueue.mainQueue().addOperationWithBlock {
                     self.performSegueWithIdentifier("EntranceDetailVCSegue", sender: self)
                 }                
+            } else if activity.activityType == "ENTRANCE_MULTI" {
+                self.selectedActivityIndex = indexPath.row
+                NSOperationQueue.mainQueue().addOperationWithBlock {
+                    self.performSegueWithIdentifier("EntranceMultiDetailVCSegue", sender: self)
+                }
             }
         }
     }
     
     // MARK: - Actions
     @IBAction func basketButtonPressed(sender: AnyObject) {
-        NSOperationQueue.mainQueue().addOperationWithBlock {
-            self.performSegueWithIdentifier("BasketCheckoutVCSegue", sender: self)
-        }
+//        NSOperationQueue.mainQueue().addOperationWithBlock {
+//            self.performSegueWithIdentifier("BasketCheckoutVCSegue", sender: self)
+//        }
     }
 
     @IBAction func ArchiveButtonPressed(sender: UIBarButtonItem) {
@@ -252,17 +279,17 @@ class HomeTableViewController: UITableViewController, DZNEmptyDataSetDelegate, D
         
         DataRestAPIClass.updateActivity(next: next, completion: {
             refresh, data, error in
-                        
-            NSOperationQueue.mainQueue().addOperationWithBlock {
-                self.navigationItem.title = "کنکوق"
-                self.refreshControl?.endRefreshing()
-                AlertClass.hideLoaingMessage(progressHUD: self.loading)
-                UIApplication.sharedApplication().networkActivityIndicatorVisible = false
-            }
             
             if let err = error {
                 switch err {
                 case .Success:
+                    NSOperationQueue.mainQueue().addOperationWithBlock {
+                        self.navigationItem.title = "کنکوق"
+                        self.refreshControl?.endRefreshing()
+                        AlertClass.hideLoaingMessage(progressHUD: self.loading)
+                        UIApplication.sharedApplication().networkActivityIndicatorVisible = false
+                    }
+                    self.retryCounter = 0
                     var localActivityList = [ConcoughActivity]()
                     
                     if let jsonData = data where jsonData.count > 0 {
@@ -273,8 +300,10 @@ class HomeTableViewController: UITableViewController, DZNEmptyDataSetDelegate, D
                             let t = item["target"]
                             let c:NSDate = FormatterSingleton.sharedInstance.UTCDateFormatter.dateFromString(cStr)!
                             
-                            let con = ConcoughActivity(created: c, createdStr: cStr, activityType: aType, target: t)
-                            localActivityList.append(con)
+                            if SUPPORT_ACTIVITY_TYPES.contains(aType) {
+                                let con = ConcoughActivity(created: c, createdStr: cStr, activityType: aType, target: t)
+                                localActivityList.append(con)
+                            }
                         }
                         
                         if refresh {
@@ -300,30 +329,50 @@ class HomeTableViewController: UITableViewController, DZNEmptyDataSetDelegate, D
                     self.queue.addOperation(operation)
                     
                 default:
+                    if self.retryCounter < CONNECTION_MAX_RETRY {
+                        self.retryCounter += 1
+                        self.loadFeeds(next: next)
+                    } else {
+                        self.retryCounter = 0
+                        
+                        NSOperationQueue.mainQueue().addOperationWithBlock {
+                            self.navigationItem.title = "کنکوق"
+                            AlertClass.hideLoaingMessage(progressHUD: self.loading)
+                            self.refreshControl?.endRefreshing()
+                            UIApplication.sharedApplication().networkActivityIndicatorVisible = false
+                        }
+                    }
                     break
                 }
             }
         }, failure: { (error) in
             if let err = error {
-                NSOperationQueue.mainQueue().addOperationWithBlock {
-                    self.navigationItem.title = "کنکوق"
-                    AlertClass.hideLoaingMessage(progressHUD: self.loading)
-                    self.refreshControl?.endRefreshing()
-                    UIApplication.sharedApplication().networkActivityIndicatorVisible = false
-                }
-                
-                switch err {
-                case .NoInternetAccess:
-                    fallthrough
-                case .HostUnreachable:
-                    AlertClass.showTopMessage(viewController: self, messageType: "NetworkError", messageSubType: err.rawValue, type: "error", completion: nil)
-//                    AlertClass.showSimpleErrorMessage(viewController: self, messageType: "NetworkError", messageSubType: err.rawValue, completion: {
-//                    })
-                default:
-                    NSOperationQueue.mainQueue().addOperationWithBlock({ 
-                        AlertClass.showTopMessage(viewController: self, messageType: "NetworkError", messageSubType: err.rawValue, type: "", completion: nil)
-                    })
-                    break
+                if self.retryCounter < CONNECTION_MAX_RETRY {
+                    self.retryCounter += 1
+                    self.loadFeeds(next: next)
+                } else {
+                    self.retryCounter = 0
+                    
+                    NSOperationQueue.mainQueue().addOperationWithBlock {
+                        self.navigationItem.title = "کنکوق"
+                        AlertClass.hideLoaingMessage(progressHUD: self.loading)
+                        self.refreshControl?.endRefreshing()
+                        UIApplication.sharedApplication().networkActivityIndicatorVisible = false
+                    }
+                    
+                    switch err {
+                    case .NoInternetAccess:
+                        fallthrough
+                    case .HostUnreachable:
+                        AlertClass.showTopMessage(viewController: self, messageType: "NetworkError", messageSubType: err.rawValue, type: "error", completion: nil)
+    //                    AlertClass.showSimpleErrorMessage(viewController: self, messageType: "NetworkError", messageSubType: err.rawValue, completion: {
+    //                    })
+                    default:
+                        NSOperationQueue.mainQueue().addOperationWithBlock({ 
+                            AlertClass.showTopMessage(viewController: self, messageType: "NetworkError", messageSubType: err.rawValue, type: "", completion: nil)
+                        })
+                        break
+                    }
                 }
             }
         })
@@ -367,6 +416,15 @@ class HomeTableViewController: UITableViewController, DZNEmptyDataSetDelegate, D
                 let activity = self.activityList[self.selectedActivityIndex]
                 let uniqueId = activity.target["unique_key"].stringValue
                 vc.entranceUniqueId = uniqueId
+            }
+        } else if segue.identifier == "EntranceMultiDetailVCSegue" {
+            if let vc = segue.destinationViewController as? EntranceMultiDetailTableViewController {
+                // get entrance unique id
+                let activity = self.activityList[self.selectedActivityIndex]
+                let uniqueId = activity.target["unique_key"].stringValue
+                vc.uniqueId = uniqueId
+                vc.target = activity.target
+                vc.actType = activity.activityType
             }
         }
     }

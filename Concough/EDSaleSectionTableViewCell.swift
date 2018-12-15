@@ -38,8 +38,8 @@ class EDSaleSectionTableViewCell: UITableViewCell {
     
     internal func configureCell(saleData saleData: EntranceSaleStructure?, statData: EntranceStatStructure?, buttonState: Bool, basketItemCount: Int? = nil) {
         
-        if (saleData!.cost! != 0) {
-            self.costLabel.text = FormatterSingleton.sharedInstance.NumberFormatter.stringFromNumber(saleData!.cost!)! + " تومان"
+        if (saleData!.costBon! != 0) {
+            self.costLabel.text = FormatterSingleton.sharedInstance.NumberFormatter.stringFromNumber(saleData!.costBon!)!
         } else {
             self.costLabel.text = "رایگان"
             self.costLabel.textColor = UIColor(netHex: RED_COLOR_HEX, alpha: 1.0)
@@ -74,7 +74,7 @@ class EDSaleSectionTableViewCell: UITableViewCell {
         self.buyButton.enabled = true
         if state == false {
             self.buyButton.setTitleColor(UIColor(netHex: BLUE_COLOR_HEX, alpha: 1.0), forState: .Normal)
-            self.buyButton.setTitle("+ سبد خرید", forState: .Normal)
+            self.buyButton.setTitle("خرید آزمون", forState: .Normal)
             self.buyButton.layer.cornerRadius = 5.0
             self.buyButton.layer.masksToBounds = true
             self.buyButton.layer.borderWidth = 1.0

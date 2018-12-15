@@ -16,7 +16,7 @@ class RealmSingleton {
     
     private init() {
         
-        var config = Realm.Configuration(schemaVersion: 3, migrationBlock: { (migration, oldSchemaVersion) in
+        var config = Realm.Configuration(schemaVersion: 5, migrationBlock: { (migration, oldSchemaVersion) in
             if (oldSchemaVersion < 1) {
                 migration.enumerate(DeviceInformationModel.className(), { (oldObject, newObject) in
                     newObject!["isMe"] = true
@@ -32,6 +32,20 @@ class RealmSingleton {
             if (oldSchemaVersion < 3) {
                 migration.enumerate(EntranceModel.className(), { (oldObject, newObject) in
                     newObject!["month"] = 0
+                })
+            }
+            if (oldSchemaVersion < 4) {
+                migration.enumerate(EntranceStarredQuestionModel.className(), { (oldObject, newObject) in
+                    newObject!["username"] = UserDefaultsSingleton.sharedInstance.getUsername()!
+                })
+                migration.enumerate(EntranceOpenedCountModel.className(), { (oldObject, newObject) in
+                    newObject!["username"] = UserDefaultsSingleton.sharedInstance.getUsername()!
+                })
+            }
+            
+            if oldSchemaVersion < 5 {
+                migration.enumerate(EntranceLessonExamModel.className() , { (oldObject, newObject) in
+                    newObject!["bookletOrder"] = 1                    
                 })
             }
         })

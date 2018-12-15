@@ -24,7 +24,7 @@ class ArchiveTableViewController: UITableViewController, EHHorizontalSelectionVi
     private var rightBarButtonItem: BBBadgeBarButtonItem!
     private var loading: MBProgressHUD?
     private var isRotating = false
-   
+    
     private var typeTitle: String?
     private var selectedTableIndex: Int = -1
     private var selectedEntranceTypeIndex: Int = -1
@@ -36,6 +36,7 @@ class ArchiveTableViewController: UITableViewController, EHHorizontalSelectionVi
     private var groups: [String: Int]! = [:]
     private var sets: [ArchiveEsetStructure]! = []
     private var isTableViewEmpty: Bool = true
+    private var retryCounter = 0
     
     //private var groupsRepo: [Int: [String: Int]] = [:]
     //private var setsRepo: [String: [ArchiveEsetStructure]] = [:]
@@ -75,7 +76,7 @@ class ArchiveTableViewController: UITableViewController, EHHorizontalSelectionVi
     
     override func viewDidAppear(animated: Bool) {
         super.viewDidAppear(animated)
-        self.setupBarButton()
+//        self.setupBarButton()
         
         let b = UIButton(frame: CGRectMake(0, 0, 25, 25))
         b.setImage(UIImage(named: "Recurring"), forState: .Normal)
@@ -83,6 +84,7 @@ class ArchiveTableViewController: UITableViewController, EHHorizontalSelectionVi
         b.addTarget(self, action: #selector(self.refreshButtonPressed(_:)), forControlEvents: .TouchUpInside)
         
         self.navigationItem.leftBarButtonItem = UIBarButtonItem(customView: b)
+        self.attachPullTorefresh()
     }
     
     override func didReceiveMemoryWarning() {
@@ -255,9 +257,9 @@ class ArchiveTableViewController: UITableViewController, EHHorizontalSelectionVi
     }
     
     @IBAction func basketButtonPressed(sender: AnyObject) {
-        NSOperationQueue.mainQueue().addOperationWithBlock {
-            self.performSegueWithIdentifier("BasketCheckoutVCSegue", sender: self)
-        }
+//        NSOperationQueue.mainQueue().addOperationWithBlock {
+//            self.performSegueWithIdentifier("BasketCheckoutVCSegue", sender: self)
+//        }
     }
     
     // MARK: - Functions
@@ -305,9 +307,21 @@ class ArchiveTableViewController: UITableViewController, EHHorizontalSelectionVi
                     })
                     self.queue.addOperation(operation)
                 } else {
-                    AlertClass.showTopMessage(viewController: self, messageType: "HTTPError", messageSubType: (error?.toString())!, type: "error", completion: nil)
+                    if self.retryCounter < CONNECTION_MAX_RETRY {
+                        self.retryCounter += 1
+                        let operation = NSBlockOperation(block: {
+                            self.getEntranceTypes()
+                        })
+                        self.queue.addOperation(operation)
+                    } else {
+                        self.retryCounter = 0
+                        
+                        AlertClass.showTopMessage(viewController: self, messageType: "HTTPError", messageSubType: (error?.toString())!, type: "error", completion: nil)
+                    }
                 }
             } else {
+                self.retryCounter = 0
+                
                 if let localData = data {
                     if let status = localData["status"].string {
                         switch status {
@@ -360,19 +374,29 @@ class ArchiveTableViewController: UITableViewController, EHHorizontalSelectionVi
             })
             self.removeRefreshAnimation()
 
-            if let err = error {
-                switch err {
-                case .NoInternetAccess:
-                    fallthrough
-                case .HostUnreachable:
-                    NSOperationQueue.mainQueue().addOperationWithBlock({
-                        AlertClass.showTopMessage(viewController: self, messageType: "NetworkError", messageSubType: err.rawValue, type: "error", completion: nil)
-                    })
-                    
-                default:
-                    NSOperationQueue.mainQueue().addOperationWithBlock({
-                        AlertClass.showTopMessage(viewController: self, messageType: "NetworkError", messageSubType: err.rawValue, type: "", completion: nil)
-                    })
+            if self.retryCounter < CONNECTION_MAX_RETRY {
+                self.retryCounter += 1
+                let operation = NSBlockOperation(block: {
+                    self.getEntranceTypes()
+                })
+                self.queue.addOperation(operation)
+            } else {
+                self.retryCounter = 0
+                
+                if let err = error {
+                    switch err {
+                    case .NoInternetAccess:
+                        fallthrough
+                    case .HostUnreachable:
+                        NSOperationQueue.mainQueue().addOperationWithBlock({
+                            AlertClass.showTopMessage(viewController: self, messageType: "NetworkError", messageSubType: err.rawValue, type: "error", completion: nil)
+                        })
+                        
+                    default:
+                        NSOperationQueue.mainQueue().addOperationWithBlock({
+                            AlertClass.showTopMessage(viewController: self, messageType: "NetworkError", messageSubType: err.rawValue, type: "", completion: nil)
+                        })
+                    }
                 }
             }
         }
@@ -394,9 +418,23 @@ class ArchiveTableViewController: UITableViewController, EHHorizontalSelectionVi
                     })
                     self.queue.addOperation(operation)
                 } else {
-                    AlertClass.showTopMessage(viewController: self, messageType: "HTTPError", messageSubType: (error?.toString())!, type: "error", completion: nil)
+                    
+                    if self.retryCounter < CONNECTION_MAX_RETRY {
+                        self.retryCounter += 1
+                        let operation = NSBlockOperation(block: {
+                            self.getEntranceGroups(entranceTypeId: etypeId)
+                        })
+                        self.queue.addOperation(operation)
+                    } else {
+                        self.retryCounter = 0
+                        
+                        AlertClass.showTopMessage(viewController: self, messageType: "HTTPError", messageSubType: (error?.toString())!, type: "error", completion: nil)
+                        
+                    }
                 }
             } else {
+                self.retryCounter = 0
+                
                 if let localData = data {
                     if let status = localData["status"].string {
                         switch status {
@@ -461,20 +499,30 @@ class ArchiveTableViewController: UITableViewController, EHHorizontalSelectionVi
             })
             self.removeRefreshAnimation()
 
-            if let err = error {
-                switch err {
-                case .NoInternetAccess:
-                    fallthrough
-                case .HostUnreachable:
-                    NSOperationQueue.mainQueue().addOperationWithBlock({
-                        AlertClass.showTopMessage(viewController: self, messageType: "NetworkError", messageSubType: err.rawValue, type: "error", completion: nil)
-                    })
-                    
-                default:
-                    NSOperationQueue.mainQueue().addOperationWithBlock({
-                        AlertClass.showTopMessage(viewController: self, messageType: "NetworkError", messageSubType: err.rawValue, type: "", completion: nil)
-                    })
-                    
+            if self.retryCounter < CONNECTION_MAX_RETRY {
+                self.retryCounter += 1
+                let operation = NSBlockOperation(block: {
+                    self.getEntranceGroups(entranceTypeId: etypeId)
+                })
+                self.queue.addOperation(operation)
+            } else {
+                self.retryCounter = 0
+                
+                if let err = error {
+                    switch err {
+                    case .NoInternetAccess:
+                        fallthrough
+                    case .HostUnreachable:
+                        NSOperationQueue.mainQueue().addOperationWithBlock({
+                            AlertClass.showTopMessage(viewController: self, messageType: "NetworkError", messageSubType: err.rawValue, type: "error", completion: nil)
+                        })
+                        
+                    default:
+                        NSOperationQueue.mainQueue().addOperationWithBlock({
+                            AlertClass.showTopMessage(viewController: self, messageType: "NetworkError", messageSubType: err.rawValue, type: "", completion: nil)
+                        })
+                        
+                    }
                 }
             }
         }
@@ -498,9 +546,23 @@ class ArchiveTableViewController: UITableViewController, EHHorizontalSelectionVi
                     })
                     self.queue.addOperation(operation)
                 } else {
-                    AlertClass.showTopMessage(viewController: self, messageType: "HTTPError", messageSubType: (error?.toString())!, type: "error", completion: nil)
+                    if self.retryCounter < CONNECTION_MAX_RETRY {
+                        self.retryCounter += 1
+                        let operation = NSBlockOperation(block: {
+                            self.getEntranceSets(entranceGroupId: groupId)
+                        })
+                        self.queue.addOperation(operation)
+                        
+                    } else {
+                        self.retryCounter = 0
+                        
+                        AlertClass.showTopMessage(viewController: self, messageType: "HTTPError", messageSubType: (error?.toString())!, type: "error", completion: nil)
+                        
+                    }
                 }
             } else {
+                self.retryCounter = 0
+                
                 if let localData = data {
                     if let status = localData["status"].string {
                         switch status {
@@ -565,25 +627,36 @@ class ArchiveTableViewController: UITableViewController, EHHorizontalSelectionVi
 
             })
             
-            if let err = error {
-                switch err {
-                case .NoInternetAccess:
-                    fallthrough
-                case .HostUnreachable:
-                    NSOperationQueue.mainQueue().addOperationWithBlock({
-                        AlertClass.showTopMessage(viewController: self, messageType: "NetworkError", messageSubType: err.rawValue, type: "error", completion: nil)
-                    })
-//                    AlertClass.showSimpleErrorMessage(viewController: self, messageType: "NetworkError", messageSubType: err.rawValue, completion: {
-//                        let operation = NSBlockOperation(block: {
-//                            self.getEntranceSets(entranceGroupId: groupId)
-//                        })
-//                        self.queue.addOperation(operation)
-//                    })
-                default:
-                    NSOperationQueue.mainQueue().addOperationWithBlock({
-                        AlertClass.showTopMessage(viewController: self, messageType: "NetworkError", messageSubType: err.rawValue, type: "", completion: nil)
-                    })
-//                    AlertClass.showSimpleErrorMessage(viewController: self, messageType: "NetworkError", messageSubType: err.rawValue, completion: nil)
+            if self.retryCounter < CONNECTION_MAX_RETRY {
+                self.retryCounter += 1
+                let operation = NSBlockOperation(block: {
+                    self.getEntranceSets(entranceGroupId: groupId)
+                })
+                self.queue.addOperation(operation)
+                
+            } else {
+                self.retryCounter = 0
+                
+                if let err = error {
+                    switch err {
+                    case .NoInternetAccess:
+                        fallthrough
+                    case .HostUnreachable:
+                        NSOperationQueue.mainQueue().addOperationWithBlock({
+                            AlertClass.showTopMessage(viewController: self, messageType: "NetworkError", messageSubType: err.rawValue, type: "error", completion: nil)
+                        })
+                        //                    AlertClass.showSimpleErrorMessage(viewController: self, messageType: "NetworkError", messageSubType: err.rawValue, completion: {
+                        //                        let operation = NSBlockOperation(block: {
+                        //                            self.getEntranceSets(entranceGroupId: groupId)
+                        //                        })
+                        //                        self.queue.addOperation(operation)
+                    //                    })
+                    default:
+                        NSOperationQueue.mainQueue().addOperationWithBlock({
+                            AlertClass.showTopMessage(viewController: self, messageType: "NetworkError", messageSubType: err.rawValue, type: "", completion: nil)
+                        })
+                        //                    AlertClass.showSimpleErrorMessage(viewController: self, messageType: "NetworkError", messageSubType: err.rawValue, completion: nil)
+                    }
                 }
             }
         }

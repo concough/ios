@@ -99,9 +99,27 @@ class AlertClass {
             case "BlockedByScreenshotTime":
                 title = "پیغام"
                 message = "دسترسی به این آیتم تا %%% به دلیل عدم رعایت قوانین مقدور نمی باشد"
+                
             default:
                 showMessage = false
             }
+            
+        case "ExamAction":
+            switch messageSubType {
+            case "FinishEntranceExam":
+                title = "پیغام"
+                message = "آیا از اتمام سنجش مطمئن هستید؟"
+            case "FinishEntranceExamResult":
+                title = "پیغام"
+                message = "محاسبه نتیجه سنجش یا انصراف از سنجش؟\n\nدر صورت انصراف سابقه ای ثبت نخواهد شد."
+            case "LessonExamHistoryNotAvail":
+                title = "پیغام"
+                message = "شما هنوز هیچ سنجشی ندارید."
+                
+            default:
+                showMessage = false
+            }
+            
         case "DeviceInfoError":
             switch messageSubType {
             case "AnotherDevice":
@@ -130,6 +148,13 @@ class AlertClass {
             case "EmptyArray":
                 title = "خطا"
                 message = "اطلاعات برای نمایش ناموجود است"
+            case "UnsupportedVersion":
+                title = "خطا"
+                message = "این قابلیت در این نسخه پشتیبان نمی شود. به نسخه های جدیدتر بروز رسانی نمایید"
+            case "ProductNotExist":
+                title = "خطا"
+                message = "چنین محصولی موجود نمی باشد"
+            
             default:
                 showMessage = false
             }
@@ -170,6 +195,16 @@ class AlertClass {
             default:
                 showMessage = false
             }
+            
+        case "WalletResult":
+            switch messageSubType {
+            case "WalletNotEnoughCash":
+                title = "خطا"
+                message = "موجودی کافی نیست"
+            default:
+                showMessage = false
+            }
+            
         case "AuthProfile":
             switch messageSubType {
             case "ExistUsername":
@@ -309,9 +344,9 @@ class AlertClass {
 
     class func showUpdatingMessage(viewController viewController: UIViewController) -> MBProgressHUD {
         let hud = MBProgressHUD.showHUDAddedTo(viewController.view, animated: true)
-        hud.activityIndicatorColor = UIColor(netHex: BLUE_COLOR_HEX, alpha: 1.0)
+        hud.activityIndicatorColor = UIColor(netHex: GREEN_COLOR_HEX, alpha: 1.0)
         hud.animationType = .Fade
-        hud.mode = .AnnularDeterminate
+        hud.mode = .Indeterminate
         hud.label.text = "به روز رسانی ..."
         hud.label.font = UIFont(name: "IRANSansMobile", size: 14)
         hud.dimBackground = true
@@ -321,6 +356,22 @@ class AlertClass {
 //        hud.backgroundColor = UIColor(white: 0.0, alpha: 0.4)
         return hud
     }
+
+    class func showMakeExamMessage(viewController viewController: UIViewController) -> MBProgressHUD {
+        let hud = MBProgressHUD.showHUDAddedTo(viewController.view, animated: true)
+        hud.activityIndicatorColor = UIColor(netHex: RED_COLOR_HEX, alpha: 1.0)
+        hud.animationType = .Fade
+        hud.mode = .Indeterminate
+        hud.label.text = "آماده سازی سنجش ..."
+        hud.label.font = UIFont(name: "IRANSansMobile", size: 14)
+        hud.dimBackground = true
+        hud.bezelView.style = .Blur
+        hud.bezelView.backgroundColor = UIColor.whiteColor()
+        //        hud.backgroundView.style = .SolidColor
+        //        hud.backgroundColor = UIColor(white: 0.0, alpha: 0.4)
+        return hud
+    }
+    
     
     class func hideLoaingMessage(progressHUD progressHUD: MBProgressHUD?) {
         if progressHUD != nil {

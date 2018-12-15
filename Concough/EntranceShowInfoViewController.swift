@@ -17,49 +17,112 @@ class EntranceShowInfoViewController: UIViewController {
     @IBOutlet weak var subTitleLabel: UILabel!
     @IBOutlet weak var extraDataLabel: UILabel!
     @IBOutlet weak var starredCountLabel: UILabel!
+    @IBOutlet weak var entranceYearLabel: UILabel!
+    @IBOutlet weak var totalQuestionsLabel: UILabel!
     @IBOutlet weak var entranceImageView: UIImageView!
     @IBOutlet weak var showStarredQuestionButton: UIButton!
-    @IBOutlet weak var showAnswerSwitch: UISwitch!
+    @IBOutlet weak var defaultShowSegment: UISegmentedControl!
+    
+    @IBOutlet weak var markedQuestionsStackView: UIStackView!
+    
+    @IBOutlet weak var defaultShowStackView: UIView!
+    @IBOutlet weak var examBriefLabel: UILabel!
+    @IBOutlet weak var examBriefStackView: UIStackView!
+    @IBOutlet weak var lessonExamTimeLabel: UILabel!
+    
+    @IBOutlet weak var questionImageView: UIImageView!
+    @IBOutlet weak var timerImageView: UIImageView!
     
     override func viewDidLoad() {
         super.viewDidLoad()
 
-        // Do any additional setup after loading the view.
+        self.questionImageView.tintImageColor(UIColor(netHex: BLUE_COLOR_HEX, alpha: 1.0))
+        self.timerImageView.tintImageColor(UIColor(netHex: BLUE_COLOR_HEX, alpha: 1.0))
         
-        self.starredCountLabel.layer.cornerRadius = self.starredCountLabel.layer.frame.width / 2.0
-        self.starredCountLabel.layer.masksToBounds = true
+        // Do any additional setup after loading the view.
+        let font = UIFont(name: "IRANSansMobile", size: 12)!
+        self.defaultShowSegment.setTitleTextAttributes([NSFontAttributeName: font], forState: UIControlState.Normal)
+        
+        self.showStarredQuestionButton.layer.cornerRadius = 5.0
+        self.showStarredQuestionButton.layer.masksToBounds = true
+        self.showStarredQuestionButton.layer.borderColor = self.showStarredQuestionButton.titleColorForState(.Normal)?.CGColor
+        self.showStarredQuestionButton.layer.borderWidth = 0.7
+        
+        self.entranceImageView.layer.cornerRadius = 35.0
+        self.entranceImageView.layer.masksToBounds = true
+        self.entranceImageView.layer.borderColor = UIColor(netHex: GRAY_COLOR_HEX_1, alpha: 0.3).CGColor
+        self.entranceImageView.layer.borderWidth = 0.5
+        
     }
 
-    internal func configureController(entrance entrance: EntranceStructure, starredCount: Int, switchState: Bool, showType: String) {
+    internal func configureController(entrance entrance: EntranceStructure, starredCount: Int, segmentState: Int, showType: String, totalQuestions: Int, answeredQuestions: Int, lessonTitle: String, lessonExamTime: Int) {
         if entrance.entranceMonth > 0 {
-            self.titleLabel.text = "آزمون \(entrance.entranceTypeTitle!) \(monthToString(entrance.entranceMonth!)) \(FormatterSingleton.sharedInstance.NumberFormatter.stringFromNumber(entrance.entranceYear!)!)"
+            self.entranceYearLabel.text = "\(monthToString(entrance.entranceMonth!)) \(FormatterSingleton.sharedInstance.NumberFormatter.stringFromNumber(entrance.entranceYear!)!)"
         } else {
-            self.titleLabel.text = "آزمون \(entrance.entranceTypeTitle!) \(FormatterSingleton.sharedInstance.NumberFormatter.stringFromNumber(entrance.entranceYear!)!)"
+            self.entranceYearLabel.text = "\(FormatterSingleton.sharedInstance.NumberFormatter.stringFromNumber(entrance.entranceYear!)!)"
         }
-        self.subTitleLabel.text = "\(entrance.entranceSetTitle!) (\(entrance.entranceGroupTitle!))"
-        
-//        if let extraData = entrance.entranceExtraData {
-//            var s = ""
-//            for (key, item) in extraData {
-//                s += "\(key): \(item.stringValue)" + " - "
-//            }
-//            
-//            if s.characters.count > 3 {
-//                s = s.substringToIndex(s.endIndex.advancedBy(-3))
-//            }
-//            self.extraDataLabel.text = s
-//        }
-        self.extraDataLabel.text = "\(entrance.entranceOrgTitle!)"
-        self.downloadImage(esetId: entrance.entranceSetId!, indexPath: NSIndexPath(forRow: 0, inSection: 0))
-        self.showAnswerSwitch.on = switchState
 
-        if showType == "Show" {
-            self.starredCountLabel.hidden = false
-            self.starredCountLabel.text = FormatterSingleton.sharedInstance.NumberFormatter.stringFromNumber(starredCount)!
-            self.showStarredQuestionButton.setTitle("سوالات نشان شده", forState: .Normal)
-        } else if showType == "Starred" {
-            self.starredCountLabel.hidden = true
-            self.showStarredQuestionButton.setTitle("کل سوالات", forState: .Normal)
+        if showType == "Show" || showType == "Starred" {
+            self.titleLabel.text = "آزمون \(entrance.entranceTypeTitle!)"
+            self.subTitleLabel.text = "\(entrance.entranceSetTitle!) (\(entrance.entranceGroupTitle!))"
+            
+            self.extraDataLabel.text = "\(entrance.entranceOrgTitle!)"
+            self.defaultShowSegment.selectedSegmentIndex = segmentState
+            
+        } else if showType == "LessonExam" || showType == "LessonExamResult" {
+            self.totalQuestionsLabel.text = "\(FormatterSingleton.sharedInstance.NumberFormatter.stringFromNumber(totalQuestions)!)"
+            self.lessonExamTimeLabel.text = "\(FormatterSingleton.sharedInstance.NumberFormatter.stringFromNumber(lessonExamTime)!) '"
+            self.subTitleLabel.text = lessonTitle
+            self.titleLabel.text = "\(entrance.entranceSetTitle!) (\(entrance.entranceGroupTitle!))"
+            self.extraDataLabel.hidden = true
+        } else if showType == "LessonExamHistory" {
+            self.totalQuestionsLabel.text = "\(FormatterSingleton.sharedInstance.NumberFormatter.stringFromNumber(totalQuestions)!)"
+            self.lessonExamTimeLabel.text = "\(FormatterSingleton.sharedInstance.NumberFormatter.stringFromNumber(lessonExamTime)!) '"
+            self.subTitleLabel.text = lessonTitle
+            self.titleLabel.text = "\(entrance.entranceSetTitle!) (\(entrance.entranceGroupTitle!))"
+            self.extraDataLabel.hidden = true
+            
+        }
+        self.downloadImage(esetId: entrance.entranceSetId!, indexPath: NSIndexPath(forRow: 0, inSection: 0))
+
+        //        if let extraData = entrance.entranceExtraData {
+        //            var s = ""
+        //            for (key, item) in extraData {
+        //                s += "\(key): \(item.stringValue)" + " - "
+        //            }
+        //
+        //            if s.characters.count > 3 {
+        //                s = s.substringToIndex(s.endIndex.advancedBy(-3))
+        //            }
+        //            self.extraDataLabel.text = s
+        //        }
+
+        if showType == "Show" || showType == "Starred" {
+            self.defaultShowStackView.hidden = false
+            self.examBriefStackView.hidden = true
+            self.showStarredQuestionButton.hidden = false
+            self.markedQuestionsStackView.hidden = false
+            
+            if showType == "Show" {
+                self.starredCountLabel.text = FormatterSingleton.sharedInstance.NumberFormatter.stringFromNumber(starredCount)!
+                self.showStarredQuestionButton.setTitle("سوالات نشان شده", forState: .Normal)
+            } else if showType == "Starred" {
+                self.showStarredQuestionButton.setTitle("کل سوالات", forState: .Normal)
+            }
+        } else if showType == "LessonExam" || showType == "LessonExamResult" {
+            self.examBriefLabel.text = "\(FormatterSingleton.sharedInstance.NumberFormatter.stringFromNumber(answeredQuestions)!) " + "سوال از " + "\(FormatterSingleton.sharedInstance.NumberFormatter.stringFromNumber(totalQuestions)!) " + "جواب داده اید"
+            
+            self.defaultShowStackView.hidden = true
+            self.examBriefStackView.hidden = false
+            self.showStarredQuestionButton.hidden = true
+            self.markedQuestionsStackView.hidden = true
+            
+        } else if showType == "LessonExamHistory" {
+            self.examBriefLabel.hidden = true
+            self.defaultShowStackView.hidden = true
+            self.examBriefStackView.hidden = false
+            self.showStarredQuestionButton.hidden = true
+            self.markedQuestionsStackView.hidden = true
         }
     }
     
@@ -138,4 +201,6 @@ class EntranceShowInfoViewController: UIViewController {
         self.dismissViewControllerAnimated(true, completion: nil)
     }
     
+    @IBAction func defaultShowSegmentValueChanged(sender: UISegmentedControl) {
+    }
 }

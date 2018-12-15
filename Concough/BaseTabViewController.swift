@@ -31,7 +31,7 @@ class BaseTabViewController: UITabBarController, UITabBarControllerDelegate {
         if self.selectedIndex == self.previousIndex {
             if let navVc = viewController as? UINavigationController {
                 if let topVc = navVc.viewControllers.first as? UITableViewController {
-                    topVc.tableView.setContentOffset(CGPointZero, animated: true)
+                    topVc.tableView.scrollToRowAtIndexPath(NSIndexPath(forRow: 0, inSection: 0), atScrollPosition: UITableViewScrollPosition.Top, animated: true)
                 }
             }
         }
