@@ -12,7 +12,7 @@ import BBBadgeBarButtonItem
 import RNCryptor
 import MBProgressHUD
 
-class EntranceDetailTableViewController: UITableViewController {
+class EntranceDetailTableViewController: UITableViewController, UIPopoverPresentationControllerDelegate, ProductBuyDelegate {
 
     internal var entranceUniqueId: String!
     
@@ -22,6 +22,7 @@ class EntranceDetailTableViewController: UITableViewController {
     private var state: EntranceVCStateEnum!
     private var queue: NSOperationQueue!
     private var selfBasketAdd: Bool = false
+    private var retryCounter = 0
     
     private var entrance: EntranceStructure?
     private var entranceStat: EntranceStatStructure?
@@ -31,23 +32,27 @@ class EntranceDetailTableViewController: UITableViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
-
-        if self.refreshControl == nil {
-            self.refreshControl = UIRefreshControl()
-            self.refreshControl?.attributedTitle = NSAttributedString(string: "برای به روز رسانی به پایین بکشید", attributes: [NSFontAttributeName: UIFont(name: "IRANYekanMobile-Light", size: 12)!])
-        }
-        self.refreshControl?.addTarget(self, action: #selector(self.refreshTableView(_:)), forControlEvents: .ValueChanged)
         
-        self.title = "کنکور"
+        self.tableView.estimatedRowHeight = 100.0
+        
+        self.title = "آزمون"
         self.queue = NSOperationQueue()
+        
     }
 
     override func viewWillAppear(animated: Bool) {
+        if self.refreshControl == nil {
+            self.refreshControl = UIRefreshControl()
+            self.refreshControl?.attributedTitle = NSAttributedString(string: "برای به روز رسانی به پایین بکشید", attributes: [NSFontAttributeName: UIFont(name: "IRANSansMobile-UltraLight", size: 12)!])
+        }
+        self.refreshControl?.addTarget(self, action: #selector(self.refreshTableView(_:)), forControlEvents: .ValueChanged)
+        self.refreshControl?.endRefreshing()
+
         self.resetView()
     }
 
     override func viewDidAppear(animated: Bool) {
-        self.updateBasketBadge(count: BasketSingleton.sharedInstance.SalesCount)
+//        self.updateBasketBadge(count: BasketSingleton.sharedInstance.SalesCount)
     }
     
     override func didReceiveMemoryWarning() {
@@ -56,6 +61,7 @@ class EntranceDetailTableViewController: UITableViewController {
     }
 
     func refreshTableView(refreshControl_: UIRefreshControl) {
+//        self.refreshControl?.endRefreshing()
         self.resetView()
     }
     
@@ -83,16 +89,20 @@ class EntranceDetailTableViewController: UITableViewController {
             b.addTarget(self, action: #selector(self.basketButtonPressed(_:)), forControlEvents: .TouchUpInside)
             
             self.rightBarButtonItem = BBBadgeBarButtonItem(customUIButton: b)
-            self.rightBarButtonItem.badgeValue = "0"
+            self.rightBarButtonItem.badgeValue = FormatterSingleton.sharedInstance.NumberFormatter.stringFromNumber(0)
             self.rightBarButtonItem.badgeBGColor = UIColor(netHex: RED_COLOR_HEX_2, alpha: 0.8)
             self.rightBarButtonItem.badgeTextColor = UIColor.whiteColor()
-            self.rightBarButtonItem.badgeFont = UIFont(name: "IRANYekanMobile-Bold", size: 12)
+            self.rightBarButtonItem.badgeFont = UIFont(name: "IRANSansMobile-Medium", size: 12)
             self.rightBarButtonItem.shouldHideBadgeAtZero = true
             self.rightBarButtonItem.shouldAnimateBadge = true
             self.rightBarButtonItem.badgeOriginX = 15.0
             self.rightBarButtonItem.badgeOriginY = -5.0
+            self.rightBarButtonItem.badgePadding = 2.0
             
             self.navigationItem.rightBarButtonItem = self.rightBarButtonItem
+        } else {
+            self.rightBarButtonItem = nil
+            self.navigationItem.rightBarButtonItem = nil
         }
     }
     
@@ -154,7 +164,8 @@ class EntranceDetailTableViewController: UITableViewController {
             }
         case .NotPurchased:
             let operation = NSBlockOperation(block: {
-                self.downloadEntranceStat()
+//                self.downloadEntranceStat()
+                self.downloadEntranceStatAndSale()
             })
             self.queue.addOperation(operation)
 
@@ -207,7 +218,7 @@ class EntranceDetailTableViewController: UITableViewController {
         if let localEntrance = EntranceModelHandler.getByUsernameAndId(id: self.entranceUniqueId, username: username) {
             let extra = JSON(data: localEntrance.extraData.dataUsingEncoding(NSUTF8StringEncoding)!)
             
-            self.entrance = EntranceStructure(entranceTypeTitle: localEntrance.type, entranceOrgTitle: localEntrance.organization, entranceGroupTitle: localEntrance.group, entranceSetTitle: localEntrance.set, entranceSetId: localEntrance.setId, entranceExtraData: extra, entranceBookletCounts: localEntrance.bookletsCount, entranceYear: localEntrance.year, entranceDuration: localEntrance.duration, entranceUniqueId: localEntrance.uniqueId, entranceLastPublished: localEntrance.lastPublished)
+            self.entrance = EntranceStructure(entranceTypeTitle: localEntrance.type, entranceOrgTitle: localEntrance.organization, entranceGroupTitle: localEntrance.group, entranceSetTitle: localEntrance.set, entranceSetId: localEntrance.setId, entranceExtraData: extra, entranceBookletCounts: localEntrance.bookletsCount, entranceYear: localEntrance.year, entranceMonth: localEntrance.month, entranceDuration: localEntrance.duration, entranceUniqueId: localEntrance.uniqueId, entranceLastPublished: localEntrance.lastPublished)
             
             self.state! = .EntranceComplete
             self.stateMachine()
@@ -215,20 +226,39 @@ class EntranceDetailTableViewController: UITableViewController {
     }
     
     private func downloadEntrance() {
-        NSOperationQueue.mainQueue().addOperationWithBlock { 
-            self.loading = AlertClass.showLoadingMessage(viewController: self)
-        }
+//        NSOperationQueue.mainQueue().addOperationWithBlock { 
+//            self.loading = AlertClass.showLoadingMessage(viewController: self)
+//        }
         
         EntranceRestAPIClass.getEntranceWithBuyInfo(uniqueId: self.entranceUniqueId, completion: { (data, error) in
             
             NSOperationQueue.mainQueue().addOperationWithBlock({
                 self.refreshControl?.endRefreshing()
-                AlertClass.hideLoaingMessage(progressHUD: self.loading)
+//                AlertClass.hideLoaingMessage(progressHUD: self.loading)
             })
             
             if error != HTTPErrorType.Success {
-                AlertClass.showTopMessage(viewController: self, messageType: "HTTPError", messageSubType: (error?.toString())!, type: "error", completion: nil)                
+                if error == HTTPErrorType.Refresh {
+                    let operation = NSBlockOperation(block: {
+                        self.downloadEntrance()
+                    })
+                    self.queue.addOperation(operation)
+                } else {
+                    if self.retryCounter < CONNECTION_MAX_RETRY {
+                        self.retryCounter += 1
+                        let operation = NSBlockOperation(block: {
+                            self.downloadEntrance()
+                        })
+                        self.queue.addOperation(operation)
+                    } else {
+                        self.retryCounter = 0
+                        
+                        AlertClass.showTopMessage(viewController: self, messageType: "HTTPError", messageSubType: (error?.toString())!, type: "error", completion: nil)
+                    }
+                }
             } else {
+                self.retryCounter = 0
+                
                 if let localData = data {
                     if let status = localData["status"].string {
                         switch status {
@@ -244,11 +274,12 @@ class EntranceDetailTableViewController: UITableViewController {
                             let booklet_count = record["booklets_count"].intValue
                             let duration = record["duration"].intValue
                             let year = record["year"].intValue
+                            let month = record["month"].intValue
                             let last_published_str = record["last_published"].stringValue
                             
                             let last_published = FormatterSingleton.sharedInstance.UTCDateFormatter.dateFromString(last_published_str)
                             
-                            self.entrance = EntranceStructure(entranceTypeTitle: entrance_type, entranceOrgTitle: organization, entranceGroupTitle: entrance_group, entranceSetTitle: entrance_set, entranceSetId: entrance_set_id, entranceExtraData: extra_data, entranceBookletCounts: booklet_count, entranceYear: year, entranceDuration: duration, entranceUniqueId: self.entranceUniqueId, entranceLastPublished: last_published)
+                            self.entrance = EntranceStructure(entranceTypeTitle: entrance_type, entranceOrgTitle: organization, entranceGroupTitle: entrance_group, entranceSetTitle: entrance_set, entranceSetId: entrance_set_id, entranceExtraData: extra_data, entranceBookletCounts: booklet_count, entranceYear: year, entranceMonth: month, entranceDuration: duration, entranceUniqueId: self.entranceUniqueId, entranceLastPublished: last_published)
                             
                             self.state = EntranceVCStateEnum.EntranceComplete
                             NSOperationQueue.mainQueue().addOperationWithBlock({ 
@@ -299,54 +330,85 @@ class EntranceDetailTableViewController: UITableViewController {
         }, failure: { (error) in
             NSOperationQueue.mainQueue().addOperationWithBlock({
                 self.refreshControl?.endRefreshing()
-                AlertClass.hideLoaingMessage(progressHUD: self.loading)
+//                AlertClass.hideLoaingMessage(progressHUD: self.loading)
             })
             
-            if let err = error {
-                switch err {
-                case .HostUnreachable:
-                    fallthrough
-                case .NoInternetAccess:
-                    NSOperationQueue.mainQueue().addOperationWithBlock({ 
-                        AlertClass.showTopMessage(viewController: self, messageType: "NetworkError", messageSubType: err.rawValue, type: "error", completion: nil)
-                    })
-                    
-//                    AlertClass.showSimpleErrorMessage(viewController: self, messageType: "NetworkError", messageSubType: err.rawValue, completion: {
-//                        let operation = NSBlockOperation(block: {
-//                            self.downloadEntrance()
-//                        })
-//                        self.queue.addOperation(operation)
-//                    })
-                default:
-                    NSOperationQueue.mainQueue().addOperationWithBlock({
-                        AlertClass.showTopMessage(viewController: self, messageType: "NetworkError", messageSubType: err.rawValue, type: "", completion: nil)
-                    })
-                    
-//                    AlertClass.showSimpleErrorMessage(viewController: self, messageType: "NetworkError", messageSubType: err.rawValue, completion: nil)
+            if self.retryCounter < CONNECTION_MAX_RETRY {
+                self.retryCounter += 1
+                let operation = NSBlockOperation(block: {
+                    self.downloadEntrance()
+                })
+                self.queue.addOperation(operation)
+                
+            } else {
+                self.retryCounter = 0
+                
+                if let err = error {
+                    switch err {
+                    case .HostUnreachable:
+                        fallthrough
+                    case .NoInternetAccess:
+                        NSOperationQueue.mainQueue().addOperationWithBlock({
+                            AlertClass.showTopMessage(viewController: self, messageType: "NetworkError", messageSubType: err.rawValue, type: "error", completion: nil)
+                        })
+                        
+                        //                    AlertClass.showSimpleErrorMessage(viewController: self, messageType: "NetworkError", messageSubType: err.rawValue, completion: {
+                        //                        let operation = NSBlockOperation(block: {
+                        //                            self.downloadEntrance()
+                        //                        })
+                        //                        self.queue.addOperation(operation)
+                    //                    })
+                    default:
+                        NSOperationQueue.mainQueue().addOperationWithBlock({
+                            AlertClass.showTopMessage(viewController: self, messageType: "NetworkError", messageSubType: err.rawValue, type: "", completion: nil)
+                        })
+                        
+                        //                    AlertClass.showSimpleErrorMessage(viewController: self, messageType: "NetworkError", messageSubType: err.rawValue, completion: nil)
+                    }
                 }
             }
-            
         })
     }
     
     private func downloadUserPurchaseData() {
-        NSOperationQueue.mainQueue().addOperationWithBlock { 
-            self.loading = AlertClass.showLoadingMessage(viewController: self)
-        }
+//        NSOperationQueue.mainQueue().addOperationWithBlock { 
+//            self.loading = AlertClass.showLoadingMessage(viewController: self)
+//        }
         
         PurchasedRestAPIClass.getEntrancePurchasedData(uniqueId: self.entranceUniqueId, completion: { (data, error) in
             NSOperationQueue.mainQueue().addOperationWithBlock({ 
-                AlertClass.hideLoaingMessage(progressHUD: self.loading)
+                self.refreshControl?.endRefreshing()
+//                AlertClass.hideLoaingMessage(progressHUD: self.loading)
+                
             })
             
             if error != HTTPErrorType.Success {
-                AlertClass.showTopMessage(viewController: self, messageType: "HTTPError", messageSubType: (error?.toString())!, type: "error", completion: nil)
+                if error == HTTPErrorType.Refresh {
+                    let operation = NSBlockOperation(block: {
+                        self.downloadUserPurchaseData()
+                    })
+                    self.queue.addOperation(operation)
+                } else {
+                    if self.retryCounter < CONNECTION_MAX_RETRY {
+                        self.retryCounter += 1
+                        let operation = NSBlockOperation(block: {
+                            self.downloadUserPurchaseData()
+                        })
+                        self.queue.addOperation(operation)
+                        
+                    } else {
+                        self.retryCounter = 0
+                        
+                        AlertClass.showTopMessage(viewController: self, messageType: "HTTPError", messageSubType: (error?.toString())!, type: "error", completion: nil)
+                    }
+                }
             } else {
+                self.retryCounter = 0
+                
                 if let localData = data {
                     if let status = localData["status"].string {
                         switch status {
                         case "OK":
-                            print("\(localData)")
                             let purchase = localData["purchase"]
                             if let purchaseStatus = purchase["status"].bool {
                                 if purchaseStatus == false {
@@ -421,53 +483,83 @@ class EntranceDetailTableViewController: UITableViewController {
             }
         }, failure: { (error) in
             NSOperationQueue.mainQueue().addOperationWithBlock({
-                AlertClass.hideLoaingMessage(progressHUD: self.loading)
+//                AlertClass.hideLoaingMessage(progressHUD: self.loading)
+            self.refreshControl?.endRefreshing()
+
             })
-            
-            if let err = error {
-                switch err {
-                case .HostUnreachable:
-                    fallthrough
-                case .NoInternetAccess:
-                    NSOperationQueue.mainQueue().addOperationWithBlock({ 
-                        AlertClass.showTopMessage(viewController: self, messageType: "NetworkError", messageSubType: err.rawValue, type: "error", completion: nil)
-                    })
-                    
-//                    AlertClass.showSimpleErrorMessage(viewController: self, messageType: "NetworkError", messageSubType: err.rawValue, completion: {
-//                        let operation = NSBlockOperation(block: {
-//                            self.downloadUserPurchaseData()
-//                        })
-//                        self.queue.addOperation(operation)
-//                    })
-                default:
-                    NSOperationQueue.mainQueue().addOperationWithBlock({
-                        AlertClass.showTopMessage(viewController: self, messageType: "NetworkError", messageSubType: err.rawValue, type: "", completion: nil)
-                    })
-                    
-//                    AlertClass.showSimpleErrorMessage(viewController: self, messageType: "NetworkError", messageSubType: err.rawValue, completion: nil)
+            if self.retryCounter < CONNECTION_MAX_RETRY {
+                self.retryCounter += 1
+                let operation = NSBlockOperation(block: {
+                    self.downloadUserPurchaseData()
+                })
+                self.queue.addOperation(operation)
+                
+            } else {
+                self.retryCounter = 0
+        
+                if let err = error {
+                    switch err {
+                    case .HostUnreachable:
+                        fallthrough
+                    case .NoInternetAccess:
+                        NSOperationQueue.mainQueue().addOperationWithBlock({ 
+                            AlertClass.showTopMessage(viewController: self, messageType: "NetworkError", messageSubType: err.rawValue, type: "error", completion: nil)
+                        })
+                        
+    //                    AlertClass.showSimpleErrorMessage(viewController: self, messageType: "NetworkError", messageSubType: err.rawValue, completion: {
+    //                        let operation = NSBlockOperation(block: {
+    //                            self.downloadUserPurchaseData()
+    //                        })
+    //                        self.queue.addOperation(operation)
+    //                    })
+                    default:
+                        NSOperationQueue.mainQueue().addOperationWithBlock({
+                            AlertClass.showTopMessage(viewController: self, messageType: "NetworkError", messageSubType: err.rawValue, type: "", completion: nil)
+                        })
+                        
+    //                    AlertClass.showSimpleErrorMessage(viewController: self, messageType: "NetworkError", messageSubType: err.rawValue, completion: nil)
+                    }
                 }
             }
         })
     }
 
     private func refreshUserPurchaseData() {
-        NSOperationQueue.mainQueue().addOperationWithBlock { 
-            self.loading = AlertClass.showLoadingMessage(viewController: self)
-        }
+//        NSOperationQueue.mainQueue().addOperationWithBlock { 
+//            self.loading = AlertClass.showLoadingMessage(viewController: self)
+//        }
         
         PurchasedRestAPIClass.getEntrancePurchasedData(uniqueId: self.entranceUniqueId, completion: { (data, error) in
-            NSOperationQueue.mainQueue().addOperationWithBlock({ 
-                AlertClass.hideLoaingMessage(progressHUD: self.loading)
-            })
+//            NSOperationQueue.mainQueue().addOperationWithBlock({ 
+//                AlertClass.hideLoaingMessage(progressHUD: self.loading)
+//            })
             
             if error != HTTPErrorType.Success {
-                AlertClass.showTopMessage(viewController: self, messageType: "HTTPError", messageSubType: (error?.toString())!, type: "error", completion: nil)
+                if error == HTTPErrorType.Refresh {
+                    let operation = NSBlockOperation(block: {
+                        self.refreshUserPurchaseData()
+                    })
+                    self.queue.addOperation(operation)
+                } else {
+                    if self.retryCounter < CONNECTION_MAX_RETRY {
+                        self.retryCounter += 1
+                        let operation = NSBlockOperation(block: {
+                            self.refreshUserPurchaseData()
+                        })
+                        self.queue.addOperation(operation)
+                    } else {
+                        self.retryCounter = 0
+                        
+                        AlertClass.showTopMessage(viewController: self, messageType: "HTTPError", messageSubType: (error?.toString())!, type: "error", completion: nil)
+                    }
+                }
             } else {
+                self.retryCounter = 0
+                
                 if let localData = data {
                     if let status = localData["status"].string {
                         switch status {
                         case "OK":
-                            print("\(localData)")
                             let purchase = localData["purchase"]
                             // get purchase record
                             if purchase["purchase_record"] != nil {
@@ -511,54 +603,84 @@ class EntranceDetailTableViewController: UITableViewController {
                 }
             }
             }, failure: { (error) in
-                NSOperationQueue.mainQueue().addOperationWithBlock({
-                    AlertClass.hideLoaingMessage(progressHUD: self.loading)
-                })
+//                NSOperationQueue.mainQueue().addOperationWithBlock({
+//                    AlertClass.hideLoaingMessage(progressHUD: self.loading)
+//                })
                 
-                if let err = error {
-                    switch err {
-                    case .HostUnreachable:
-                        fallthrough
-                    case .NoInternetAccess:
-                        NSOperationQueue.mainQueue().addOperationWithBlock({
-                            AlertClass.showTopMessage(viewController: self, messageType: "NetworkError", messageSubType: err.rawValue, type: "error", completion: nil)
-                        })
-                        
-                        //                    AlertClass.showSimpleErrorMessage(viewController: self, messageType: "NetworkError", messageSubType: err.rawValue, completion: {
-                        //                        let operation = NSBlockOperation(block: {
-                        //                            self.downloadUserPurchaseData()
-                        //                        })
-                        //                        self.queue.addOperation(operation)
-                    //                    })
-                    default:
-                        NSOperationQueue.mainQueue().addOperationWithBlock({
-                            AlertClass.showTopMessage(viewController: self, messageType: "NetworkError", messageSubType: err.rawValue, type: "", completion: nil)
-                        })
-                        
-                        //                    AlertClass.showSimpleErrorMessage(viewController: self, messageType: "NetworkError", messageSubType: err.rawValue, completion: nil)
+                if self.retryCounter < CONNECTION_MAX_RETRY {
+                    self.retryCounter += 1
+                    let operation = NSBlockOperation(block: {
+                        self.refreshUserPurchaseData()
+                    })
+                    self.queue.addOperation(operation)
+                } else {
+                    self.retryCounter = 0
+                    
+                    if let err = error {
+                        switch err {
+                        case .HostUnreachable:
+                            fallthrough
+                        case .NoInternetAccess:
+                            NSOperationQueue.mainQueue().addOperationWithBlock({
+                                AlertClass.showTopMessage(viewController: self, messageType: "NetworkError", messageSubType: err.rawValue, type: "error", completion: nil)
+                            })
+                            
+                            //                    AlertClass.showSimpleErrorMessage(viewController: self, messageType: "NetworkError", messageSubType: err.rawValue, completion: {
+                            //                        let operation = NSBlockOperation(block: {
+                            //                            self.downloadUserPurchaseData()
+                            //                        })
+                            //                        self.queue.addOperation(operation)
+                        //                    })
+                        default:
+                            NSOperationQueue.mainQueue().addOperationWithBlock({
+                                AlertClass.showTopMessage(viewController: self, messageType: "NetworkError", messageSubType: err.rawValue, type: "", completion: nil)
+                            })
+                            
+                            //                    AlertClass.showSimpleErrorMessage(viewController: self, messageType: "NetworkError", messageSubType: err.rawValue, completion: nil)
+                        }
                     }
                 }
         })
     }
     
     private func updateUserPurchaseData() {
-        NSOperationQueue.mainQueue().addOperationWithBlock { 
-            self.loading = AlertClass.showUpdatingMessage(viewController: self)
-        }
+//        NSOperationQueue.mainQueue().addOperationWithBlock { 
+//            self.loading = AlertClass.showUpdatingMessage(viewController: self)
+//        }
         
         PurchasedRestAPIClass.putEntrancePurchasedDownload(uniqueId: self.entranceUniqueId, completion: { (data, error) in
-            NSOperationQueue.mainQueue().addOperationWithBlock({ 
-                AlertClass.hideLoaingMessage(progressHUD: self.loading)
-            })
+//            NSOperationQueue.mainQueue().addOperationWithBlock({ 
+//                AlertClass.hideLoaingMessage(progressHUD: self.loading)
+//            })
             
             if error != HTTPErrorType.Success {
-                AlertClass.showTopMessage(viewController: self, messageType: "HTTPError", messageSubType: (error?.toString())!, type: "error", completion: nil)
+                if error == HTTPErrorType.Refresh {
+                    let operation = NSBlockOperation(block: {
+                        self.updateUserPurchaseData()
+                    })
+                    self.queue.addOperation(operation)
+                    
+                } else {
+                    if self.retryCounter < CONNECTION_MAX_RETRY {
+                        self.retryCounter += 1
+                        
+                        let operation = NSBlockOperation(block: {
+                            self.updateUserPurchaseData()
+                        })
+                        self.queue.addOperation(operation)
+                    } else {
+                        self.retryCounter = 0
+                        
+                        AlertClass.showTopMessage(viewController: self, messageType: "HTTPError", messageSubType: (error?.toString())!, type: "error", completion: nil)
+                    }
+                }
             } else {
+                self.retryCounter = 0
+                
                 if let localData = data {
                     if let status = localData["status"].string {
                         switch status {
                         case "OK":
-                            print("\(localData)")
                             let purchase = localData["purchase"]
                             // get purchase record
                             if purchase["purchase_record"] != nil {
@@ -603,9 +725,153 @@ class EntranceDetailTableViewController: UITableViewController {
                 }
             }
             }, failure: { (error) in
-                NSOperationQueue.mainQueue().addOperationWithBlock({
-                    AlertClass.hideLoaingMessage(progressHUD: self.loading)
+//                NSOperationQueue.mainQueue().addOperationWithBlock({
+//                    AlertClass.hideLoaingMessage(progressHUD: self.loading)
+//                })
+                
+                if self.retryCounter < CONNECTION_MAX_RETRY {
+                    self.retryCounter += 1
+                    
+                    let operation = NSBlockOperation(block: {
+                        self.updateUserPurchaseData()
+                    })
+                    self.queue.addOperation(operation)
+                } else {
+                    self.retryCounter = 0
+                    
+                    if let err = error {
+                        switch err {
+                        case .HostUnreachable:
+                            fallthrough
+                        case .NoInternetAccess:
+                            NSOperationQueue.mainQueue().addOperationWithBlock({
+                                AlertClass.showTopMessage(viewController: self, messageType: "NetworkError", messageSubType: err.rawValue, type: "error", completion: nil)
+                            })
+                            
+                            //                    AlertClass.showSimpleErrorMessage(viewController: self, messageType: "NetworkError", messageSubType: err.rawValue, completion: {
+                            //                        let operation = NSBlockOperation(block: {
+                            //                            self.downloadUserPurchaseData()
+                            //                        })
+                            //                        self.queue.addOperation(operation)
+                        //                    })
+                        default:
+                            NSOperationQueue.mainQueue().addOperationWithBlock({
+                                AlertClass.showTopMessage(viewController: self, messageType: "NetworkError", messageSubType: err.rawValue, type: "", completion: nil)
+                            })
+                            
+                            //                    AlertClass.showSimpleErrorMessage(viewController: self, messageType: "NetworkError", messageSubType: err.rawValue, completion: nil)
+                        }
+                    }
+                }
+        })
+    }
+    
+    private func downloadEntranceStatAndSale() {
+        ProductRestAPIClass.getEntranceStatAndSaleData(uniqueId: self.entranceUniqueId, completion: { (data, error) in
+            
+            NSOperationQueue.mainQueue().addOperationWithBlock({
+                self.refreshControl?.endRefreshing()
+                //                AlertClass.hideLoaingMessage(progressHUD: self.loading)
+                
+            })
+            
+            if error != HTTPErrorType.Success {
+                if error == HTTPErrorType.Refresh {
+                    let operation = NSBlockOperation(block: {
+                        self.downloadEntranceStatAndSale()
+                    })
+                    self.queue.addOperation(operation)
+                    
+                } else {
+                    if self.retryCounter < CONNECTION_MAX_RETRY {
+                        self.retryCounter += 1
+                        let operation = NSBlockOperation(block: {
+                            self.downloadEntranceStatAndSale()
+                        })
+                        self.queue.addOperation(operation)
+                    } else {
+                        self.retryCounter = 0
+                        
+                        AlertClass.showTopMessage(viewController: self, messageType: "HTTPError", messageSubType: (error?.toString())!, type: "error", completion: nil)
+                    }
+                }
+            } else {
+                self.retryCounter = 0
+                
+                if let localData = data {
+                    if let status = localData["status"].string {
+                        switch status {
+                        case "OK":
+                            let stat = localData["stat_data"]
+                            let purchased = stat["purchased"].intValue
+                            let updated_str = stat["updated"].stringValue
+                            let updated = FormatterSingleton.sharedInstance.UTCDateFormatter.dateFromString(updated_str)
+                            
+                            self.entranceStat = EntranceStatStructure(purchased: purchased, updated: updated)
+                            
+                            let sale = localData["sale_data"]
+                            let discount = sale["discount"].intValue
+                            let cost = sale["sale_record"]["cost"].intValue
+                            let cost_bon = sale["sale_record"]["cost_bon"].intValue
+                            
+                            self.entranceSale = EntranceSaleStructure(discount: discount, cost: cost, costBon: cost_bon)
+                            self.state = EntranceVCStateEnum.ShowSaleInfo
+                            self.stateMachine()
+                            return
+                            
+                            
+                        case "Error":
+                            if let errorType = localData["error_type"].string {
+                                switch errorType {
+                                case "EmptyArray":
+                                    break
+                                case "EntranceNotExist":
+                                    // No Entrance data exist --> pop this
+                                    NSOperationQueue.mainQueue().addOperationWithBlock({
+                                        AlertClass.showAlertMessage(viewController: self, messageType: "EntranceResult", messageSubType: "EntranceNotExist", type: "error", completion: {
+                                            NSOperationQueue.mainQueue().addOperationWithBlock({
+                                                self.dismissViewControllerAnimated(true, completion: nil)
+                                            })
+                                        })
+                                    })
+                                    
+                                    //                                    AlertClass.showSimpleErrorMessage(viewController: self, messageType: "EntranceResult", messageSubType: "EntranceNotExist", completion: {
+                                    //
+                                    //                                        NSOperationQueue.mainQueue().addOperationWithBlock({
+                                    //                                            self.dismissViewControllerAnimated(true, completion: nil)
+                                    //                                        })
+                                //                                    })
+                                default:
+                                    break
+                                    NSOperationQueue.mainQueue().addOperationWithBlock({
+                                        AlertClass.showTopMessage(viewController: self, messageType: "ErrorResult", messageSubType: errorType, type: "", completion: nil)
+                                    })
+                                    //                                    AlertClass.showSimpleErrorMessage(viewController: self, messageType: "ErrorResult", messageSubType: errorType, completion: nil)
+                                }
+                            }
+                            
+                        default:
+                            break
+                        }
+                    }
+                }
+            }
+            
+        }) { (error) in
+            NSOperationQueue.mainQueue().addOperationWithBlock({
+                self.refreshControl?.endRefreshing()
+                //                AlertClass.hideLoaingMessage(progressHUD: self.loading)
+                
+            })
+            
+            if self.retryCounter < CONNECTION_MAX_RETRY {
+                self.retryCounter += 1
+                let operation = NSBlockOperation(block: {
+                    self.downloadEntranceStatAndSale()
                 })
+                self.queue.addOperation(operation)
+            } else {
+                self.retryCounter = 0
                 
                 if let err = error {
                     switch err {
@@ -630,22 +896,44 @@ class EntranceDetailTableViewController: UITableViewController {
                         //                    AlertClass.showSimpleErrorMessage(viewController: self, messageType: "NetworkError", messageSubType: err.rawValue, completion: nil)
                     }
                 }
-        })
+            }
+        }
+        
     }
     
     private func downloadEntranceStat() {
-        NSOperationQueue.mainQueue().addOperationWithBlock { 
-            self.loading = AlertClass.showLoadingMessage(viewController: self)
-        }
+//        NSOperationQueue.mainQueue().addOperationWithBlock { 
+//            self.loading = AlertClass.showLoadingMessage(viewController: self)
+//        }
         
         ProductRestAPIClass.getEntranceStatData(uniqueId: self.entranceUniqueId, completion: { (data, error) in
-            NSOperationQueue.mainQueue().addOperationWithBlock({ 
-                AlertClass.hideLoaingMessage(progressHUD: self.loading)
-            })
+//            NSOperationQueue.mainQueue().addOperationWithBlock({ 
+//                AlertClass.hideLoaingMessage(progressHUD: self.loading)
+//            })
             
             if error != HTTPErrorType.Success {
-                AlertClass.showTopMessage(viewController: self, messageType: "HTTPError", messageSubType: (error?.toString())!, type: "error", completion: nil)
+                if error == HTTPErrorType.Refresh {
+                    let operation = NSBlockOperation(block: {
+                        self.downloadEntranceStat()
+                    })
+                    self.queue.addOperation(operation)
+
+                } else {
+                    if self.retryCounter < CONNECTION_MAX_RETRY {
+                        self.retryCounter += 1
+                        let operation = NSBlockOperation(block: {
+                            self.downloadEntranceStat()
+                        })
+                        self.queue.addOperation(operation)
+                    } else {
+                        self.retryCounter = 0
+                        
+                        AlertClass.showTopMessage(viewController: self, messageType: "HTTPError", messageSubType: (error?.toString())!, type: "error", completion: nil)
+                    }
+                }
             } else {
+                self.retryCounter = 0
+                
                 if let localData = data {
                     if let status = localData["status"].string {
                         switch status {
@@ -702,49 +990,81 @@ class EntranceDetailTableViewController: UITableViewController {
             }
             
         }) { (error) in
-            NSOperationQueue.mainQueue().addOperationWithBlock({
-                AlertClass.hideLoaingMessage(progressHUD: self.loading)
-            })
+//            NSOperationQueue.mainQueue().addOperationWithBlock({
+//                AlertClass.hideLoaingMessage(progressHUD: self.loading)
+//            })
             
-            if let err = error {
-                switch err {
-                case .HostUnreachable:
-                    fallthrough
-                case .NoInternetAccess:
-                    NSOperationQueue.mainQueue().addOperationWithBlock({
-                        AlertClass.showTopMessage(viewController: self, messageType: "NetworkError", messageSubType: err.rawValue, type: "error", completion: nil)
-                    })
-                    
-                    //                    AlertClass.showSimpleErrorMessage(viewController: self, messageType: "NetworkError", messageSubType: err.rawValue, completion: {
-                    //                        let operation = NSBlockOperation(block: {
-                    //                            self.downloadUserPurchaseData()
-                    //                        })
-                    //                        self.queue.addOperation(operation)
-                //                    })
-                default:
-                    NSOperationQueue.mainQueue().addOperationWithBlock({
-                        AlertClass.showTopMessage(viewController: self, messageType: "NetworkError", messageSubType: err.rawValue, type: "", completion: nil)
-                    })
-                    
-                    //                    AlertClass.showSimpleErrorMessage(viewController: self, messageType: "NetworkError", messageSubType: err.rawValue, completion: nil)
+            if self.retryCounter < CONNECTION_MAX_RETRY {
+                self.retryCounter += 1
+                let operation = NSBlockOperation(block: {
+                    self.downloadEntranceStat()
+                })
+                self.queue.addOperation(operation)
+            } else {
+                self.retryCounter = 0
+                
+                if let err = error {
+                    switch err {
+                    case .HostUnreachable:
+                        fallthrough
+                    case .NoInternetAccess:
+                        NSOperationQueue.mainQueue().addOperationWithBlock({
+                            AlertClass.showTopMessage(viewController: self, messageType: "NetworkError", messageSubType: err.rawValue, type: "error", completion: nil)
+                        })
+                        
+                        //                    AlertClass.showSimpleErrorMessage(viewController: self, messageType: "NetworkError", messageSubType: err.rawValue, completion: {
+                        //                        let operation = NSBlockOperation(block: {
+                        //                            self.downloadUserPurchaseData()
+                        //                        })
+                        //                        self.queue.addOperation(operation)
+                    //                    })
+                    default:
+                        NSOperationQueue.mainQueue().addOperationWithBlock({
+                            AlertClass.showTopMessage(viewController: self, messageType: "NetworkError", messageSubType: err.rawValue, type: "", completion: nil)
+                        })
+                        
+                        //                    AlertClass.showSimpleErrorMessage(viewController: self, messageType: "NetworkError", messageSubType: err.rawValue, completion: nil)
+                    }
                 }
             }
         }
     }
     
     private func downloadEntranceSale() {
-        NSOperationQueue.mainQueue().addOperationWithBlock { 
-            self.loading = AlertClass.showLoadingMessage(viewController: self)
-        }
+//        NSOperationQueue.mainQueue().addOperationWithBlock { 
+//            self.loading = AlertClass.showLoadingMessage(viewController: self)
+//        }
         
         ProductRestAPIClass.getEntranceSaleData(uniqueId: self.entranceUniqueId, completion: { (data, error) in
             NSOperationQueue.mainQueue().addOperationWithBlock({ 
-                AlertClass.hideLoaingMessage(progressHUD: self.loading)
+                self.refreshControl?.endRefreshing()
+//                AlertClass.hideLoaingMessage(progressHUD: self.loading)
+                
             })
             
             if error != HTTPErrorType.Success {
-                AlertClass.showTopMessage(viewController: self, messageType: "HTTPError", messageSubType: (error?.toString())!, type: "error", completion: nil)
+                if error == HTTPErrorType.Refresh {
+                    let operation = NSBlockOperation(block: {
+                        self.downloadEntranceSale()
+                    })
+                    self.queue.addOperation(operation)
+                    
+                } else {
+                    if self.retryCounter < CONNECTION_MAX_RETRY {
+                        self.retryCounter += 1
+                        let operation = NSBlockOperation(block: {
+                            self.downloadEntranceSale()
+                        })
+                        self.queue.addOperation(operation)
+                    } else {
+                        self.retryCounter = 0
+                        
+                        AlertClass.showTopMessage(viewController: self, messageType: "HTTPError", messageSubType: (error?.toString())!, type: "error", completion: nil)
+                    }
+                }
             } else {
+                self.retryCounter = 0
+                
                 if let localData = data {
                     if let status = localData["status"].string {
                         switch status {
@@ -752,8 +1072,9 @@ class EntranceDetailTableViewController: UITableViewController {
                             let sale = localData["sale_data"]
                             let discount = sale["discount"].intValue
                             let cost = sale["sale_record"]["cost"].intValue
+                            let cost_bon = sale["sale_record"]["cost_bon"].intValue
                             
-                            self.entranceSale = EntranceSaleStructure(discount: discount, cost: cost)
+                            self.entranceSale = EntranceSaleStructure(discount: discount, cost: cost, costBon: cost_bon)
                             self.state = EntranceVCStateEnum.ShowSaleInfo
                             self.stateMachine()
                             return
@@ -797,35 +1118,174 @@ class EntranceDetailTableViewController: UITableViewController {
             
         }) { (error) in
             NSOperationQueue.mainQueue().addOperationWithBlock({
-                AlertClass.hideLoaingMessage(progressHUD: self.loading)
+                self.refreshControl?.endRefreshing()
+//                AlertClass.hideLoaingMessage(progressHUD: self.loading)
             })
             
-            if let err = error {
-                switch err {
-                case .HostUnreachable:
-                    fallthrough
-                case .NoInternetAccess:
-                    NSOperationQueue.mainQueue().addOperationWithBlock({
-                        AlertClass.showTopMessage(viewController: self, messageType: "NetworkError", messageSubType: err.rawValue, type: "error", completion: nil)
-                    })
-                    
-                    //                    AlertClass.showSimpleErrorMessage(viewController: self, messageType: "NetworkError", messageSubType: err.rawValue, completion: {
-                    //                        let operation = NSBlockOperation(block: {
-                    //                            self.downloadUserPurchaseData()
-                    //                        })
-                    //                        self.queue.addOperation(operation)
-                //                    })
-                default:
-                    NSOperationQueue.mainQueue().addOperationWithBlock({
-                        AlertClass.showTopMessage(viewController: self, messageType: "NetworkError", messageSubType: err.rawValue, type: "", completion: nil)
-                    })
-                    
-                    //                    AlertClass.showSimpleErrorMessage(viewController: self, messageType: "NetworkError", messageSubType: err.rawValue, completion: nil)
+            if self.retryCounter < CONNECTION_MAX_RETRY {
+                self.retryCounter += 1
+                let operation = NSBlockOperation(block: {
+                    self.downloadEntranceSale()
+                })
+                self.queue.addOperation(operation)
+            } else {
+                self.retryCounter = 0
+                
+                if let err = error {
+                    switch err {
+                    case .HostUnreachable:
+                        fallthrough
+                    case .NoInternetAccess:
+                        NSOperationQueue.mainQueue().addOperationWithBlock({
+                            AlertClass.showTopMessage(viewController: self, messageType: "NetworkError", messageSubType: err.rawValue, type: "error", completion: nil)
+                        })
+                        
+                        //                    AlertClass.showSimpleErrorMessage(viewController: self, messageType: "NetworkError", messageSubType: err.rawValue, completion: {
+                        //                        let operation = NSBlockOperation(block: {
+                        //                            self.downloadUserPurchaseData()
+                        //                        })
+                        //                        self.queue.addOperation(operation)
+                    //                    })
+                    default:
+                        NSOperationQueue.mainQueue().addOperationWithBlock({
+                            AlertClass.showTopMessage(viewController: self, messageType: "NetworkError", messageSubType: err.rawValue, type: "", completion: nil)
+                        })
+                        
+                        //                    AlertClass.showSimpleErrorMessage(viewController: self, messageType: "NetworkError", messageSubType: err.rawValue, completion: nil)
+                    }
                 }
             }
-                
         }
     }
+    
+    private func createWallet() {
+        //        NSOperationQueue.mainQueue().addOperationWithBlock {
+        //            self.loading = AlertClass.showLoadingMessage(viewController: self)
+        //        }
+        
+        WalletRestAPIClass.info(completion: { (data, error) in
+            
+            if error != HTTPErrorType.Success {
+                if error == HTTPErrorType.Refresh {
+                    let operation = NSBlockOperation(block: {
+                        self.createWallet()
+                    })
+                    self.queue.addOperation(operation)
+                    
+                } else {
+                    if self.retryCounter < CONNECTION_MAX_RETRY {
+                        self.retryCounter += 1
+                        let operation = NSBlockOperation(block: {
+                            self.createWallet()
+                        })
+                        self.queue.addOperation(operation)
+                    } else {
+                        self.retryCounter = 0
+                        
+                        AlertClass.showTopMessage(viewController: self, messageType: "HTTPError", messageSubType: (error?.toString())!, type: "error", completion: nil)
+                        
+                        if let cell = self.tableView.cellForRowAtIndexPath(NSIndexPath(forRow: 0, inSection: 1)) as? EDSaleSectionTableViewCell {
+                            cell.changeButtonState(state: false)
+                        }
+                        
+                    }
+                }
+            } else {
+                self.retryCounter = 0
+                
+                if let cell = self.tableView.cellForRowAtIndexPath(NSIndexPath(forRow: 0, inSection: 1)) as? EDSaleSectionTableViewCell {
+                    cell.changeButtonState(state: false)
+                }
+                
+                if let localData = data {
+                    if let status = localData["status"].string {
+                        switch status {
+                        case "OK":
+                            let wallet_record = localData["record"]
+                            let cash = wallet_record["cash"].intValue
+
+                            var updated = NSDate()
+                            if let m = wallet_record["updated"].string {
+                                updated = FormatterSingleton.sharedInstance.UTCDateFormatter.dateFromString(m)!
+                            }
+ 
+                            UserDefaultsSingleton.sharedInstance.setWalletInfo(cash: cash, updated: updated)
+                            
+                            if UserDefaultsSingleton.sharedInstance.hasWallet() {
+                                let walletInfo = UserDefaultsSingleton.sharedInstance.getWalletInfo()!
+                                let cost: Int = (self.entranceSale?.costBon)!
+                                
+                                var canBuy = true
+                                if cost > walletInfo.cash {
+                                    canBuy = false
+                                }
+                                
+                                self.showBuyDialog(balance: walletInfo.cash, cost: cost, canBuy: canBuy)
+                            }
+                            
+                        case "Error":
+                            if let errorType = localData["error_type"].string {
+                                switch errorType {
+                                case "EmptyArray":
+                                    break
+                                default:
+                                    break
+                                    NSOperationQueue.mainQueue().addOperationWithBlock({
+                                        AlertClass.showTopMessage(viewController: self, messageType: "ErrorResult", messageSubType: errorType, type: "", completion: nil)
+                                    })
+                                    //                                    AlertClass.showSimpleErrorMessage(viewController: self, messageType: "ErrorResult", messageSubType: errorType, completion: nil)
+                                }
+                            }
+                            
+                        default:
+                            break
+                        }
+                    }
+                }
+            }
+            
+        }) { (error) in
+            
+            if self.retryCounter < CONNECTION_MAX_RETRY {
+                self.retryCounter += 1
+                let operation = NSBlockOperation(block: {
+                    self.createWallet()
+                })
+                self.queue.addOperation(operation)
+            } else {
+                self.retryCounter = 0
+                
+                if let cell = self.tableView.cellForRowAtIndexPath(NSIndexPath(forRow: 0, inSection: 1)) as? EDSaleSectionTableViewCell {
+                    cell.changeButtonState(state: false)
+                }
+                
+                if let err = error {
+                    switch err {
+                    case .HostUnreachable:
+                        fallthrough
+                    case .NoInternetAccess:
+                        NSOperationQueue.mainQueue().addOperationWithBlock({
+                            AlertClass.showTopMessage(viewController: self, messageType: "NetworkError", messageSubType: err.rawValue, type: "error", completion: nil)
+                        })
+                        
+                        //                    AlertClass.showSimpleErrorMessage(viewController: self, messageType: "NetworkError", messageSubType: err.rawValue, completion: {
+                        //                        let operation = NSBlockOperation(block: {
+                        //                            self.downloadUserPurchaseData()
+                        //                        })
+                        //                        self.queue.addOperation(operation)
+                    //                    })
+                    default:
+                        NSOperationQueue.mainQueue().addOperationWithBlock({
+                            AlertClass.showTopMessage(viewController: self, messageType: "NetworkError", messageSubType: err.rawValue, type: "", completion: nil)
+                        })
+                        
+                        //                    AlertClass.showSimpleErrorMessage(viewController: self, messageType: "NetworkError", messageSubType: err.rawValue, completion: nil)
+                    }
+                }
+            }
+        }
+    }
+    
     
     internal func downloadProgress(value value: Int) {
         NSOperationQueue.mainQueue().addOperationWithBlock {
@@ -862,6 +1322,15 @@ class EntranceDetailTableViewController: UITableViewController {
             self.state! = EntranceVCStateEnum.Downloaded
             self.stateMachine()
             return
+        } else {
+            DownloaderSingleton.sharedInstance.removeDownloader(uniqueId: self.entranceUniqueId)
+
+            AlertClass.showTopMessage(viewController: self, messageType: "ActionResult", messageSubType: "DownloadFailed", type: "error", completion: nil)
+            
+            self.state! = EntranceVCStateEnum.Purchased
+            self.stateMachine()
+            return
+
         }
         
     }
@@ -876,62 +1345,242 @@ class EntranceDetailTableViewController: UITableViewController {
         }
     }
     
-    // MARK: - Actions
-    @IBAction func buyButtonPressed(sender: UIButton) {
-        if BasketSingleton.sharedInstance.BasketId == nil {
-            BasketSingleton.sharedInstance.createBasket(viewController: self, completion: { 
-                if let id = BasketSingleton.sharedInstance.findSaleByTargetId(targetId: self.entranceUniqueId, type: "Entrance") {
-                    // sale object exist --> remove it
-                    BasketSingleton.sharedInstance.removeSaleById(viewController: self, saleId: id, completion: { (count) in
-                        self.selfBasketAdd = !self.selfBasketAdd
-                        self.updateBasketBadge(count: count)
-                        
-                        NSOperationQueue.mainQueue().addOperationWithBlock {
-                            self.tableView.reloadData()
-                        }
-                    })
-                } else {
-                    BasketSingleton.sharedInstance.addSale(viewController: self, target: self.entrance! as Any, type: "Entrance", completion: { (count) in
-                        self.selfBasketAdd = !self.selfBasketAdd
-                        self.updateBasketBadge(count: count)
+    private func showBuyDialog(balance balance: Int, cost: Int, canBuy: Bool) {
+        if let rect = self.tableView.cellForRowAtIndexPath(NSIndexPath(forRow: 0, inSection: 1)) as? EDSaleSectionTableViewCell {
+            
+            let popover = UIStoryboard(name: "Main", bundle: nil).instantiateViewControllerWithIdentifier("ENTRANCE_BUY_VC") as! EntranceBuyViewController
+            popover.modalPresentationStyle = .Popover
+            popover.popoverPresentationController?.delegate = self
+            popover.popoverPresentationController?.sourceView = rect.buyButton
+            popover.popoverPresentationController?.sourceRect = rect.buyButton.bounds
+            popover.popoverPresentationController?.permittedArrowDirections = .Any
+            popover.preferredContentSize = CGSize(width: self.view.layer.bounds.width, height: 210)
+            
+            popover.balance = balance
+            popover.cost = cost
+            popover.canBuy = canBuy
+            popover.productType = "Entrance"
+            popover.uniqueId = self.entranceUniqueId
+            popover.productBuyDelegate = self
+            
+            self.presentViewController(popover, animated: true, completion: nil)
+        }
+    }
 
-                        NSOperationQueue.mainQueue().addOperationWithBlock {
-                            self.tableView.reloadData()
-                        }
-                    })
+    private func downloadImages(ids: [Int]) {
+        let filemgr = NSFileManager.defaultManager()
+        let dirPaths = NSSearchPathForDirectoriesInDomains(.DocumentDirectory, .UserDomainMask, true)
+        
+        let docsDir = dirPaths[0] as NSString
+        let newDir = docsDir.stringByAppendingPathComponent("images")
+        
+        let username: String = UserDefaultsSingleton.sharedInstance.getUsername()!
+        let purchased = PurchasedModelHandler.getAllPurchasedIn(username: username, ids: ids)
+        for p in purchased {
+            if p.productType == "Entrance" {
+                if let entrance = EntranceModelHandler.getByUsernameAndId(id: p.productUniqueId, username: username) {
+                    downloadEsetImage(esetId: entrance.setId, rootDirectory: newDir, filemgr: filemgr)
                 }
-                
-            })
-        } else {
-            if let id = BasketSingleton.sharedInstance.findSaleByTargetId(targetId: self.entranceUniqueId, type: "Entrance") {
-                // sale object exist --> remove it
-                BasketSingleton.sharedInstance.removeSaleById(viewController: self, saleId: id, completion: { (count) in
-                    print ("sale count: \(count)")
-                    self.selfBasketAdd = !self.selfBasketAdd
-                    self.updateBasketBadge(count: count)
-                    
-                    NSOperationQueue.mainQueue().addOperationWithBlock {
-                        self.tableView.reloadData()
-                    }
-                })
-            } else {
-                BasketSingleton.sharedInstance.addSale(viewController: self, target: self.entrance! as Any, type: "Entrance", completion: { (count) in
-                    print("sales count: \(count)")
-                    self.selfBasketAdd = !self.selfBasketAdd
-                    self.updateBasketBadge(count: count)
-                    
-                    NSOperationQueue.mainQueue().addOperationWithBlock {
-                        self.tableView.reloadData()
-                    }
-                })
             }
         }
     }
     
-    @IBAction func basketButtonPressed(sender: AnyObject) {
-        NSOperationQueue.mainQueue().addOperationWithBlock { 
-            self.performSegueWithIdentifier("BasketCheckoutVCSegue", sender: self)
+    private func downloadEsetImage(esetId esetId: Int, rootDirectory: String, filemgr: NSFileManager) {
+        
+        MediaRestAPIClass.downloadEsetImageLocal(esetId, completion: {
+            fullPath, data, error in
+            
+            if error != .Success {
+                if error == HTTPErrorType.Refresh {
+                    self.downloadEsetImage(esetId: esetId, rootDirectory: rootDirectory, filemgr: filemgr)
+                } else {
+                    //                    print("error in downloaing image from \(fullPath!)")
+                }
+            } else {
+                if let myData = data {
+                    let esetDir = (rootDirectory as NSString).stringByAppendingPathComponent("eset")
+                    
+                    do {
+                        if filemgr.fileExistsAtPath(esetDir) == false {
+                            try filemgr.createDirectoryAtPath(esetDir, withIntermediateDirectories: true, attributes: nil)
+                        }
+                        
+                        let filePath = (esetDir as NSString).stringByAppendingPathComponent(String(esetId))
+                        
+                        if filemgr.fileExistsAtPath(filePath) == true {
+                            try filemgr.removeItemAtPath(filePath)
+                        }
+                        filemgr.createFileAtPath(filePath, contents: myData, attributes: nil)
+                        
+                        
+                    } catch {
+                        
+                    }
+                }
+            }
+            }, failure: { (error) in
+        })
+        
+    }
+    
+    
+    // MARK: - Delegates
+    func ProductBuyedResult(data data: JSON, productId: String, productType: String) {
+        let cash = data["wallet_cash"].intValue
+        var updated = NSDate()
+        if let m = data["wallet_updated"].string {
+            updated = FormatterSingleton.sharedInstance.UTCDateFormatter.dateFromString(m)!
         }
+        
+        UserDefaultsSingleton.sharedInstance.setWalletInfo(cash: cash, updated: updated)
+        
+        var purchasedTemp: [Int] = []
+        let username = UserDefaultsSingleton.sharedInstance.getUsername()
+        
+        if let purchased = data["purchased"].array {
+            for item in purchased {
+                let purchaseId = item["purchase_id"].intValue
+                let downloaded = item["downloaded"].intValue
+                
+                let purchased_time_str = item["purchase_time"].stringValue
+                let purchasedTime = FormatterSingleton.sharedInstance.UTCDateFormatter.dateFromString(purchased_time_str)!
+                
+                if EntranceModelHandler.add(entrance: self.entrance!, username: username!) == true {
+                    if PurchasedModelHandler.add(id: purchaseId, username: username!, isDownloaded: false, downloadTimes: downloaded, isImageDownlaoded: false, purchaseType: "Entrance", purchaseUniqueId: entrance!.entranceUniqueId!, created: purchasedTime) == false {
+                        
+                        // rollback entrance insert
+                        EntranceModelHandler.removeById(id: entrance!.entranceUniqueId!, username: username!)
+                    } else {
+                        purchasedTemp.append(purchaseId)
+                    }
+                }
+                
+            }
+        }
+
+        NSOperationQueue.mainQueue().addOperationWithBlock { 
+            self.resetView()
+        }
+        
+        self.downloadImages(purchasedTemp)
+        
+        AlertClass.showAlertMessage(viewController: self, messageType: "ActionResult", messageSubType: "PurchasedSuccess", type: "success", completion: {
+            self.tabBarController?.tabBar.items?[2].badgeValue = "\(purchasedTemp.count)"
+        })
+        
+    }
+    
+    // MARK: - Actions
+    
+    @IBAction func buyButtonPressed(sender: UIButton) {
+//        self.showBuyDialog(balance: 500, cost: 100, canBuy: false)
+//        return
+        
+        if UserDefaultsSingleton.sharedInstance.hasWallet() {
+            let walletInfo = UserDefaultsSingleton.sharedInstance.getWalletInfo()!
+            let cost: Int = (self.entranceSale?.costBon)!
+            
+            var canBuy = true
+            if cost > walletInfo.cash {
+                canBuy = false
+            }
+            
+            self.showBuyDialog(balance: walletInfo.cash, cost: cost, canBuy: canBuy)
+            
+        } else {
+            if let cell = self.tableView.cellForRowAtIndexPath(NSIndexPath(forRow: 0, inSection: 1)) as? EDSaleSectionTableViewCell {
+                cell.disableBuyButton()
+            }
+            
+            let operation = NSBlockOperation(block: {
+                self.createWallet()
+            })
+            self.queue.addOperation(operation)
+        }
+        
+    }
+    
+    
+    
+//    @IBAction func buyButtonPressed(sender: UIButton) {
+//        
+//        if let cell = self.tableView.cellForRowAtIndexPath(NSIndexPath(forRow: 0, inSection: 1)) as? EDSaleSectionTableViewCell {
+//            cell.disableBuyButton()
+//        }
+//        
+//        if BasketSingleton.sharedInstance.BasketId == nil {
+//            BasketSingleton.sharedInstance.createBasket(viewController: self, completion: { 
+//                if let id = BasketSingleton.sharedInstance.findSaleByTargetId(targetId: self.entranceUniqueId, type: "Entrance") {
+//                    // sale object exist --> remove it
+//                    BasketSingleton.sharedInstance.removeSaleById(viewController: self, saleId: id, completion: { (count) in
+//                        self.selfBasketAdd = !self.selfBasketAdd
+//                        self.updateBasketBadge(count: count)
+//                        
+//                        NSOperationQueue.mainQueue().addOperationWithBlock {
+//                            self.tableView.reloadData()
+//                        }
+//                        }, failure: {
+//                            if let cell = self.tableView.cellForRowAtIndexPath(NSIndexPath(forRow: 0, inSection: 1)) as? EDSaleSectionTableViewCell {
+//                                cell.changeButtonState(state: self.selfBasketAdd)
+//                            }
+//                    })
+//                } else {
+//                    BasketSingleton.sharedInstance.addSale(viewController: self, target: self.entrance! as Any, type: "Entrance", completion: { (count) in
+//                        self.selfBasketAdd = !self.selfBasketAdd
+//                        self.updateBasketBadge(count: count)
+//
+//                        NSOperationQueue.mainQueue().addOperationWithBlock {
+//                            self.tableView.reloadData()
+//                        }
+//                        }, failure: {
+//                            if let cell = self.tableView.cellForRowAtIndexPath(NSIndexPath(forRow: 0, inSection: 1)) as? EDSaleSectionTableViewCell {
+//                                cell.changeButtonState(state: self.selfBasketAdd)
+//                            }
+//                    })
+//                }
+//                
+//                }, failure: {
+//                    if let cell = self.tableView.cellForRowAtIndexPath(NSIndexPath(forRow: 0, inSection: 1)) as? EDSaleSectionTableViewCell {
+//                        cell.changeButtonState(state: self.selfBasketAdd)
+//                    }
+//            })
+//        } else {
+//            if let id = BasketSingleton.sharedInstance.findSaleByTargetId(targetId: self.entranceUniqueId, type: "Entrance") {
+//                // sale object exist --> remove it
+//                BasketSingleton.sharedInstance.removeSaleById(viewController: self, saleId: id, completion: { (count) in
+//                    self.selfBasketAdd = !self.selfBasketAdd
+//                    self.updateBasketBadge(count: count)
+//                    
+//                    NSOperationQueue.mainQueue().addOperationWithBlock {
+//                        self.tableView.reloadData()
+//                    }
+//                    }, failure: {
+//                        if let cell = self.tableView.cellForRowAtIndexPath(NSIndexPath(forRow: 0, inSection: 1)) as? EDSaleSectionTableViewCell {
+//                            cell.changeButtonState(state: self.selfBasketAdd)
+//                        }
+//                })
+//            } else {
+//                BasketSingleton.sharedInstance.addSale(viewController: self, target: self.entrance! as Any, type: "Entrance", completion: { (count) in
+//                    self.selfBasketAdd = !self.selfBasketAdd
+//                    self.updateBasketBadge(count: count)
+//                    
+//                    NSOperationQueue.mainQueue().addOperationWithBlock {
+//                        self.tableView.reloadData()
+//                    }
+//                    }, failure: {
+//                        if let cell = self.tableView.cellForRowAtIndexPath(NSIndexPath(forRow: 0, inSection: 1)) as? EDSaleSectionTableViewCell {
+//                            cell.changeButtonState(state: self.selfBasketAdd)
+//                        }
+//                
+//                })
+//            }
+//        }
+//    }
+    
+    @IBAction func basketButtonPressed(sender: AnyObject) {
+//        NSOperationQueue.mainQueue().addOperationWithBlock { 
+//            self.performSegueWithIdentifier("BasketCheckoutVCSegue", sender: self)
+//        }
     }
     
     @IBAction func downloadButtonPressed(sender: UIButton) {
@@ -946,30 +1595,44 @@ class EntranceDetailTableViewController: UITableViewController {
             let operation = NSBlockOperation(block: {
                 let downloader = DownloaderSingleton.sharedInstance.getMeDownloader(type: "Entrance", uniqueId: self.entranceUniqueId) as! EntrancePackageDownloader
                 downloader.initialize(entranceUniqueId: self.entranceUniqueId!, viewController: self, vcType: "ED", username: username)
-                if downloader.fillImagesArray() == true {
-                    let filemgr = NSFileManager.defaultManager()
-                    let dirPaths = NSSearchPathForDirectoriesInDomains(.DocumentDirectory, .UserDomainMask, true)
-                    
-                    let docsDir = dirPaths[0] as NSString
-                    let newDir = docsDir.stringByAppendingPathComponent(self.entranceUniqueId!)
-                    
-                    var isDir: ObjCBool = false
-                    if filemgr.fileExistsAtPath(newDir, isDirectory: &isDir) == true {
-                        if isDir {
-                            let count = downloader.DownloadCount
-                            
-                            if let cell = self.tableView.cellForRowAtIndexPath(NSIndexPath(forRow: 0, inSection: 1)) as? EDPurchasedSectionTableViewCell {
-                                cell.changeToDownloadState(total: count)
-                                cell.setNeedsLayout()
-                            }
-                            
-                            DownloaderSingleton.sharedInstance.setDownloaderStarted(uniqueId: self.entranceUniqueId)
-                            
-                            downloader.downloadPackageImages(saveDirectory: newDir)
-                        }
-                    }
+                downloader.fillImagesArray({ (result) in
+                    if result == true {
+                        let filemgr = NSFileManager.defaultManager()
+                        let dirPaths = NSSearchPathForDirectoriesInDomains(.DocumentDirectory, .UserDomainMask, true)
                         
-                }
+                        let docsDir = dirPaths[0] as NSString
+                        let pathAdd = "\(username)_\(self.entranceUniqueId!)"
+                        let newDir = docsDir.stringByAppendingPathComponent(pathAdd)
+                        
+                        var isDir: ObjCBool = false
+                        if filemgr.fileExistsAtPath(newDir, isDirectory: &isDir) == true {
+                            if isDir {
+                                let count = downloader.DownloadCount
+                                
+                                if let cell = self.tableView.cellForRowAtIndexPath(NSIndexPath(forRow: 0, inSection: 1)) as? EDPurchasedSectionTableViewCell {
+                                    cell.changeToDownloadState(total: count)
+                                    cell.setNeedsLayout()
+                                }
+                                
+                                DownloaderSingleton.sharedInstance.setDownloaderStarted(uniqueId: self.entranceUniqueId)
+                                
+                                downloader.downloadPackageImages(saveDirectory: newDir)
+                            }
+                        }
+                    } else {
+                        PurchasedModelHandler.setIsDownloadedTrue(productType: "Entrance", productId: self.entranceUniqueId, username: username)
+                        if let entrance = EntranceModelHandler.getByUsernameAndId(id: self.entranceUniqueId, username: username) {
+                            let title = "دانلود آزمون به اتمام رسید"
+                            let message = "\(entrance.type) \(monthToString(entrance.month))  \(entrance.year)\n" + "\(entrance.set) (\(entrance.group))"
+                            
+                            LocalNotificationsSingleton.sharedInstance.createNotification(alertTitle: title, alertBody: message, fireDate: NSDate())
+                            
+                        }
+                        
+                        self.downloadImagesFinished(result: true)
+                    }
+                })
+                
             })
             self.queue.addOperation(operation)
             
@@ -987,7 +1650,8 @@ class EntranceDetailTableViewController: UITableViewController {
                             let dirPaths = NSSearchPathForDirectoriesInDomains(.DocumentDirectory, .UserDomainMask, true)
                             
                             let docsDir = dirPaths[0] as NSString
-                            let newDir = docsDir.stringByAppendingPathComponent(self.entranceUniqueId!)
+                            let pathAdd = "\(username)_\(self.entranceUniqueId!)"
+                            let newDir = docsDir.stringByAppendingPathComponent(pathAdd)
                             
                             do {
                                 try filemgr.removeItemAtPath(newDir)
@@ -1031,8 +1695,23 @@ class EntranceDetailTableViewController: UITableViewController {
     }
     
     @IBAction func showEntranceButtonPressed(sender: UIButton) {
-        NSOperationQueue.mainQueue().addOperationWithBlock { 
-            self.performSegueWithIdentifier("EntranceShowVCSegue", sender: self)
+        var canShow = true
+        let username = UserDefaultsSingleton.sharedInstance.getUsername()!
+        if let counter = SnapshotCounterHandler.getByUsernameAndProductId(username: username, productUniqueId: self.entranceUniqueId, productType: "Entrance") {
+            if let blockTime = counter.blockTo {
+                if blockTime.compare(NSDate()) == .OrderedDescending {
+                    canShow = false
+                    let date = FormatterSingleton.sharedInstance.IRDateFormatter.stringFromDate(blockTime)
+                    AlertClass.showAlertMessageWithParams(viewController: self, messageType: "ActionResult", messageSubType: "BlockedByScreenshotTime", params: [date], type: "error", completion: nil)
+
+                }
+            }
+        }
+
+        if canShow {
+            NSOperationQueue.mainQueue().addOperationWithBlock {
+                self.performSegueWithIdentifier("EntranceShowVCSegue", sender: self)
+            }
         }
     }
     
@@ -1042,7 +1721,7 @@ class EntranceDetailTableViewController: UITableViewController {
         case .Initialize:
             return 0
         case .EntranceComplete:
-            return 1
+            fallthrough
         case .DownloadStarted:
             fallthrough
         case .Downloaded:
@@ -1061,7 +1740,7 @@ class EntranceDetailTableViewController: UITableViewController {
         case .Initialize:
             return 0
         case .EntranceComplete:
-            return 3
+            fallthrough
         case .DownloadStarted:
             fallthrough
         case .Downloaded:
@@ -1087,18 +1766,18 @@ class EntranceDetailTableViewController: UITableViewController {
             switch indexPath.row {
             case 0:
                 if let cell = self.tableView.dequeueReusableCellWithIdentifier("INITIAL_SECTION", forIndexPath: indexPath) as? EDInitialSectionTableViewCell {
-                    cell.configureCell(title: "\(self.entrance!.entranceTypeTitle!) \(self.entrance!.entranceOrgTitle!)", subTitle: "\(self.entrance!.entranceGroupTitle!) (\(self.entrance!.entranceSetTitle!))", imageId: self.entrance!.entranceSetId!, indexPath: indexPath)
+                    cell.configureCell(title: "\(self.entrance!.entranceTypeTitle!)", subTitle: "\(self.entrance!.entranceSetTitle!) (\(self.entrance!.entranceGroupTitle!))", imageId: self.entrance!.entranceSetId!, indexPath: indexPath)
                     return cell
                 }
             case 1:
                 if let cell = self.tableView.dequeueReusableCellWithIdentifier("HEADER_SECTION", forIndexPath: indexPath) as? EDHeaderSectionTableViewCell {
-                    cell.configureCell(title: "اطلاعات آزمون", extraData: self.entrance!.entranceExtraData)
+                    cell.configureCell(title: "اطلاعات آزمون", extraData: self.entrance!.entranceOrgTitle!)
                     return cell
                 }
             case 2:
                 if let cell = self.tableView.dequeueReusableCellWithIdentifier("INFORMATION_SECTION", forIndexPath: indexPath) as? EDInformationSectionTableViewCell {
                     
-                    cell.configureCell(bookletCount: self.entrance!.entranceBookletCounts!, duration: self.entrance!.entranceDuration!, year: self.entrance!.entranceYear!)
+                    cell.configureCell(bookletCount: self.entrance!.entranceBookletCounts!, duration: self.entrance!.entranceDuration!, year: self.entrance!.entranceYear!, month: self.entrance!.entranceMonth!)
                     return cell
                 }
             default:
@@ -1136,6 +1815,11 @@ class EntranceDetailTableViewController: UITableViewController {
                     cell.jumpToFavoritesButton.addTarget(self, action: #selector(self.showEntranceButtonPressed(_:)), forControlEvents: .TouchUpInside)
                     return cell
                 }
+            } else {
+                if let cell = self.tableView.dequeueReusableCellWithIdentifier("ENTRANCE_DETAIL_LOADING", forIndexPath: indexPath) as? ActivityUpdateTableViewCell {
+                    cell.cellConfigure()
+                    return cell
+                }
             }
         default:
             break
@@ -1144,35 +1828,54 @@ class EntranceDetailTableViewController: UITableViewController {
     }
     
     override func tableView(tableView: UITableView, heightForRowAtIndexPath indexPath: NSIndexPath) -> CGFloat {
-        switch indexPath.section {
-        case 0:
-            switch indexPath.row {
-            case 0:
-                return 170.0
-            case 1:
-                return 65.0
-            case 2:
-                return 80.0
-            default:
-                break
-            }
-        case 1:
-            if self.state! == .ShowSaleInfo {
-                if self.selfBasketAdd == true {
-                    return 160.0
-                } else {
-                    return 90.0
-                }
-            } else if self.state! == .Purchased || self.state! == .Downloaded || self.state! == .DownloadStarted {
-                return 80.0
-            }
-        default:
-            break
-        }
-        return 0.0
+        return UITableViewAutomaticDimension
     }
     
+//    override func tableView(tableView: UITableView, heightForRowAtIndexPath indexPath: NSIndexPath) -> CGFloat {
+//        switch indexPath.section {
+//        case 0:
+//            switch indexPath.row {
+//            case 0:
+//                let text = "\(self.entrance!.entranceSetTitle!)"
+//                let labelSize = (text as NSString).sizeWithAttributes(nil)
+//                
+//                return 160.0 + labelSize.height
+//                
+//            case 1:
+//                return 70.0
+//            case 2:
+//                return 80.0
+//            default:
+//                break
+//            }
+//        case 1:
+//            if self.state! == .ShowSaleInfo {
+//                if self.selfBasketAdd == true {
+//                    return 185.0
+//                } else {
+//                    return 90.0
+//                }
+//            } else if self.state! == .Purchased || self.state! == .Downloaded || self.state! == .DownloadStarted {
+//                return 100.0
+//            }
+//        default:
+//            break
+//        }
+//        return 0.0
+//    }
+    
     // MARK: - Navigation
+    func adaptivePresentationStyleForPresentationController(controller: UIPresentationController) -> UIModalPresentationStyle {
+        return .None
+    }
+    
+    func prepareForPopoverPresentation(popoverPresentationController: UIPopoverPresentationController) {
+    }
+    
+    func popoverPresentationControllerShouldDismissPopover(popoverPresentationController: UIPopoverPresentationController) -> Bool {
+        return false
+    }
+    
     override func prepareForSegue(segue: UIStoryboardSegue, sender: AnyObject?) {
         if segue.identifier == "BasketCheckoutVCSegue" {
             if segue.destinationViewController is BasketCheckoutTableViewController {

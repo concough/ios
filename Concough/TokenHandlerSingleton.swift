@@ -20,6 +20,8 @@ class TokenHandlerSingleton {
     
     static let sharedInstance = TokenHandlerSingleton()
     
+    func touch() {}
+    
     func setUsernameAndPassword(username username: String, password: String) {
         self._username = username
         self._password = password
@@ -82,7 +84,6 @@ class TokenHandlerSingleton {
         if self._oauth_method == "oauth" {
             AccessTokenAdapter.authorize(username: self._username!, password: self._password!, completion: { data, statusCode, err in
 
-                //print ("TokenHandlerSingleton --> authorize: \(statusCode) - \(err)\n")
                 if statusCode == 200 {
                     // extrace token and refresh_token from response
                     if let localData = data {
@@ -94,8 +95,6 @@ class TokenHandlerSingleton {
                             self._tokenType = localData["token_type"].stringValue
                             self._expiresIn = localData["expires_in"].intValue
                             self._lastTime = NSDate()
-                            
-                            //self.printData(when: "after")
                             
                             // set keychain value
                             KeyChainAccessProxy.setValue(OAUTH_TOKEN_KEY, value: self._token!)
@@ -159,11 +158,9 @@ class TokenHandlerSingleton {
         if self._oauth_method == "oauth" {
             if self._refreshToken != nil {
                 // call refresh token method
-                //self.printData(when: "before")
 
                 AccessTokenAdapter.refreshToken(refToken: self._refreshToken!, completion: { (data, statusCode, err) in
 
-                    //print ("TokenHandlerSingleton --> refreshToken: \(statusCode) - \(err)\n")
                     if statusCode == 200 {
                         // extrace token and refresh_token from response
                         if let localData = data {
@@ -175,8 +172,6 @@ class TokenHandlerSingleton {
                                 self._tokenType = localData["token_type"].stringValue
                                 self._expiresIn = localData["expires_in"].intValue
                                 self._lastTime = NSDate()
-                                
-                                //self.printData(when: "after")
                                 
                                 // set keychain value
                                 KeyChainAccessProxy.setValue(OAUTH_TOKEN_KEY, value: self._token!)
@@ -258,26 +253,39 @@ class TokenHandlerSingleton {
     func assureAuthorized(refresh: Bool = false, completion: (authenticated: Bool, error: HTTPErrorType?) -> (), failure: (error: NetworkErrorType?) -> ()) {
         
         if self.isAuthorized() {
-            //print ("TokenHandlerSingleton --> assureAuthorized: Authorized\n")
             if refresh {
                 self.refreshToken({ (error) in
                     if error == .Success {
                         completion(authenticated: true, error: error)
                     } else {
-//                        if error == .BadRequest || error == .UnAuthorized {
+                        if error == .BadRequest || error == .ServerInternalError {
                             self.authorize({ (error) in
                                 if error == .Success {
                                     completion(authenticated: true, error: error)
                                 } else {
-                                    if error == .BadRequest {
-                                        KeyChainAccessProxy.clearAllValue()
-                                        UserDefaultsSingleton.sharedInstance.clearAll()
-                                    }
                                     completion(authenticated: false, error: error)
                                 }
-                            }, failure: { (error) in
-                                failure(error: error)
+                                }, failure: { (error) in
+                                    failure(error: error)
                             })
+                        } else {
+                            completion(authenticated: false, error: error)
+                        }
+                        
+//                        if error == .BadRequest || error == .UnAuthorized {
+//                            self.authorize({ (error) in
+//                                if error == .Success {
+//                                    completion(authenticated: true, error: error)
+//                                } else {
+//                                    if error == .BadRequest {
+//                                        KeyChainAccessProxy.clearAllValue()
+//                                        UserDefaultsSingleton.sharedInstance.clearAll()
+//                                    }
+//                                    completion(authenticated: false, error: error)
+//                                }
+//                            }, failure: { (error) in
+//                                failure(error: error)
+//                            })
 //                        }
 //                        completion(authenticated: false, error: error)
                     }
@@ -289,26 +297,22 @@ class TokenHandlerSingleton {
                     let timeDiff = Int(NSDate().timeIntervalSinceDate(last_time))
                     if timeDiff >= expiresIn - 60 {
                         self.refreshToken({ (error) in
-                            //print ("TokenHandlerSingleton --> assureAuthorized: Expired\n")
                             if error == .Success {
                                 completion(authenticated: true, error: error)
                             } else {
-//                                if error == .BadRequest {
+                                if error == .BadRequest || error == .ServerInternalError {
                                     self.authorize({ (error) in
                                         if error == .Success {
                                             completion(authenticated: true, error: error)
                                         } else {
-                                            if error == .BadRequest {
-                                                KeyChainAccessProxy.clearAllValue()
-                                                UserDefaultsSingleton.sharedInstance.clearAll()
-                                            }
                                             completion(authenticated: false, error: error)
                                         }
-                                    }, failure: { (error) in
+                                        }, failure: { (error) in
                                             failure(error: error)
                                     })
-//                                }
-//                                completion(authenticated: false, error: error)
+                                } else {
+                                    completion(authenticated: false, error: error)
+                                }
                             }
                         }, failure: { error in
                             failure(error: error)
@@ -316,11 +320,12 @@ class TokenHandlerSingleton {
                     } else {
                         completion(authenticated: true, error: .Success)
                     }
+                } else {
+                    completion(authenticated: false, error: nil)
                 }
             }
         } else {
             if self.isAuthenticated() {
-                //print ("TokenHandlerSingleton --> assureAuthorized: Not Authorized but Authenticated\n")
                 self.authorize({ (error) in
                     if error == .Success {
                         completion(authenticated: true, error: error)
@@ -331,7 +336,6 @@ class TokenHandlerSingleton {
                     failure(error: error)
                 })
             } else {
-                //print ("TokenHandlerSingleton --> assureAuthorized: Not Authenticated\n")
                 completion(authenticated: false, error: nil)
             }
         }

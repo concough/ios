@@ -9,12 +9,14 @@
 import UIKit
 import MBProgressHUD
 
-class SettingsReportBugViewController: UIViewController {
+class SettingsReportBugViewController: UIViewController, UITextViewDelegate {
 
     @IBOutlet weak var reportTextView: UITextView!
     @IBOutlet weak var reportButton: UIButton!
     
     private var loading: MBProgressHUD?
+    private var isFirstTime: Bool = true
+    private var retryCounter = 0
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -29,11 +31,20 @@ class SettingsReportBugViewController: UIViewController {
         self.reportTextView.layer.masksToBounds = true
         self.reportTextView.layer.borderColor = UIColor(netHex: 0xDDDDDD, alpha: 1.0).CGColor
         self.reportTextView.layer.borderWidth = 1.0
+        
+        self.reportTextView.delegate = self
     }
 
     override func didReceiveMemoryWarning() {
         super.didReceiveMemoryWarning()
         // Dispose of any resources that can be recreated.
+    }
+    
+    func textViewDidBeginEditing(textView: UITextView) {
+        if self.isFirstTime {
+            textView.text = ""
+            self.isFirstTime = false
+        }
     }
     
     // MARK: - Actions
@@ -61,9 +72,20 @@ class SettingsReportBugViewController: UIViewController {
             
             if error != HTTPErrorType.Success {
                 // sometimes happened
-                NSOperationQueue.mainQueue().addOperationWithBlock({
-                    AlertClass.showTopMessage(viewController: self, messageType: "HTTPError", messageSubType: (error?.toString())!, type: "error", completion: nil)
-                })
+                if error == HTTPErrorType.Refresh {
+                    self.reportBug(text: text)
+                } else {
+                    if self.retryCounter < CONNECTION_MAX_RETRY {
+                        self.retryCounter += 1
+                        self.reportBug(text: text)
+                    } else {
+                        self.retryCounter = 0
+                        
+                        NSOperationQueue.mainQueue().addOperationWithBlock({
+                            AlertClass.showTopMessage(viewController: self, messageType: "HTTPError", messageSubType: (error?.toString())!, type: "error", completion: nil)
+                        })
+                    }
+                }
             } else {
                 if let localData = data {
                     if let status = localData["status"].string {
@@ -91,24 +113,31 @@ class SettingsReportBugViewController: UIViewController {
             NSOperationQueue.mainQueue().addOperationWithBlock({
                 AlertClass.hideLoaingMessage(progressHUD: self.loading)
             })
-            
-            if let err = error {
-                switch err {
-                case .NoInternetAccess:
-                    fallthrough
-                case .HostUnreachable:
-                    NSOperationQueue.mainQueue().addOperationWithBlock({
-                        AlertClass.showTopMessage(viewController: self, messageType: "NetworkError", messageSubType: err.rawValue, type: "error", completion: nil)
-                    })
-                    //                            AlertClass.showSimpleErrorMessage(viewController: self, messageType: "NetworkError", messageSubType: err.rawValue, completion: {
-                    //                                NSOperationQueue.mainQueue().addOperationWithBlock({
-                    //                                    self.login()
-                    //                                })
-                //                            })
-                default:
-                    NSOperationQueue.mainQueue().addOperationWithBlock({
-                        AlertClass.showTopMessage(viewController: self, messageType: "NetworkError", messageSubType: err.rawValue, type: "", completion: nil)
-                    })
+
+            if self.retryCounter < CONNECTION_MAX_RETRY {
+                self.retryCounter += 1
+                self.reportBug(text: text)
+            } else {
+                self.retryCounter = 0
+                
+                if let err = error {
+                    switch err {
+                    case .NoInternetAccess:
+                        fallthrough
+                    case .HostUnreachable:
+                        NSOperationQueue.mainQueue().addOperationWithBlock({
+                            AlertClass.showTopMessage(viewController: self, messageType: "NetworkError", messageSubType: err.rawValue, type: "error", completion: nil)
+                        })
+                        //                            AlertClass.showSimpleErrorMessage(viewController: self, messageType: "NetworkError", messageSubType: err.rawValue, completion: {
+                        //                                NSOperationQueue.mainQueue().addOperationWithBlock({
+                        //                                    self.login()
+                        //                                })
+                    //                            })
+                    default:
+                        NSOperationQueue.mainQueue().addOperationWithBlock({
+                            AlertClass.showTopMessage(viewController: self, messageType: "NetworkError", messageSubType: err.rawValue, type: "", completion: nil)
+                        })
+                    }
                 }
             }
         }

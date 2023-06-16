@@ -28,8 +28,38 @@ class EntranceLessonModelHandler {
             })
             return lesson
         } catch(let error as NSError) {
-            print("\(error)")
+//            print("\(error)")
         }
+        return nil
+    }
+    
+    class func getAllLessons(username username: String) -> [EntranceLessonModel] {
+        var items: [EntranceLessonModel] = []
+        let entrances = RealmSingleton.sharedInstance.DefaultRealm.objects(EntranceModel.self).filter("username = '\(username)'")
+        if entrances.count > 0 {
+            for entrance in entrances {
+                for booklet in entrance.booklets {
+                    for lesson in booklet.lessons {
+                        items.append(lesson)
+                    }
+                }
+            }
+        }
+        return items
+        
+    }
+    
+    class func getOneLessonByTitleAndOrder(username username: String, entranceUniqueId: String, lessonTitle: String, lessonOrder: Int) -> EntranceLessonModel? {
+        if let entrance = RealmSingleton.sharedInstance.DefaultRealm.objects(EntranceModel.self).filter("username = '\(username)' AND uniqueId = '\(entranceUniqueId)'").first {
+            for booklet in entrance.booklets {
+                for lesson in booklet.lessons {
+                    if lesson.fullTitle == lessonTitle && lesson.order == lessonOrder {
+                        return lesson
+                    }
+                }
+            }
+        }
+        
         return nil
     }
 }

@@ -42,7 +42,7 @@ class EntranceRestAPIClass {
                         case .ForbidenAccess:
                             TokenHandlerSingleton.sharedInstance.assureAuthorized(true, completion: { (authenticated, error) in
                                 if authenticated && error == .Success {
-                                    completion(data: nil, error: error)
+                                    completion(data: nil, error: HTTPErrorType.Refresh)
                                 }
                                 }, failure: { (error) in
                                     failure(error: error)
@@ -55,6 +55,8 @@ class EntranceRestAPIClass {
                     }
                 }
                 
+            } else {
+                completion(data: nil, error: error)
             }
             }, failure: { (error) in
                 failure(error: error)
@@ -93,7 +95,7 @@ class EntranceRestAPIClass {
                         case .ForbidenAccess:
                             TokenHandlerSingleton.sharedInstance.assureAuthorized(true, completion: { (authenticated, error) in
                                 if authenticated && error == .Success {
-                                    completion(data: nil, error: error)
+                                    completion(data: nil, error: HTTPErrorType.Refresh)
                                 }
                                 }, failure: { (error) in
                                     failure(error: error)
@@ -143,7 +145,7 @@ class EntranceRestAPIClass {
                         case .ForbidenAccess:
                             TokenHandlerSingleton.sharedInstance.assureAuthorized(true, completion: { (authenticated, err) in
                                 if authenticated && error == .Success {
-                                    completion(fullUrl: fullPath, data: nil, error: err)
+                                    completion(fullUrl: fullPath, data: nil, error: HTTPErrorType.Refresh)
                                 }
                                 }, failure: { (error) in
                                     failure(error: error)

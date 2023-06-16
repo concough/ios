@@ -44,7 +44,7 @@ class ArchiveBasicTableViewCell: UITableViewCell {
             count = FormatterSingleton.sharedInstance.NumberFormatter.stringFromNumber(c)
         }
         
-        self.configureCell(indexPath: indexPath, setId: set.id!, title: set.title!, subTitle: "\(count!) کنکور")
+        self.configureCell(indexPath: indexPath, setId: set.id!, title: set.title!, subTitle: "\(count!) آزمون")
     }
     
     private func downloadImage(esetId esetId: Int, indexPath: NSIndexPath) {
@@ -70,10 +70,13 @@ class ArchiveBasicTableViewCell: UITableViewCell {
                     
                     if error != .Success {
                         // print the error for now
-                        self.imageView?.image = UIImage()
-                        self.setNeedsLayout()
-                        print("error in downloaing image from \(fullPath!)")
-                        
+                        if error == HTTPErrorType.Refresh {
+                            self.downloadImage(esetId: esetId, indexPath: indexPath)
+                        } else {
+                            self.imageView?.image = UIImage()
+                            self.setNeedsLayout()
+//                            print("error in downloaing image from \(fullPath!)")
+                        }
                     } else {
                         if let myData = data {
                             MediaCacheSingleton.sharedInstance[fullPath!] = myData

@@ -55,3 +55,67 @@ extension String {
     }
 
 }
+
+extension NSDate {
+    func timeAgoSinceDate(lang lang: String = "fa", numericDates:Bool = false) -> String {
+        let calendar = NSCalendar.currentCalendar()
+        let now = NSDate()
+        let earliest = now.earlierDate(self)
+        let latest = (earliest == now) ? self : now
+        let components:NSDateComponents = calendar.components([NSCalendarUnit.Minute , NSCalendarUnit.Hour , NSCalendarUnit.Day , NSCalendarUnit.WeekOfYear , NSCalendarUnit.Month , NSCalendarUnit.Year , NSCalendarUnit.Second], fromDate: earliest, toDate: latest, options: NSCalendarOptions())
+        
+        if (components.year >= 2) {
+            return timesAgoTranslate(lang: lang, key: "d_year_ago", params: components.year)
+        } else if (components.year >= 1){
+            if (numericDates){
+                return timesAgoTranslate(lang: lang, key: "1_year_ago", params: 0)
+            } else {
+                return timesAgoTranslate(lang: lang, key: "last_year", params: 0)
+            }
+        } else if (components.month >= 2) {
+            return timesAgoTranslate(lang: lang, key: "d_month_ago", params: components.month)
+        } else if (components.month >= 1){
+            if (numericDates){
+                return timesAgoTranslate(lang: lang, key: "1_month_ago", params: 0)
+            } else {
+                return timesAgoTranslate(lang: lang, key: "last_month", params: 0)
+            }
+        } else if (components.weekOfYear >= 2) {
+            return timesAgoTranslate(lang: lang, key: "d_week_ago", params: components.weekOfYear)
+        } else if (components.weekOfYear >= 1){
+            if (numericDates){
+                return timesAgoTranslate(lang: lang, key: "1_week_ago", params: 0)
+            } else {
+                return timesAgoTranslate(lang: lang, key: "last_week", params: 0)
+            }
+        } else if (components.day >= 2) {
+            return timesAgoTranslate(lang: lang, key: "d_day_ago", params: components.day)
+        } else if (components.day >= 1){
+            if (numericDates){
+                return timesAgoTranslate(lang: lang, key: "1_day_ago", params: 0)
+            } else {
+                return timesAgoTranslate(lang: lang, key: "last_day", params: 0)
+            }
+        } else if (components.hour >= 2) {
+            return timesAgoTranslate(lang: lang, key: "d_hour_ago", params: components.hour)
+        } else if (components.hour >= 1){
+            if (numericDates){
+                return timesAgoTranslate(lang: lang, key: "1_hour_ago", params: 0)
+            } else {
+                return timesAgoTranslate(lang: lang, key: "last_hour", params: 0)
+            }
+        } else if (components.minute >= 2) {
+            return timesAgoTranslate(lang: lang, key: "d_minute_ago", params: components.minute)
+        } else if (components.minute >= 1){
+            if (numericDates){
+                return timesAgoTranslate(lang: lang, key: "1_minute_ago", params: 0)
+            } else {
+                return timesAgoTranslate(lang: lang, key: "last_minute", params: 0)
+            }
+        } else if (components.second >= 10) {
+            return timesAgoTranslate(lang: lang, key: "d_second_ago", params: components.second)
+        } else {
+            return timesAgoTranslate(lang: lang, key: "just_now", params: 0)
+        }
+    }
+}

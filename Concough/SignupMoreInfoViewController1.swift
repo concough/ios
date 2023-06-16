@@ -40,7 +40,7 @@ class SignupMoreInfoViewController1: UIViewController, UITextFieldDelegate {
         // customize UI
         self.ConfigureImageUIDefault()
         
-        let attributes = NSDictionary(object: UIFont(name: "IRANYekanMobile-Bold", size: 14)! , forKey: NSFontAttributeName) as! [String: AnyObject]
+        let attributes = NSDictionary(object: UIFont(name: "IRANSansMobile-Medium", size: 14)! , forKey: NSFontAttributeName) as! [String: AnyObject]
         self.nextBarItem.setTitleTextAttributes(attributes, forState: .Normal)
         
         //self.genderSegmentControl.layer.cornerRadius = 5.0
@@ -158,7 +158,6 @@ class SignupMoreInfoViewController1: UIViewController, UITextFieldDelegate {
     
     // MARK: - Actions
     @IBAction func nextButtonPressed(sender: UIBarButtonItem) {
-        //print("next button pressed")
         if let firstname = self.firstnameTextField.text?.trim() where firstname != "", let lastname = self.lastnameTextField.text?.trim() where lastname != "" {
             
             self.infoStruct.firstname = firstname
@@ -168,7 +167,7 @@ class SignupMoreInfoViewController1: UIViewController, UITextFieldDelegate {
             self.performSegueWithIdentifier("SignupMoreInfoVC2Segue", sender: self)
         }
         else {
-            AlertClass.showSimpleErrorMessage(viewController: self, messageType: "Form", messageSubType: "EmptyFields", completion: nil)
+            AlertClass.showTopMessage(viewController: self, messageType: "Form", messageSubType: "EmptyFields", type: "error", completion: nil)
         }
     }
     

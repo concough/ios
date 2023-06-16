@@ -34,12 +34,18 @@ class ArchiveAdvanceTableViewCell: UITableViewCell {
     override func prepareForReuse() {
         self.selectionStyle = .None
         self.entranceSetImageView.image = UIImage(named: "NoImage")
+        self.entranceSetImageView.assicatedObject = ""
     }
     
     internal func configureCell(indexPath indexPath: NSIndexPath, setId: Int, title: String, subTitle: String, code: Int) {
         self.entranceSetTitle.text = title
         self.entranceSetSubTitle.text = subTitle
-        self.entranceCodeLabel.text = "کد: " + FormatterSingleton.sharedInstance.NumberFormatter.stringFromNumber(code)!
+        if code == 0 {
+            self.entranceCodeLabel.text = "کد: ندارد"
+            
+        } else {
+            self.entranceCodeLabel.text = "کد: " + FormatterSingleton.sharedInstance.NumberFormatter.stringFromNumber(code)!
+        }
         
         self.downloadImage(esetId: setId, indexPath: indexPath)
     }
@@ -54,7 +60,7 @@ class ArchiveAdvanceTableViewCell: UITableViewCell {
             self.selectionStyle = .Default
         }
         
-        self.configureCell(indexPath: indexPath, setId: set.id!, title: set.title!, subTitle: "\(count!) کنکور", code: set.code!)
+        self.configureCell(indexPath: indexPath, setId: set.id!, title: set.title!, subTitle: "\(count!) آزمون", code: set.code!)
     }
     
     private func downloadImage(esetId esetId: Int, indexPath: NSIndexPath) {
@@ -76,20 +82,23 @@ class ArchiveAdvanceTableViewCell: UITableViewCell {
                     MediaRequestRepositorySingleton.sharedInstance.remove(key: "\(self.localName):\(indexPath.section):\(indexPath.row):\(esetUrl)")
                     
                     if error != .Success {
-                        // print the error for now
-//                        self.entranceSetImageView?.image = UIImage()
-//                        self.setNeedsLayout()
-                        print("error in downloaing image from \(fullPath!)")
-                        
+                        if error == HTTPErrorType.Refresh {
+                            self.downloadImage(esetId: esetId, indexPath: indexPath)
+                        } else {
+                            // print the error for now
+                            //                        self.entranceSetImageView?.image = UIImage()
+                            //                        self.setNeedsLayout()
+//                            print("error in downloaing image from \(fullPath!)")
+                        }
                     } else {
                         if let myData = data {
                             MediaCacheSingleton.sharedInstance[fullPath!] = myData
                             
                             if self.imageView?.assicatedObject == esetUrl {
-                                NSOperationQueue.mainQueue().addOperationWithBlock({
+//                                NSOperationQueue.mainQueue().addOperationWithBlock({
                                     self.entranceSetImageView?.image = UIImage(data: myData)
                                     //self.setNeedsLayout()
-                                })
+//                                })
                             }
                         }
                     }

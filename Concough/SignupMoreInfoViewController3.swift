@@ -13,8 +13,10 @@ import SimpleAlert
 class SignupMoreInfoViewController3: UIViewController, UINavigationControllerDelegate {
 
     internal var infoStruct: SignupMoreInfoStruct!
-    private var selectedGrade: GradeTypeEnum!
+    private var selectedGrade: String!
+    private var selectedGradeString: String!
     private var loading: MBProgressHUD?
+    private var retryCounter = 0
     
     @IBOutlet weak var gradeButton: UIButton!
     @IBOutlet weak var finishButton: UIButton!
@@ -33,17 +35,18 @@ class SignupMoreInfoViewController3: UIViewController, UINavigationControllerDel
             self.title = "کنکوق"
             //self.navigationItem.rightBarButtonItem = UIBarButtonItem(title: "اتمام", style: .Plain, target: self, action: #selector(self.nextButtonPressed(_:)))
         }
-        
     }
 
     override func viewWillAppear(animated: Bool) {
         if let grade = self.infoStruct.grade {
-            self.selectedGrade = GradeTypeEnum(rawValue: grade)
+            self.selectedGrade = grade
+            self.selectedGradeString = self.infoStruct.gradeString
+            self.gradeButton.setTitle( self.infoStruct.gradeString, forState: .Normal)
         } else {
-            self.selectedGrade = GradeTypeEnum.BE
+            self.selectedGrade = ""
+            self.selectedGradeString = ""
+            self.gradeButton.setTitle( "انتخاب کنید", forState: .Normal)
         }
-        
-        self.gradeButton.setTitle( self.selectedGrade.toString(), forState: .Normal) 
     }
     
     override func didReceiveMemoryWarning() {
@@ -59,13 +62,114 @@ class SignupMoreInfoViewController3: UIViewController, UINavigationControllerDel
         }
     }
     
-    // MARK: - Actions
+    @IBAction func nextButtonPressed(sender: AnyObject) {
+        // main action here
+        self.postProfile()
+    }
+    
     @IBAction func gradeButtonPressed(sender: UIButton) {
-        let alert = SimpleAlert.Controller(title: "متقاضی کنکور؟", message: "لطفا یکی از گزینه های زیر را انتخاب نمایید", style: .ActionSheet)
+        NSOperationQueue.mainQueue().addOperationWithBlock {
+            self.loading = AlertClass.showLoadingMessage(viewController: self)
+        }
+        
+        ProfileRestAPIClass.getProfileGradeList({ (data, error) in
+            NSOperationQueue.mainQueue().addOperationWithBlock({
+                AlertClass.hideLoaingMessage(progressHUD: self.loading)
+            })
+            
+            if error != HTTPErrorType.Success {
+                if error == HTTPErrorType.Refresh {
+                    self.gradeButtonPressed(sender)
+                } else {
+                    
+                    if self.retryCounter < CONNECTION_MAX_RETRY {
+                        self.retryCounter += 1
+                        self.gradeButtonPressed(sender)
+                    } else {
+                        self.retryCounter = 0
+                        
+                        NSOperationQueue.mainQueue().addOperationWithBlock({
+                            AlertClass.showTopMessage(viewController: self, messageType: "HTTPError", messageSubType: (error?.toString())!, type: "error", completion: nil)
+                        })
+                    }
+                }
+            } else {
+                self.retryCounter = 0
+                
+                if let localData = data {
+                    if let status = localData["status"].string {
+                        switch status {
+                        case "OK":
+                            
+                            if let records = localData["record"].array {
+                                var localR:[String: String] = [:]
+                                for record in records {
+                                    if let title = record["title"].string, let code = record["code"].string {
+                                        localR.updateValue(code, forKey: title)
+                                    }
+                                }
+                                
+                                self.showChooseGradeDialog(localR)
+                            }
+                            break
+                            
+                        case "Error":
+                            if let errorType = localData["error_type"].string {
+                                switch errorType {
+                                case "EmptyArray":
+                                    // empty array received --> do nothing
+                                    break
+                                default:
+                                    break
+                                }
+                            }
+                            break
+                        default:
+                            break
+                        }
+                    }
+                }
+            }
+        }) { (error) in
+            NSOperationQueue.mainQueue().addOperationWithBlock({
+                AlertClass.hideLoaingMessage(progressHUD: self.loading)
+            })
+            
+            if self.retryCounter < CONNECTION_MAX_RETRY {
+                self.retryCounter += 1
+                self.gradeButtonPressed(sender)
+            } else {
+                self.retryCounter = 0
+                
+                if let err = error {
+                    switch err {
+                    case .NoInternetAccess:
+                        fallthrough
+                    case .HostUnreachable:
+                        NSOperationQueue.mainQueue().addOperationWithBlock({
+                            AlertClass.showTopMessage(viewController: self, messageType: "NetworkError", messageSubType: err.rawValue, type: "error", completion: nil)
+                        })
+                        //                    AlertClass.showSimpleErrorMessage(viewController: self, messageType: "NetworkError", messageSubType: err.rawValue, completion: {
+                        //                        NSOperationQueue.mainQueue().addOperationWithBlock({
+                        //                            self.postProfile()
+                        //                        })
+                    //                    })
+                    default:
+                        NSOperationQueue.mainQueue().addOperationWithBlock({
+                            AlertClass.showTopMessage(viewController: self, messageType: "NetworkError", messageSubType: err.rawValue, type: "", completion: nil)
+                        })
+                    }
+                }
+            }
+        }
+    }
+    
+    private func showChooseGradeDialog(values: [String:String]) {
+        let alert = SimpleAlert.Controller(title: "متقاضی آزمون؟", message: "لطفا یکی از گزینه های زیر را انتخاب نمایید", style: .ActionSheet)
         alert.configContentView = { sview in
             if let v = sview as? SimpleAlert.ContentView {
-                v.titleLabel.font = UIFont(name: "IRANYekanMobile-Bold", size: 14)!
-                v.messageLabel.font = UIFont(name: "IRANYekanMobile", size: 12)!
+                v.titleLabel.font = UIFont(name: "IRANSansMobile-Bold", size: 14)!
+                v.messageLabel.font = UIFont(name: "IRANSansMobile", size: 12)!
                 v.messageLabel.textColor = UIColor.darkGrayColor()
             }
         }
@@ -73,38 +177,39 @@ class SignupMoreInfoViewController3: UIViewController, UINavigationControllerDel
         alert.configContainerCornerRadius = {
             return 10.0
         }
-            
-        for value in GradeTypeEnum.allValues {
-            let action = SimpleAlert.Action(title: value.toString(), style: .Default, handler: { (action) in
+        
+        for val in values {
+            let action = SimpleAlert.Action(title: val.0, style: .Default, handler: { (action) in
+                
                 let index = alert.actions.indexOf(action)
-                print(index)
-                self.selectedGrade = GradeTypeEnum.allValues[index!]
-                
+                self.selectedGrade = val.1
+                self.selectedGradeString = val.0
+
                 //                NSOperationQueue.mainQueue().addOperationWithBlock({
-                self.gradeButton.setTitle(value.toString(), forState: .Normal)
+                self.gradeButton.setTitle(val.0, forState: .Normal)
                 //                })
-                
             })
             
             alert.addAction(action)
             action.button.setTitleColor(UIColor(netHex: BLUE_COLOR_HEX, alpha: 1.0), forState: .Normal)
-            action.button.titleLabel?.font = UIFont(name: "IRANYekanMobile-Bold", size: 14)!
+            action.button.titleLabel?.font = UIFont(name: "IRANSansMobile-Bold", size: 14)!
         }
-        
         
         NSOperationQueue.mainQueue().addOperationWithBlock {
             self.presentViewController(alert, animated: true, completion: nil)
         }
+        
     }
     
-    @IBAction func nextButtonPressed(sender: AnyObject) {
-        // main action here
-        self.postProfile()
-    }
     
     // MARK: - Functions
     private func postProfile() {
-        self.infoStruct.grade = self.selectedGrade.rawValue
+        if self.selectedGrade == "" || self.selectedGradeString == "" {
+            AlertClass.showTopMessage(viewController: self, messageType: "Form", messageSubType: "EmptyFields", type: "error", completion: nil)
+        } else {
+        
+        self.infoStruct.grade = self.selectedGrade
+        self.infoStruct.gradeString = self.selectedGradeString
 
         NSOperationQueue.mainQueue().addOperationWithBlock { 
             self.loading = AlertClass.showLoadingMessage(viewController: self)
@@ -114,10 +219,23 @@ class SignupMoreInfoViewController3: UIViewController, UINavigationControllerDel
                 AlertClass.hideLoaingMessage(progressHUD: self.loading)
             })
             if error != HTTPErrorType.Success {
-                NSOperationQueue.mainQueue().addOperationWithBlock({ 
-                    AlertClass.showTopMessage(viewController: self, messageType: "HTTPError", messageSubType: (error?.toString())!, type: "error", completion: nil)
-                })
+                if error == HTTPErrorType.Refresh {
+                    self.postProfile()
+                } else {
+                    if self.retryCounter < CONNECTION_MAX_RETRY {
+                        self.retryCounter += 1
+                        self.postProfile()
+                    } else {
+                        self.retryCounter = 0
+                        
+                        NSOperationQueue.mainQueue().addOperationWithBlock({
+                            AlertClass.showTopMessage(viewController: self, messageType: "HTTPError", messageSubType: (error?.toString())!, type: "error", completion: nil)
+                        })
+                    }
+                }
             } else {
+                self.retryCounter = 0
+                
                 if let localData = data {
                     if let status = localData["status"].string {
                         switch status {
@@ -127,7 +245,7 @@ class SignupMoreInfoViewController3: UIViewController, UINavigationControllerDel
                                 modified = FormatterSingleton.sharedInstance.UTCDateFormatter.dateFromString(m)!
                             }
                             
-                            UserDefaultsSingleton.sharedInstance.createProfile(firstname: self.infoStruct.firstname!, lastname: self.infoStruct.lastname!, grade: self.infoStruct.grade!, gender: self.infoStruct.gender!, birthday: self.infoStruct.birthday!, modified: modified)
+                            UserDefaultsSingleton.sharedInstance.createProfile(firstname: self.infoStruct.firstname!, lastname: self.infoStruct.lastname!, grade: self.infoStruct.grade!, gradeString: self.infoStruct.gradeString!, gender: self.infoStruct.gender!, birthday: self.infoStruct.birthday!, modified: modified)
                             
                             // perform segue navigation to home controller
                             let vc : UIViewController = self.storyboard?.instantiateViewControllerWithIdentifier("TabHomeTableViewController") as! UITabBarController;
@@ -169,32 +287,40 @@ class SignupMoreInfoViewController3: UIViewController, UINavigationControllerDel
                 AlertClass.hideLoaingMessage(progressHUD: self.loading)
             })
             
-            if let err = error {
-                switch err {
-                case .NoInternetAccess:
-                    fallthrough
-                case .HostUnreachable:
-                    NSOperationQueue.mainQueue().addOperationWithBlock({
-                        AlertClass.showTopMessage(viewController: self, messageType: "NetworkError", messageSubType: err.rawValue, type: "error", completion: nil)
-                    })
-//                    AlertClass.showSimpleErrorMessage(viewController: self, messageType: "NetworkError", messageSubType: err.rawValue, completion: {
-//                        NSOperationQueue.mainQueue().addOperationWithBlock({ 
-//                            self.postProfile()
-//                        })
-//                    })
-                default:
-                    NSOperationQueue.mainQueue().addOperationWithBlock({
-                        AlertClass.showTopMessage(viewController: self, messageType: "NetworkError", messageSubType: err.rawValue, type: "", completion: nil)
-                    })
+            if self.retryCounter < CONNECTION_MAX_RETRY {
+                self.retryCounter += 1
+                self.postProfile()
+            } else {
+                self.retryCounter = 0
+                
+                if let err = error {
+                    switch err {
+                    case .NoInternetAccess:
+                        fallthrough
+                    case .HostUnreachable:
+                        NSOperationQueue.mainQueue().addOperationWithBlock({
+                            AlertClass.showTopMessage(viewController: self, messageType: "NetworkError", messageSubType: err.rawValue, type: "error", completion: nil)
+                        })
+    //                    AlertClass.showSimpleErrorMessage(viewController: self, messageType: "NetworkError", messageSubType: err.rawValue, completion: {
+    //                        NSOperationQueue.mainQueue().addOperationWithBlock({ 
+    //                            self.postProfile()
+    //                        })
+    //                    })
+                    default:
+                        NSOperationQueue.mainQueue().addOperationWithBlock({
+                            AlertClass.showTopMessage(viewController: self, messageType: "NetworkError", messageSubType: err.rawValue, type: "", completion: nil)
+                        })
+                    }
                 }
             }
         })
+        }
     }
 
     // MARK: - Navigations
     override func prepareForSegue(segue: UIStoryboardSegue, sender: AnyObject?) {
         if segue.identifier == "HomeVCSegue" {
-            
+            SynchronizationSingleton.sharedInstance.startSync()
         }
     }
 }

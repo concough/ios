@@ -23,7 +23,9 @@ class EntranceModelHandler {
         entrance.type = e.entranceTypeTitle!
         entrance.uniqueId = e.entranceUniqueId!
         entrance.year = e.entranceYear!
+        entrance.month = e.entranceMonth!
         entrance.username = username
+        entrance.pUniqueId = "\(username)-\(NSUUID().UUIDString.lowercaseString)"
         
         do {
             try RealmSingleton.sharedInstance.DefaultRealm.write({ 
@@ -32,7 +34,7 @@ class EntranceModelHandler {
             
             return true
         } catch (let error as NSError) {
-            print("\(error)")
+//            print("\(error)")
         }
         return false
     }
@@ -54,6 +56,21 @@ class EntranceModelHandler {
         return nil
     }
     
+    class func correctMonthOfEntrance(id id: String, username: String, month: Int) -> Bool {
+        if let entrance = EntranceModelHandler.getByUsernameAndId(id: id, username: username) {
+            do {
+                try RealmSingleton.sharedInstance.DefaultRealm.write({ 
+                    entrance.month = month
+                })
+                return true
+            } catch(let error as NSError) {
+                
+            }
+        }
+        
+        return false
+    }
+    
     class func removeById(id id: String, username: String) -> Bool {
         let items = RealmSingleton.sharedInstance.DefaultRealm.objects(EntranceModel.self).filter("username = '\(username)' AND uniqueId = '\(id)'")
         
@@ -66,7 +83,7 @@ class EntranceModelHandler {
                     })
                     
                 } catch(let error as NSError) {
-                    print("\(error)")
+//                    print("\(error)")
                     return false
                 }
             }

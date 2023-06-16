@@ -24,19 +24,20 @@ class EDHeaderSectionTableViewCell: UITableViewCell {
         
     }
     
-    internal func configureCell(title title: String, extraData: JSON?) {
+    internal func configureCell(title title: String, extraData: String) {
         self.headerTitle.text = title
         
-        if let data = extraData {
-            var s = ""
-            for (key, item) in data {
-                s += "\(key): \(item.stringValue)" + " - "
-            }
-            
-            if s.characters.count > 3 {
-                s = s.substringToIndex(s.endIndex.advancedBy(-3))
-            }
-            self.headerSubTitle.text = s
-        }
+//        if let data = extraData {
+//            var s = ""
+//            for (key, item) in data {
+//                s += "\(key): \(item.stringValue)" + " - "
+//            }
+//            
+//            if s.characters.count > 3 {
+//                s = s.substringToIndex(s.endIndex.advancedBy(-3))
+//            }
+//            self.headerSubTitle.text = s
+//        }
+        self.headerSubTitle.text = extraData
     }
 }

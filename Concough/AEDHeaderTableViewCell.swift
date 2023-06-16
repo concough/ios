@@ -21,6 +21,8 @@ class AEDHeaderTableViewCell: UITableViewCell {
         super.awakeFromNib()
         // Initialization code
         self.selectionStyle = .None
+        self.entranceSetLabel.lineBreakMode = .ByWordWrapping
+        self.entranceSetLabel.numberOfLines = 0
     }
 
     override func drawRect(rect: CGRect) {
@@ -43,8 +45,13 @@ class AEDHeaderTableViewCell: UITableViewCell {
         let count = FormatterSingleton.sharedInstance.NumberFormatter.stringFromNumber(entranceCount)!
         
         self.entranceSetLabel.text = esetTitle
-        self.entranceCountLabel.text = "\(count) کنکور منتشر شده"
-        self.entranceSetCodeLabel.text = "کد: " + FormatterSingleton.sharedInstance.NumberFormatter.stringFromNumber(entranceSetCode)!
+        self.entranceCountLabel.text = "\(count) آزمون منتشر شده"
+        if (entranceSetCode == 0) {
+            self.entranceSetCodeLabel.hidden = true
+            self.entranceSetCodeLabel.text = "کد: ندارد"
+        } else {
+            self.entranceSetCodeLabel.text = "کد: " + FormatterSingleton.sharedInstance.NumberFormatter.stringFromNumber(entranceSetCode)!
+        }
         
         self.downloadImage(esetId: esetId, indexPath: indexPath)
     }
@@ -68,11 +75,13 @@ class AEDHeaderTableViewCell: UITableViewCell {
                     MediaRequestRepositorySingleton.sharedInstance.remove(key: "\(self.localName):\(indexPath.section):\(indexPath.row):\(esetUrl)")
                     
                     if error != .Success {
-                        // print the error for now
-                        self.entranceImage?.image = UIImage()
-                        self.setNeedsLayout()
-                        print("error in downloaing image from \(fullPath!)")
-                        
+                        if error == HTTPErrorType.Refresh {
+                            self.downloadImage(esetId: esetId, indexPath: indexPath)
+                        } else {
+                            self.entranceImage?.image = UIImage()
+                            self.setNeedsLayout()
+//                            print("error in downloaing image from \(fullPath!)")
+                        }
                     } else {
                         if let myData = data {
                             MediaCacheSingleton.sharedInstance[fullPath!] = myData

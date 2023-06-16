@@ -11,6 +11,8 @@ import UIKit
 class FavoriteEntranceDeleteTableViewCell: UITableViewCell {
 
     private let localName: String = "FavoriteVC"
+    private let imageBasePath: String = ("images" as NSString).stringByAppendingPathComponent("eset")
+    
     
     @IBOutlet weak var title: UILabel!
     @IBOutlet weak var subTitle: UILabel!
@@ -38,28 +40,55 @@ class FavoriteEntranceDeleteTableViewCell: UITableViewCell {
     
     // MARK: - Functions
     internal func configureCell(entrance entrance: EntranceStructure, purchased: EntrancePrurchasedStructure, indexPath: NSIndexPath) {
-        self.title.text = "کنکور \(entrance.entranceTypeTitle!) \(entrance.entranceOrgTitle!) " + FormatterSingleton.sharedInstance.NumberFormatter.stringFromNumber(entrance.entranceYear!)!
+        if entrance.entranceMonth > 0 {
+            self.title.text = "آزمون \(entrance.entranceTypeTitle!) \(monthToString(entrance.entranceMonth!)) " + FormatterSingleton.sharedInstance.NumberFormatter.stringFromNumber(entrance.entranceYear!)!
+        } else {
+            self.title.text = "آزمون \(entrance.entranceTypeTitle!) " + FormatterSingleton.sharedInstance.NumberFormatter.stringFromNumber(entrance.entranceYear!)!
+        }
         self.subTitle.text = "\(entrance.entranceSetTitle!) (\(entrance.entranceGroupTitle!))"
         
-        if let extraData = entrance.entranceExtraData {
-            var s = ""
-            for (key, item) in extraData {
-                s += "\(key): \(item.stringValue)" + " - "
-            }
-            
-            if s.characters.count > 3 {
-                s = s.substringToIndex(s.endIndex.advancedBy(-3))
-            }
-            self.extraData.text = s
-            
-            self.deleteButton.assicatedObject = "\(indexPath.section):\(indexPath.row)"
-        }
+//        if let extraData = entrance.entranceExtraData {
+//            var s = ""
+//            for (key, item) in extraData {
+//                s += "\(key): \(item.stringValue)" + " - "
+//            }
+//            
+//            if s.characters.count > 3 {
+//                s = s.substringToIndex(s.endIndex.advancedBy(-3))
+//            }
+//            self.extraData.text = s
+//            
+//        }
+        self.extraData.text = "\(entrance.entranceOrgTitle!)"
+        self.deleteButton.assicatedObject = "\(indexPath.section):\(indexPath.row)"
+        
         
         // download Images
         self.downloadImage(esetId: entrance.entranceSetId!, indexPath: indexPath)
     }
     
     private func downloadImage(esetId esetId: Int, indexPath: NSIndexPath) {
+        let filemgr = NSFileManager.defaultManager()
+        let dirPaths = NSSearchPathForDirectoriesInDomains(.DocumentDirectory, .UserDomainMask, true)
+        
+        let docsDir = dirPaths[0] as NSString
+        let filePath = (docsDir.stringByAppendingPathComponent(imageBasePath) as NSString).stringByAppendingPathComponent(String(esetId))
+        
+        if filemgr.fileExistsAtPath(filePath) == true {
+            if let data = filemgr.contentsAtPath(filePath) {
+                NSOperationQueue.mainQueue().addOperationWithBlock({
+                    self.entranceImageView?.image = UIImage(data: data)
+                    self.setNeedsLayout()
+                })
+                
+            }
+        } else {
+            downloadImageFromNet(esetId: esetId, indexPath: indexPath)
+        }
+    }
+    
+    
+    private func downloadImageFromNet(esetId esetId: Int, indexPath: NSIndexPath) {
         if let esetUrl = MediaRestAPIClass.makeEsetImageUri(esetId) {
             MediaRequestRepositorySingleton.sharedInstance.cancel(key: "\(self.localName):\(indexPath.section):\(indexPath.row):\(esetUrl)")
             
@@ -78,11 +107,13 @@ class FavoriteEntranceDeleteTableViewCell: UITableViewCell {
                     MediaRequestRepositorySingleton.sharedInstance.remove(key: "\(self.localName):\(indexPath.section):\(indexPath.row):\(esetUrl)")
                     
                     if error != .Success {
-                        // print the error for now
-                        self.entranceImageView?.image = UIImage()
-                        self.setNeedsLayout()
-                        print("error in downloaing image from \(fullPath!)")
-                        
+                        if error == HTTPErrorType.Refresh {
+                            self.downloadImage(esetId: esetId, indexPath: indexPath)
+                        } else {
+                            self.entranceImageView?.image = UIImage()
+                            self.setNeedsLayout()
+//                            print("error in downloaing image from \(fullPath!)")
+                        }
                     } else {
                         if let myData = data {
                             MediaCacheSingleton.sharedInstance[fullPath!] = myData

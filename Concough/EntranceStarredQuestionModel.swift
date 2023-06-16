@@ -13,5 +13,6 @@ class EntranceStarredQuestionModel: Object {
     
     dynamic var question: EntranceQuestionModel?
     dynamic var created: NSDate = NSDate()
-    dynamic var entranceUniqueId: String?    
+    dynamic var entranceUniqueId: String?
+    dynamic var username: String = ""
 }

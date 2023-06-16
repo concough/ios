@@ -18,6 +18,7 @@ class ChangePasswordViewController: UIViewController, UITextFieldDelegate {
     
     private var activeTextField: UITextField!
     private var loading: MBProgressHUD?
+    private var retryCounter = 0
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -90,10 +91,24 @@ class ChangePasswordViewController: UIViewController, UITextFieldDelegate {
                 AlertClass.hideLoaingMessage(progressHUD: self.loading)
             })
             if error != HTTPErrorType.Success {
-                NSOperationQueue.mainQueue().addOperationWithBlock({
-                    AlertClass.showTopMessage(viewController: self, messageType: "HTTPError", messageSubType: (error?.toString())!, type: "error", completion: nil)
-                })
+                if error == HTTPErrorType.Refresh {
+                    self.changePassword(oldPassword: pass1, newPassword: pass2)
+                } else {
+                    if self.retryCounter < CONNECTION_MAX_RETRY {
+                        self.retryCounter += 1
+                        self.changePassword(oldPassword: pass1, newPassword: pass2)
+                    } else {
+                        self.retryCounter = 0
+                        
+                        NSOperationQueue.mainQueue().addOperationWithBlock({
+                            AlertClass.showTopMessage(viewController: self, messageType: "HTTPError", messageSubType: (error?.toString())!, type: "error", completion: nil)
+                        })
+                        
+                    }
+                }
             } else {
+                self.retryCounter = 0
+                
                 if let localData = data {
                     if let status = localData["status"].string {
                         switch status {
@@ -109,10 +124,11 @@ class ChangePasswordViewController: UIViewController, UITextFieldDelegate {
                             if let errorType = localData["error_type"].string {
                                 switch errorType {
                                 case "PassCannotChange":
-                                    NSOperationQueue.mainQueue().addOperationWithBlock({ 
+                                    fallthrough
+                                case "FieldTooSmall":
+                                    NSOperationQueue.mainQueue().addOperationWithBlock({
                                         AlertClass.showTopMessage(viewController: self, messageType: "AuthProfile", messageSubType: errorType, type: "error", completion: nil)
                                     })
-                                    fallthrough
                                 case "MultiRecord":
                                     fallthrough
                                 case "BadData":
@@ -134,23 +150,31 @@ class ChangePasswordViewController: UIViewController, UITextFieldDelegate {
             NSOperationQueue.mainQueue().addOperationWithBlock({
                 AlertClass.hideLoaingMessage(progressHUD: self.loading)
             })
-            if let err = error {
-                switch err {
-                case .NoInternetAccess:
-                    fallthrough
-                case .HostUnreachable:
-                    NSOperationQueue.mainQueue().addOperationWithBlock({
-                        AlertClass.showTopMessage(viewController: self, messageType: "NetworkError", messageSubType: err.rawValue, type: "error", completion: nil)
-                    })
-                    //                            AlertClass.showSimpleErrorMessage(viewController: self, messageType: "NetworkError", messageSubType: err.rawValue, completion: {
-                    //                                NSOperationQueue.mainQueue().addOperationWithBlock({
-                    //                                    self.login()
-                    //                                })
-                //                            })
-                default:
-                    NSOperationQueue.mainQueue().addOperationWithBlock({
-                        AlertClass.showTopMessage(viewController: self, messageType: "NetworkError", messageSubType: err.rawValue, type: "", completion: nil)
-                    })
+            
+            if self.retryCounter < CONNECTION_MAX_RETRY {
+                self.retryCounter += 1
+                self.changePassword(oldPassword: pass1, newPassword: pass2)
+            } else {
+                self.retryCounter = 0
+                
+                if let err = error {
+                    switch err {
+                    case .NoInternetAccess:
+                        fallthrough
+                    case .HostUnreachable:
+                        NSOperationQueue.mainQueue().addOperationWithBlock({
+                            AlertClass.showTopMessage(viewController: self, messageType: "NetworkError", messageSubType: err.rawValue, type: "error", completion: nil)
+                        })
+                        //                            AlertClass.showSimpleErrorMessage(viewController: self, messageType: "NetworkError", messageSubType: err.rawValue, completion: {
+                        //                                NSOperationQueue.mainQueue().addOperationWithBlock({
+                        //                                    self.login()
+                        //                                })
+                    //                            })
+                    default:
+                        NSOperationQueue.mainQueue().addOperationWithBlock({
+                            AlertClass.showTopMessage(viewController: self, messageType: "NetworkError", messageSubType: err.rawValue, type: "", completion: nil)
+                        })
+                    }
                 }
             }
         }
@@ -200,6 +224,7 @@ class ChangePasswordViewController: UIViewController, UITextFieldDelegate {
             }
         }
     }
+    
     
     // MARK: - TextField Delegate Methods
     func textFieldDidBeginEditing(textField: UITextField) {

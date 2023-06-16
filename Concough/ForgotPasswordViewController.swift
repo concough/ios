@@ -14,11 +14,26 @@ class ForgotPasswordViewController: UIViewController, UITextFieldDelegate {
     private var activeTextField: UITextField?
     private var signupStruct: SignupStructure!
     private var loading: MBProgressHUD?
+    private var retryCounter = 0
     
     @IBOutlet weak var usernameTextField: UITextField!
     @IBOutlet weak var sendCodeButton: UIButton!
     @IBOutlet weak var loginButton: UIButton!
+    @IBOutlet weak var returnButton: UIButton!
     @IBOutlet weak var scrollView: UIScrollView!
+    
+    private var send_type: String = "sms" {
+        didSet {
+            if send_type == "call" {
+                self.sendCodeButton.setTitle("ارسال کد از طریق تماس", forState: .Normal)
+            } else if send_type == "sms" {
+                self.sendCodeButton.setTitle("ارسال کد", forState: .Normal)
+            } else {
+                self.sendCodeButton.setTitle("فردا سعی نمایید ..", forState: .Normal)
+            }
+        }
+    }
+    
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -31,9 +46,14 @@ class ForgotPasswordViewController: UIViewController, UITextFieldDelegate {
         self.loginButton.layer.cornerRadius = 3.0
         self.loginButton.layer.borderWidth = 1.0
         self.loginButton.layer.borderColor = self.loginButton.titleLabel?.textColor.CGColor
+
+        self.returnButton.layer.cornerRadius = 3.0
+        self.returnButton.layer.borderWidth = 1.0
+        self.returnButton.layer.borderColor = self.returnButton.titleLabel?.textColor.CGColor
         
         // set delegates
         self.usernameTextField.delegate = self
+        self.usernameTextField.addTarget(self, action: #selector(self.textFieldDidChange(_:)), forControlEvents: .EditingChanged)
         
         // set notifications
         NSNotificationCenter.defaultCenter().addObserver(self, selector: #selector(ForgotPasswordViewController.keyboardWillShowNotification(_:)), name: UIKeyboardWillShowNotification, object: nil)
@@ -79,6 +99,16 @@ class ForgotPasswordViewController: UIViewController, UITextFieldDelegate {
         return true
     }
     
+    @IBAction func textFieldDidChange(textField: UITextField) {
+        if textField.text?.trim()?.characters.count > 0 {
+            textField.textAlignment = .Left
+            textField.semanticContentAttribute = .ForceLeftToRight
+        } else {
+            textField.textAlignment = .Center
+            textField.semanticContentAttribute = .ForceRightToLeft
+        }
+    }
+    
     // MARK: - Notifications Implementations
     func keyboardWillShowNotification(notification: NSNotification) {
         if let userInfo = notification.userInfo {
@@ -107,15 +137,25 @@ class ForgotPasswordViewController: UIViewController, UITextFieldDelegate {
     }
     
     // MARK: - Actions
+    @IBAction func returnButtonPressed(sender: UIButton) {
+        self.dismissViewControllerAnimated(true, completion: nil)
+    }
+    
     @IBAction func sendCodeButtonPressed(sender: UIButton) {
         // sending procedure
         if var username = self.usernameTextField.text?.trim() where username != "" {
-            if username.hasPrefix("0") {
-                username = username.substringFromIndex(username.startIndex.advancedBy(1))
+            if username.isValidPhoneNumber {
+                if username.hasPrefix("0") {
+                    username = username.substringFromIndex(username.startIndex.advancedBy(1))
+                }
+                username = "98" + username
+                
+                self.forgotPassword(username: username)
+            } else {
+                NSOperationQueue.mainQueue().addOperationWithBlock({
+                    AlertClass.showTopMessage(viewController: self, messageType: "Form", messageSubType: "PhoneVerifyWrong", type: "error", completion: nil)
+                })
             }
-            username = "98" + username
-            
-            self.forgotPassword(username: username)
         } else {
             NSOperationQueue.mainQueue().addOperationWithBlock({ 
                 AlertClass.showTopMessage(viewController: self, messageType: "Form", messageSubType: "EmptyFields", type: "error", completion: nil)
@@ -129,16 +169,29 @@ class ForgotPasswordViewController: UIViewController, UITextFieldDelegate {
             self.loading = AlertClass.showLoadingMessage(viewController: self)
         }
         
-        AuthRestAPIClass.forgotPassword(username: username, completion: { (data, error) in
+        AuthRestAPIClass.forgotPassword(username: username, send_type: self.send_type, completion: { (data, error) in
             NSOperationQueue.mainQueue().addOperationWithBlock({ 
                 AlertClass.hideLoaingMessage(progressHUD: self.loading)
             })
             
             if error != HTTPErrorType.Success {
-                NSOperationQueue.mainQueue().addOperationWithBlock({
-                    AlertClass.showTopMessage(viewController: self, messageType: "HTTPError", messageSubType: (error?.toString())!, type: "error", completion: nil)
-                })
+                if error == HTTPErrorType.Refresh {
+                    self.forgotPassword(username: username)
+                } else {
+                    if self.retryCounter < CONNECTION_MAX_RETRY {
+                        self.retryCounter += 1
+                        self.forgotPassword(username: username)
+                    } else {
+                        self.retryCounter = 0
+                        
+                        NSOperationQueue.mainQueue().addOperationWithBlock({
+                            AlertClass.showTopMessage(viewController: self, messageType: "HTTPError", messageSubType: (error?.toString())!, type: "error", completion: nil)
+                        })
+                    }
+                }
             } else {
+                self.retryCounter = 0
+                
                 if let localData = data {
                     if let status = localData["status"].string {
                         switch status {
@@ -158,13 +211,27 @@ class ForgotPasswordViewController: UIViewController, UITextFieldDelegate {
                                     NSOperationQueue.mainQueue().addOperationWithBlock({ 
                                         AlertClass.showTopMessage(viewController: self, messageType: "AuthProfile", messageSubType: errorType, type: "error", completion: nil)
                                     })
-                                    
+                                case "SMSSendError": fallthrough
+                                case "CallSendError":
+                                    AlertClass.showAlertMessage(viewController: self, messageType: "AuthProfile", messageSubType: errorType, type: "error", completion: nil)
+                                case "ExceedToday":
+                                    AlertClass.showAlertMessage(viewController: self, messageType: "AuthProfile", messageSubType: errorType, type: "error", completion: {
+                                        
+                                        self.send_type = "call"
+                                    })
+                                case "ExceedCallToday":
+                                    AlertClass.showAlertMessage(viewController: self, messageType: "AuthProfile", messageSubType: errorType, type: "error", completion: {
+                                        
+                                        self.send_type = ""
+                                    })
+                                
                                 case "BadData":
                                     fallthrough
                                 case "RemoteDBError":
                                     fallthrough
                                 default:
-                                    break
+                                    AlertClass.showAlertMessage(viewController: self, messageType: "ErrorResult", messageSubType: errorType, type: "error", completion: nil)
+//                                    AlertClass.showSimpleErrorMessage(viewController: self, messageType: "ErrorResult", messageSubType: errorType, completion: nil)
                                 }
                             }
                             break
@@ -179,23 +246,31 @@ class ForgotPasswordViewController: UIViewController, UITextFieldDelegate {
                 AlertClass.hideLoaingMessage(progressHUD: self.loading)
             })
             
-            if let err = error {
-                switch err {
-                case .NoInternetAccess:
-                    fallthrough
-                case .HostUnreachable:
-                    NSOperationQueue.mainQueue().addOperationWithBlock({
-                        AlertClass.showTopMessage(viewController: self, messageType: "NetworkError", messageSubType: err.rawValue, type: "error", completion: nil)
-                    })
-//                    AlertClass.showSimpleErrorMessage(viewController: self, messageType: "NetworkError", messageSubType: err.rawValue, completion: {
-//                        NSOperationQueue.mainQueue().addOperationWithBlock({ 
-//                            self.forgotPassword(username: username)
-//                        })
-//                    })
-                default:
-                    NSOperationQueue.mainQueue().addOperationWithBlock({
-                        AlertClass.showTopMessage(viewController: self, messageType: "NetworkError", messageSubType: err.rawValue, type: "", completion: nil)
-                    })
+            if self.retryCounter < CONNECTION_MAX_RETRY {
+                self.retryCounter += 1
+                self.forgotPassword(username: username)
+                
+            } else {
+                self.retryCounter = 0
+                
+                if let err = error {
+                    switch err {
+                    case .NoInternetAccess:
+                        fallthrough
+                    case .HostUnreachable:
+                        NSOperationQueue.mainQueue().addOperationWithBlock({
+                            AlertClass.showTopMessage(viewController: self, messageType: "NetworkError", messageSubType: err.rawValue, type: "error", completion: nil)
+                        })
+                        //                    AlertClass.showSimpleErrorMessage(viewController: self, messageType: "NetworkError", messageSubType: err.rawValue, completion: {
+                        //                        NSOperationQueue.mainQueue().addOperationWithBlock({
+                        //                            self.forgotPassword(username: username)
+                        //                        })
+                    //                    })
+                    default:
+                        NSOperationQueue.mainQueue().addOperationWithBlock({
+                            AlertClass.showTopMessage(viewController: self, messageType: "NetworkError", messageSubType: err.rawValue, type: "", completion: nil)
+                        })
+                    }
                 }
             }
         })
@@ -208,7 +283,6 @@ class ForgotPasswordViewController: UIViewController, UITextFieldDelegate {
 
     // MARK: - Unwind Segues
     @IBAction func unwindForgotPasswordPressed(segue: UIStoryboardSegue) {
-        //print("Reset Password Unwind Segue")
     }
 
     override func prepareForSegue(segue: UIStoryboardSegue, sender: AnyObject?) {

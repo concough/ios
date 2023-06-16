@@ -10,8 +10,7 @@ import UIKit
 
 class EDInitialSectionTableViewCell: UITableViewCell {
 
-    private let localName: String = "EntranceVC"
-    
+    private let localName: String = "EntranceVC"    
     
     @IBOutlet weak var containerView: UIView!
     @IBOutlet weak var entranceImageView: UIImageView!
@@ -21,6 +20,8 @@ class EDInitialSectionTableViewCell: UITableViewCell {
     override func awakeFromNib() {
         super.awakeFromNib()
         self.selectionStyle = .None
+        self.subTitleLabel.lineBreakMode = .ByWordWrapping
+        self.subTitleLabel.numberOfLines = 0
     }
 
     override func setSelected(selected: Bool, animated: Bool) {
@@ -52,10 +53,13 @@ class EDInitialSectionTableViewCell: UITableViewCell {
                     
                     if error != .Success {
                         // print the error for now
-                        self.entranceImageView?.image = UIImage()
-                        self.setNeedsLayout()
-                        print("error in downloaing image from \(fullPath!)")
-                        
+                        if error == HTTPErrorType.Refresh {
+                            self.downloadImage(esetId: esetId, indexPath: indexPath)
+                        } else {
+                            self.entranceImageView?.image = UIImage()
+                            self.setNeedsLayout()
+//                            print("error in downloaing image from \(fullPath!)")                            
+                        }
                     } else {
                         if let myData = data {
                             MediaCacheSingleton.sharedInstance[fullPath!] = myData

@@ -18,6 +18,7 @@ struct EntranceStructure: Any {
     var entranceExtraData: JSON?
     var entranceBookletCounts: Int?
     var entranceYear: Int?
+    var entranceMonth: Int?
     var entranceDuration: Int?
     var entranceUniqueId: String?
     var entranceLastPublished: NSDate?

@@ -36,9 +36,14 @@ class EDInformationSectionTableViewCell: UITableViewCell {
         //self.buttonLineView.hidden = !showButtonView
     }
 
-    internal func configureCell(bookletCount booklet: Int, duration: Int, year: Int) {
+    internal func configureCell(bookletCount booklet: Int, duration: Int, year: Int, month: Int) {
         self.bookletLable.text = FormatterSingleton.sharedInstance.NumberFormatter.stringFromNumber(booklet)! + " دفترچه"
         self.timeLable.text = FormatterSingleton.sharedInstance.NumberFormatter.stringFromNumber(duration)! + " دقیقه"
-        self.yearLable.text = FormatterSingleton.sharedInstance.NumberFormatter.stringFromNumber(year)!
+        
+        if month > 0 {
+            self.yearLable.text = monthToString(month) + " " + FormatterSingleton.sharedInstance.NumberFormatter.stringFromNumber(year)!
+        } else {
+            self.yearLable.text = FormatterSingleton.sharedInstance.NumberFormatter.stringFromNumber(year)!
+        }
     }
 }

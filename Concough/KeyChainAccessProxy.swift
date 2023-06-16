@@ -12,13 +12,10 @@ import SwiftKeychainWrapper
 class KeyChainAccessProxy {
     class func getValue(key: String) -> NSCoding? {
         let value = KeychainWrapper.defaultKeychainWrapper().objectForKey(key)
-        //print("keychain --> get value for \(key) \(value)")
         return value
     }
     
     class func setValue(key: String, value: NSCoding) -> Bool {
-        //let val = value as! String
-        //print("keychain --> set value for \(key): \(val)")
         return KeychainWrapper.defaultKeychainWrapper().setObject(value, forKey: key)
     }
     

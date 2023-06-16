@@ -24,6 +24,12 @@ class UrlMakerSingleton {
     private var _purchased_class_name: String!
     private var _product_class_name: String!
     private var _basket_class_name: String!
+    private var _device_class_name: String!
+    private var _wallet_class_name: String!
+    private var _userlog_class_name: String!
+    
+    private var _about_url: String!
+    private var _help_url: String!
     
     static let sharedInstance = UrlMakerSingleton()
     
@@ -43,19 +49,25 @@ class UrlMakerSingleton {
         self._purchased_class_name = PURCHASED_CLASS_NAME
         self._product_class_name = PRODUCT_CLASS_NAME
         self._basket_class_name = BASKET_CLASS_NAME
+        self._device_class_name = DEVICE_CLASS_NAME
+        self._wallet_class_name = WALLET_CLASS_NAME
+        self._userlog_class_name = USERLOG_CLASS_NAME
+        
+        self._about_url = ABOUT_URL
+        self._help_url = HELP_URL
     }
     
     internal func getAboutUrl() -> String? {
         var fullPath:String?
         
-        fullPath = "\(self._base_url)" + "about/"
+        fullPath = "\(self._about_url)"
         return fullPath
     }
 
     internal func getHelpUrl() -> String? {
         var fullPath:String?
         
-        fullPath = "\(self._base_url)" + "help/"
+        fullPath = "\(self._help_url)"
         return fullPath
     }
 
@@ -79,8 +91,19 @@ class UrlMakerSingleton {
             fullPath = "\(self._base_url)\(self._api_version)/\(functionName)/"
         }
         return fullPath
-        
     }
+
+    internal func getAppLastVersionUrl(device: String) -> String? {
+        var fullPath:String?
+        let functionName = "app_version"
+        if OAUTH_METHOD == "jwt" {
+            fullPath = "\(self._base_url)\(self._api_version)/\(self._jwt_prefix)/\(functionName)/\(device)/"
+        } else if OAUTH_METHOD == "oauth" {
+            fullPath = "\(self._base_url)\(self._api_version)/\(functionName)/\(device)/"
+        }
+        return fullPath
+    }
+    
     
     internal func mediaUrlFor(type: String, mediaId: AnyObject) -> String? {
         var fullPath:String?
@@ -104,6 +127,18 @@ class UrlMakerSingleton {
         return fullPath
     }
 
+    internal func mediaUrlForBulkQuestion(uniqueId uniqueId: String) -> String? {
+        var fullPath:String?
+        let functionName = "entrance/\(uniqueId)/qs/bulk"
+        if OAUTH_METHOD == "jwt" {
+            fullPath = "\(self._base_url)\(self._api_version)/\(self._jwt_prefix)/\(self._media_class_name)/\(functionName)/"
+        } else if OAUTH_METHOD == "oauth" {
+            fullPath = "\(self._base_url)\(self._api_version)/\(self._media_class_name)/\(functionName)/"
+        }
+        return fullPath
+    }
+    
+    
     internal func activityUrl() -> String? {
         var fullPath:String?
         if OAUTH_METHOD == "jwt" {
@@ -242,6 +277,18 @@ class UrlMakerSingleton {
         }
         return fullPath
     }
+    
+    internal func listGradeProfileUrl() -> String? {
+        var fullPath:String?
+        let functionName = "grade/list"
+        
+        if OAUTH_METHOD == "jwt" {
+            fullPath = "\(self._base_url)\(self._api_version)/\(self._jwt_prefix)/\(self._profile_class_name)/\(functionName)/"
+        } else if OAUTH_METHOD == "oauth" {
+            fullPath = "\(self._base_url)\(self._api_version)/\(self._profile_class_name)/\(functionName)"
+        }
+        return fullPath
+    }
  
     internal func archiveEntranceTypesUrl() -> String? {
         var fullPath: String?
@@ -368,9 +415,24 @@ class UrlMakerSingleton {
         let functionName = "entrance/\(uniqueId)/sale"
         return self.getProductUrl(functionName: functionName)
     }
-
+    
     internal func getProductStatForEntranceUrl(uniqueId uniqueId: String) -> String? {
         let functionName = "entrance/\(uniqueId)/stat"
+        return self.getProductUrl(functionName: functionName)
+    }
+
+    internal func getProductStatAndSaleForEntranceUrl(uniqueId uniqueId: String) -> String? {
+        let functionName = "entrance/\(uniqueId)/stat_and_sale"
+        return self.getProductUrl(functionName: functionName)
+    }
+
+    internal func getProductAddToLibUrl() -> String? {
+        let functionName = "add_to_lib"
+        return self.getProductUrl(functionName: functionName)
+    }
+    
+    internal func getProductDataForEntranceMultiUrl(uniqueId uniqueId: String) -> String? {
+        let functionName = "entrance_multi/\(uniqueId)/sale"
         return self.getProductUrl(functionName: functionName)
     }
     
@@ -409,4 +471,68 @@ class UrlMakerSingleton {
         let functionName = "\(basketId)/checkout"
         return self.getBasketUrl(functionName: functionName)
     }
+
+    internal func getVerifyCheckoutBasketUrl() -> String? {
+        let functionName = "checkout/verify"
+        return self.getBasketUrl(functionName: functionName)
+    }
+    
+    private func getDeviceUrl(functionName functionName: String) -> String? {
+        var fullPath: String?
+        
+        if OAUTH_METHOD == "jwt" {
+            fullPath = "\(self._base_url)\(self._api_version)/\(self._jwt_prefix)/\(self._device_class_name)/\(functionName)/"
+        } else if OAUTH_METHOD == "oauth" {
+            fullPath = "\(self._base_url)\(self._api_version)/\(self._device_class_name)/\(functionName)/"
+        }
+        return fullPath
+    }
+    
+    internal func getDeviceCreateUrl() -> String? {
+        let functionName = "create"
+        return self.getDeviceUrl(functionName: functionName)
+    }
+
+    internal func getDeviceLockUrl() -> String? {
+        let functionName = "lock"
+        return self.getDeviceUrl(functionName: functionName)
+    }
+
+    internal func getDeviceAcquireUrl() -> String? {
+        let functionName = "acquire"
+        return self.getDeviceUrl(functionName: functionName)
+    }
+
+    internal func getDeviceStateUrl() -> String? {
+        let functionName = "state"
+        return self.getDeviceUrl(functionName: functionName)
+    }
+
+    private func getWalletUrl(functionName functionName: String) -> String? {
+        var fullPath: String?
+        
+        if OAUTH_METHOD == "jwt" {
+            fullPath = "\(self._base_url)\(self._api_version)/\(self._jwt_prefix)/\(self._wallet_class_name)/\(functionName)/"
+        } else if OAUTH_METHOD == "oauth" {
+            fullPath = "\(self._base_url)\(self._api_version)/\(self._wallet_class_name)/\(functionName)/"
+        }
+        return fullPath
+    }
+    
+    internal func getWalletInfoUrl() -> String? {
+        let functionName = "info"
+        return self.getWalletUrl(functionName: functionName)
+    }
+    
+    internal func getUserLogSyncUpUrl() -> String? {
+        var fullPath: String?
+        
+        if OAUTH_METHOD == "jwt" {
+            fullPath = "\(self._base_url)\(self._api_version)/\(self._jwt_prefix)/\(self._userlog_class_name)/"
+        } else if OAUTH_METHOD == "oauth" {
+            fullPath = "\(self._base_url)\(self._api_version)/\(self._userlog_class_name)/"
+        }
+        return fullPath
+    }
+    
 }

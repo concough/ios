@@ -15,8 +15,6 @@ class MediaCacheSingleton {
     static let sharedInstance: MediaCacheSingleton = {
         let instance = MediaCacheSingleton()
         
-        print("Media Cache Created ...")
-        
         return instance
     }()
     
@@ -34,7 +32,6 @@ class MediaCacheSingleton {
         set {
             guard self.cache.objectForKey(x) != nil else {
                 self.cache.setObject(newValue!, forKey: x)
-                //print ("key inserted ::\(x):: to cache")
                 return
             }
         }

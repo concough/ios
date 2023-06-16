@@ -28,7 +28,7 @@ class PurchasedModelHandler {
             })
             return true
         } catch(let error as NSError) {
-            print("\(error)")
+//            print("\(error)")
         }
         return false
     }
@@ -42,7 +42,7 @@ class PurchasedModelHandler {
                     RealmSingleton.sharedInstance.DefaultRealm.delete(purchased!)
                 })
             } catch (let error as NSError) {
-                print("\(error)")
+//                print("\(error)")
                 return false
             }
         }
@@ -59,7 +59,7 @@ class PurchasedModelHandler {
                 })
                 return true
             } catch (let error as NSError) {
-                print("\(error)")
+//                print("\(error)")
             }
         }
         return false
@@ -73,7 +73,7 @@ class PurchasedModelHandler {
                 })
                 return true
             } catch (let error as NSError) {
-                print("\(error)")
+//                print("\(error)")
             }
         }
         return false
@@ -96,7 +96,7 @@ class PurchasedModelHandler {
                     item.downloadTimes = newDownloadTimes
                 })
             } catch (let error as NSError) {
-                print("\(error)")
+//                print("\(error)")
             }
         }
     }
@@ -111,19 +111,27 @@ class PurchasedModelHandler {
                 })
                 return true
             } catch (let error as NSError) {
-                print("\(error)")
+//                print("\(error)")
             }
         }
         return false
     }
     
     class func getAllPurchased(username username: String) -> Results<PurchasedModel> {
-        let items = RealmSingleton.sharedInstance.DefaultRealm.objects(PurchasedModel.self).filter("username = '\(username)'")
+        let sorts = [SortDescriptor(property: "isDownloaded", ascending: false), SortDescriptor(property: "created", ascending: false)]
+        
+        let items = RealmSingleton.sharedInstance.DefaultRealm.objects(PurchasedModel.self).filter("username = '\(username)'").sorted(sorts)
+        //.so
         return items
     }
 
     class func getAllPurchasedNotIn(username username: String, ids: [Int]) -> Results<PurchasedModel> {
-        let items = RealmSingleton.sharedInstance.DefaultRealm.objects(PurchasedModel.self).filter("username = '\(username)' AND NOT id IN %@", ids)
+        let items = RealmSingleton.sharedInstance.DefaultRealm.objects(PurchasedModel.self).filter("username = '\(username)' AND NOT id IN %@", ids).sorted("created", ascending: false)
+        return items
+    }
+
+    class func getAllPurchasedIn(username username: String, ids: [Int]) -> Results<PurchasedModel> {
+        let items = RealmSingleton.sharedInstance.DefaultRealm.objects(PurchasedModel.self).filter("username = '\(username)' AND id IN %@", ids).sorted("created", ascending: false)
         return items
     }
 

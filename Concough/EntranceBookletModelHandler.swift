@@ -25,13 +25,13 @@ class EntranceBookletModelHandler {
             })
             return booklet
         } catch(let error as NSError) {
-            print("\(error)")
+//            print("\(error)")
         }
         return nil
     }
     
-    class func getBookletsByEntranceId(uniqueId uniqueId: String) -> Results<EntranceBookletModel> {
-        let items = RealmSingleton.sharedInstance.DefaultRealm.objects(EntranceBookletModel.self).filter("entrance.uniqueId = '\(uniqueId)'").sorted("order", ascending: true)
+    class func getBookletsByEntranceId(uniqueId uniqueId: String, username: String) -> Results<EntranceBookletModel> {
+        let items = RealmSingleton.sharedInstance.DefaultRealm.objects(EntranceBookletModel.self).filter("entrance.uniqueId = '\(uniqueId)' AND entrance.username = '\(username)'").sorted("order", ascending: true)
         
         return items
     }

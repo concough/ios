@@ -37,23 +37,35 @@ class BasketEntranceTableViewCell: UITableViewCell {
     }
 
     internal func configureCell(entrance entrance: EntranceStructure, cost: Int, indexPath: NSIndexPath) {
-        self.titleLabel.text = "کنکور \(entrance.entranceTypeTitle!) \(entrance.entranceOrgTitle!) \(FormatterSingleton.sharedInstance.NumberFormatter.stringFromNumber(entrance.entranceYear!)!)"
+        if entrance.entranceMonth > 0 {
+            self.titleLabel.text = "آزمون \(entrance.entranceTypeTitle!) \(monthToString(entrance.entranceMonth!)) \(FormatterSingleton.sharedInstance.NumberFormatter.stringFromNumber(entrance.entranceYear!)!)"
+        } else {
+            self.titleLabel.text = "آزمون \(entrance.entranceTypeTitle!) \(FormatterSingleton.sharedInstance.NumberFormatter.stringFromNumber(entrance.entranceYear!)!)"
+        }
         //self.subTitleLabel.text = "مجموعه مهندسی کامپیوتر و الکترونیک ایخ هطر هسطر هشرط هشسط هشس هسط هشس طهشسرش هشسط (مجموعه فنی و مهندسی)"
         self.subTitleLabel.text = "\(entrance.entranceSetTitle!) (\(entrance.entranceGroupTitle!))"
-        self.subTitleLabel.sizeToFit()
-        self.costLabel.text = FormatterSingleton.sharedInstance.NumberFormatter.stringFromNumber(cost)! + " تومان"
+//        self.subTitleLabel.semanticContentAttribute = .ForceRightToLeft
+//        self.subTitleLabel.sizeToFit()
         
-        if let extraData = entrance.entranceExtraData {
-            var s = ""
-            for (key, item) in extraData {
-                s += "\(key): \(item.stringValue)" + " - "
-            }
-            
-            if s.characters.count > 3 {
-                s = s.substringToIndex(s.endIndex.advancedBy(-3))
-            }
-            self.extraLabel.text = s
+        if (cost != 0) {
+            self.costLabel.text = FormatterSingleton.sharedInstance.NumberFormatter.stringFromNumber(cost)! + " تومان"
+        } else {
+            self.costLabel.text = "رایگان"
         }
+        
+//        if let extraData = entrance.entranceExtraData {
+//            var s = ""
+//            for (key, item) in extraData {
+//                s += "\(key): \(item.stringValue)" + " - "
+//            }
+//            
+//            if s.characters.count > 3 {
+//                s = s.substringToIndex(s.endIndex.advancedBy(-3))
+//            }
+//            self.extraLabel.text = s
+//        }
+        self.extraLabel.text = "\(entrance.entranceOrgTitle!)"
+        
         self.downloadImage(esetId: entrance.entranceSetId!, indexPath: indexPath)
     }
 
@@ -76,11 +88,13 @@ class BasketEntranceTableViewCell: UITableViewCell {
                     MediaRequestRepositorySingleton.sharedInstance.remove(key: "\(self.localName):\(indexPath.section):\(indexPath.row):\(esetUrl)")
                     
                     if error != .Success {
-                        // print the error for now
-                        self.entranceImage?.image = UIImage()
-                        self.setNeedsLayout()
-                        print("error in downloaing image from \(fullPath!)")
-                        
+                        if error == HTTPErrorType.Refresh {
+                            self.downloadImage(esetId: esetId, indexPath: indexPath)
+                        } else {
+                            self.entranceImage?.image = UIImage()
+                            self.setNeedsLayout()
+//                            print("error in downloaing image from \(fullPath!)")
+                        }
                     } else {
                         if let myData = data {
                             MediaCacheSingleton.sharedInstance[fullPath!] = myData

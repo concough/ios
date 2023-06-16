@@ -47,3 +47,10 @@ extension UIColor {
         self.init(red: CGFloat((netHex >> 16) & 0xff) / 255.0, green: CGFloat((netHex >> 8) & 0xff) / 255.0, blue:  CGFloat((netHex >> 0) & 0xff) / 255.0, alpha:  alpha)
     }
 }
+
+extension UIImageView {
+    func tintImageColor(color: UIColor) {
+        self.image = self.image!.imageWithRenderingMode(.AlwaysTemplate)
+        self.tintColor = color
+    }
+}

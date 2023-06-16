@@ -11,4 +11,5 @@ import Foundation
 struct EntranceSaleStructure {
     var discount: Int? = 0
     var cost: Int?
+    var costBon: Int?
 }

@@ -19,6 +19,7 @@ struct SignupMoreInfoStruct {
     var firstname: String?
     var lastname: String?
     var grade: String?
+    var gradeString: String?
     var gender: String?
     var birthday: NSDate?
 }

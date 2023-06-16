@@ -19,12 +19,38 @@
                     <view key="view" contentMode="scaleToFill" id="Ze5-6b-2t3">
                         <rect key="frame" x="0.0" y="0.0" width="320" height="568"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                        <subviews>
+                            <imageView userInteractionEnabled="NO" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="logo_white" translatesAutoresizingMaskIntoConstraints="NO" id="yda-Jx-Psk">
+                                <rect key="frame" x="85" y="60" width="150" height="150"/>
+                                <constraints>
+                                    <constraint firstAttribute="height" constant="150" id="J78-o7-LdD"/>
+                                    <constraint firstAttribute="width" constant="150" id="Qzm-zc-qbR"/>
+                                </constraints>
+                            </imageView>
+                            <imageView clearsContextBeforeDrawing="NO" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="zhycan_logo_rgb" translatesAutoresizingMaskIntoConstraints="NO" id="zb0-uy-wtt">
+                                <rect key="frame" x="100.5" y="504" width="120" height="44"/>
+                                <constraints>
+                                    <constraint firstAttribute="width" constant="120" id="kH9-I7-amE"/>
+                                    <constraint firstAttribute="height" constant="44" id="wxg-LN-E34"/>
+                                </constraints>
+                            </imageView>
+                        </subviews>
                         <color key="backgroundColor" red="1" green="1" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                        <constraints>
+                            <constraint firstItem="yda-Jx-Psk" firstAttribute="centerX" secondItem="Ze5-6b-2t3" secondAttribute="centerX" id="XL4-qP-hqQ"/>
+                            <constraint firstItem="xb3-aO-Qok" firstAttribute="top" secondItem="zb0-uy-wtt" secondAttribute="bottom" constant="20" id="krG-p0-Nm2"/>
+                            <constraint firstItem="zb0-uy-wtt" firstAttribute="centerX" secondItem="Ze5-6b-2t3" secondAttribute="centerX" id="n28-qT-TFB"/>
+                            <constraint firstItem="yda-Jx-Psk" firstAttribute="top" secondItem="Llm-lL-Icb" secondAttribute="bottom" constant="40" id="wBU-qs-sfi"/>
+                        </constraints>
                     </view>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="iYj-Kq-Ea1" userLabel="First Responder" sceneMemberID="firstResponder"/>
             </objects>
-            <point key="canvasLocation" x="53" y="375"/>
+            <point key="canvasLocation" x="-120" y="139.43661971830986"/>
         </scene>
     </scenes>
+    <resources>
+        <image name="logo_white" width="1024" height="1024"/>
+        <image name="zhycan_logo_rgb" width="547" height="124"/>
+    </resources>
 </document>

@@ -53,7 +53,7 @@ class DataRestAPIClass {
                         case .ForbidenAccess:
                             TokenHandlerSingleton.sharedInstance.assureAuthorized(true, completion: { (authenticated, err) in
                                 if authenticated && err == .Success {
-                                    completion(refresh: false, data: nil, error: err)
+                                    completion(refresh: false, data: nil, error: HTTPErrorType.Refresh)
                                 }
                             }, failure: { (error) in
                                 failure(error: error)

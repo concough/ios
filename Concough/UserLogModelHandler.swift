@@ -30,4 +30,23 @@ class UserLogModelHandler {
         }
         return false
     }
+    
+    class func list(username username: String) -> (Results<UserLogModel>, Int) {
+        let items = RealmSingleton.sharedInstance.DefaultRealm.objects(UserLogModel.self).filter("username = '\(username)'").sorted("created", ascending: true)
+        let count = RealmSingleton.sharedInstance.DefaultRealm.objects(UserLogModel.self).filter("username = '\(username)'").sorted("created", ascending: true).count
+        
+        return (items, count)
+    }
+    
+    class func removeByUniqueId(username username: String, uniqueId: String) {
+        let items = RealmSingleton.sharedInstance.DefaultRealm.objects(UserLogModel.self).filter("username = '\(username)' AND uniqueId = '\(uniqueId)'")
+        
+        do {
+            try RealmSingleton.sharedInstance.DefaultRealm.write({
+                RealmSingleton.sharedInstance.DefaultRealm.delete(items)
+            })
+        } catch (let error as NSError) {
+        }
+        
+    }
 }

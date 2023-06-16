@@ -43,7 +43,7 @@ class BasketRestAPIClass {
                         case .ForbidenAccess:
                             TokenHandlerSingleton.sharedInstance.assureAuthorized(true, completion: { (authenticated, error) in
                                 if authenticated && error == .Success {
-                                    completion(data: nil, error: error)
+                                    completion(data: nil, error: HTTPErrorType.Refresh)
                                 }
                                 }, failure: { (error) in
                                     failure(error: error)
@@ -96,7 +96,7 @@ class BasketRestAPIClass {
                         case .ForbidenAccess:
                             TokenHandlerSingleton.sharedInstance.assureAuthorized(true, completion: { (authenticated, error) in
                                 if authenticated && error == .Success {
-                                    completion(data: nil, error: error)
+                                    completion(data: nil, error: HTTPErrorType.Refresh)
                                 }
                                 }, failure: { (error) in
                                     failure(error: error)
@@ -147,7 +147,7 @@ class BasketRestAPIClass {
                         case .ForbidenAccess:
                             TokenHandlerSingleton.sharedInstance.assureAuthorized(true, completion: { (authenticated, error) in
                                 if authenticated && error == .Success {
-                                    completion(data: nil, error: error)
+                                    completion(data: nil, error: HTTPErrorType.Refresh)
                                 }
                                 }, failure: { (error) in
                                     failure(error: error)
@@ -198,7 +198,7 @@ class BasketRestAPIClass {
                         case .ForbidenAccess:
                             TokenHandlerSingleton.sharedInstance.assureAuthorized(true, completion: { (authenticated, error) in
                                 if authenticated && error == .Success {
-                                    completion(data: nil, error: error)
+                                    completion(data: nil, error: HTTPErrorType.Refresh)
                                 }
                                 }, failure: { (error) in
                                     failure(error: error)
@@ -249,7 +249,7 @@ class BasketRestAPIClass {
                         case .ForbidenAccess:
                             TokenHandlerSingleton.sharedInstance.assureAuthorized(true, completion: { (authenticated, error) in
                                 if authenticated && error == .Success {
-                                    completion(data: nil, error: error)
+                                    completion(data: nil, error: HTTPErrorType.Refresh)
                                 }
                             }, failure: { (error) in
                                 failure(error: error)
@@ -267,4 +267,62 @@ class BasketRestAPIClass {
                 failure(error: error)
         })
     }
+    
+    class func verifyCheckoutBasket(basketId basketId: String?, authority: String?, completion: (data: JSON?, error: HTTPErrorType?) -> (), failure: (error: NetworkErrorType?) -> ()) {
+        
+        guard let fullPath = UrlMakerSingleton.sharedInstance.getVerifyCheckoutBasketUrl() else {
+            return
+        }
+        
+        TokenHandlerSingleton.sharedInstance.assureAuthorized(completion: { (authenticated, error) in
+            if authenticated && error == .Success {
+                
+                let headers = TokenHandlerSingleton.sharedInstance.getHeader()
+                
+                let bid: String = (basketId != nil) ? basketId!: ""
+                let aid: String = (authority != nil) ? authority!: ""
+                
+                let parameters: [String: AnyObject] = ["basket_id": bid,
+                    "authority_id": aid]
+                
+                Alamofire.request(.POST, fullPath, parameters: parameters, encoding: .JSON, headers: headers).responseJSON { response in
+                    
+                    switch response.result {
+                    case .Success:
+                        //debugPrint(response)
+                        let statusCode = response.response?.statusCode
+                        let errorType = HTTPErrorType.toType(statusCode!)
+                        
+                        switch errorType {
+                        case .Success:
+                            if let json = response.result.value {
+                                let jsonData = JSON(json)
+                                
+                                
+                                completion(data: jsonData, error: .Success)
+                            }
+                        case .UnAuthorized:
+                            fallthrough
+                        case .ForbidenAccess:
+                            TokenHandlerSingleton.sharedInstance.assureAuthorized(true, completion: { (authenticated, error) in
+                                if authenticated && error == .Success {
+                                    completion(data: nil, error: HTTPErrorType.Refresh)
+                                }
+                                }, failure: { (error) in
+                                    failure(error: error)
+                            })
+                        default:
+                            completion(data: nil, error: errorType)
+                        }
+                    case .Failure(let error):
+                        failure(error: NetworkErrorType.toType(error))
+                    }
+                }
+                
+            }
+            }, failure: { (error) in
+                failure(error: error)
+        })
+    }
+    
 }
